@@ -25,40 +25,40 @@ Departure: Friday around 14h30
 
 #### Monday: Transcriptomics
 
-* Introductory lecture: Vincent Gardeux
-* Quantification, QC & Normalization: Davide Riss0
-* Dimensionality reduction: Paulo Czarnewski
+* Introductory lecture (Vincent Gardeux)
+* Quantification, QC & Normalization (Davide Risso)
+* Dimensionality reduction (Paulo Czarnewski)
 
 #### Tuesday: Transcriptomics
 
-* Batch correction: Panagiotis Papasaikas
-* Clustering - methods overview: Charlotte Soneson
-* Cell fate mapping and trajectories: Wouter Saelens
+* Batch correction (Panagiotis Papasaikas)
+* Clustering - methods overview (Charlotte Soneson)
+* Cell fate mapping and trajectories (Wouter Saelens)
 
 #### Wednesday: Transcriptomics
 
-* Differential expression: Charlotte Soneson
+* Differential expression (Charlotte Soneson)
 * Afternoon: Team activity
 * Evening: Keynote lecture: Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuwen, Belgium.
 
 #### Thursday: Proteomics
 
-* Transcriptome + proteome: Johan Reimegård
-* Differential abundance and differential state analysis of single cell cytometry data: Mark Robinson & Helena Crowell
+* Transcriptome + proteome (Johan Reimegård)
+* Differential abundance and differential state analysis of single cell cytometry data (Mark Robinson & Helena Crowell)
 
 #### Friday: Other omics and integration
 
-* Spatial mapping of scRNAseq: Lars Borm
-* Lineage tracing and scRNA: Maria Florescu
-* Data integration methods: Sebastien Smallwood
+* Spatial mapping of scRNAseq (Lars Borm)
+* Lineage tracing and scRNA (Maria Florescu)
+* Data integration methods (Sebastien Smallwood)
 
-### Learning objectives
+## Learning objectives
 After this course you will be able to:
 - use a range of bioinformatics tools to analyze single cell RNA-seq data
 - discuss a variety of aspects of single cell RNA-seq data analysis
 - understand the advantages and limitations of single cell RNA-seq data analysis
 
-### Lecturers
+## Lecturers
 - Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuwen, Belgium
 - Åsa Björklund, NBIS, Uppsala University, SciLifeLab, Uppsala, Sweden
 - Charlotte Soneson, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland
