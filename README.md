@@ -25,32 +25,32 @@ Departure: Friday around 14h30
 
 #### Monday: Transcriptomics
 
-* Introductory lecture: Vincent Gardeux, Laboratory of Systems and Genetics, EPFL / SIB, Lausanne, Switzerland.
-* Quantification, QC & Normalization: Davide Risso, Department of Statistical Sciences, University of Padova, Italy.
-* Dimensionality reduction: Paulo Czarnewski, NBIS, Uppsala University, SciLifeLab, Uppsala, Sweden.
+* Introductory lecture: Vincent Gardeux
+* Quantification, QC & Normalization: Davide Riss0
+* Dimensionality reduction: Paulo Czarnewski
 
 #### Tuesday: Transcriptomics
 
-* Batch correction: Panagiotis Papasaikas, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel. Switzerland.
-* Clustering - methods overview: Charlotte Soneson, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland.
-* Cell fate mapping and trajectories: Wouter Saelens, VIB-UGent Center for Inflammation Research, Gent, Belgium.
+* Batch correction: Panagiotis Papasaikas
+* Clustering - methods overview: Charlotte Soneson
+* Cell fate mapping and trajectories: Wouter Saelens
 
 #### Wednesday: Transcriptomics
 
-* Differential expression: Charlotte Soneson, Computational Biology, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland.
+* Differential expression: Charlotte Soneson
 * Afternoon: Team activity
 * Evening: Keynote lecture: Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuwen, Belgium.
 
 #### Thursday: Proteomics
 
-* Transcriptome + proteome: Johan Reimegård, Uppsala University, SciLifeLab, Uppsala, Sweden.
-* Differential abundance and differential state analysis of single cell cytometry data: Mark Robinson & Helena Crowell, Statistical Genomics, University of Zurich / SIB, Zurich, Switzerland.
+* Transcriptome + proteome: Johan Reimegård
+* Differential abundance and differential state analysis of single cell cytometry data: Mark Robinson & Helena Crowell
 
 #### Friday: Other omics and integration
 
-* Spatial mapping of scRNAseq: Lars Borm, Department of Medical Biochemistry and Biophysics, Karolinska Institutet, Stockholm, Sweden.
-* Lineage tracing and scRNA: Maria Florescu, Hubrecht Institute, Developmental Biology and Stem Cell Research, Utrecht, Netherlands.
-* Data integration methods: Sebastien Smallwood, Friedrich Miescher Institute for Biomedical Research, Basel, Switzerland.
+* Spatial mapping of scRNAseq: Lars Borm
+* Lineage tracing and scRNA: Maria Florescu
+* Data integration methods: Sebastien Smallwood
 
 ### Learning objectives
 After this course you will be able to:
@@ -59,6 +59,20 @@ After this course you will be able to:
 - understand the advantages and limitations of single cell RNA-seq data analysis
 
 ### Lecturers
+- Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuwen, Belgium
+- Åsa Björklund, NBIS, Uppsala University, SciLifeLab, Uppsala, Sweden
+- Charlotte Soneson, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland
+- Davide Risso, Department of Statistical Sciences, University of Padova, Italy
+- Helena Crowell, Statistical Genomics, University of Zurich / SIB, Zurich, Switzerland
+- Johan Reimegård, NBIS, Uppsala University, SciLifeLab, Uppsala, Sweden
+- Lars Borm, Department of Medical Biochemistry and Biophysics, Karolinska Institutet, Stockholm, Sweden
+- Maria Florescu, Hubrecht Institute, Developmental Biology and Stem Cell Research, Utrecht, Netherlands
+- Mark Robinson, Statistical Genomics, University of Zurich / SIB, Zurich, Switzerland 
+- Panagiotis Papasaikas, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland
+- Paulo Czarnewski, NBIS, Stockholm University, SciLifeLab, Stockholm, Sweden
+- Sebastien Smallwood, Friedrich Miescher Institute for Biomedical Research, Basel, Switzerland
+- Vincent Gardeux, Laboratory of Systems and Genetics, EPFL / SIB, Lausanne, Switzerland
+- Wouter Saelens, VIB-UGent Center for Inflammation Research, Gent, Belgium
 
 ### Additional information
 
