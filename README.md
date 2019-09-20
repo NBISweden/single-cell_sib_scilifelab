@@ -1,6 +1,6 @@
 <img src="./logos/sib_logo_high.jpg" width="250">          <img src="logos/nbislogo-orange-txt.svg" width="200">          <img src="logos/scilifelab-ws.jpg" width="300">
 
-# Joint SIB / SciLifeLab Autumn School Single Cell Analysis
+# Joint SIB and NBIS/SciLifeLab Autumn School Single Cell Analysis
 
 ### [Schedule](schedule.md)
 
