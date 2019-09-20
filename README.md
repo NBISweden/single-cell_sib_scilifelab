@@ -1,4 +1,5 @@
-![logo](logos/sib_logo_high.jpg =100x)
+![logo](logos/sib_logo_high.jpg)
+<img src="./logos/sib_logo_high.jpg" width="100">
 ![logo](logos/nbislogo-orange-txt.svg =100x)
 ![logo](logos/scilifelab-ws.jpg =100x)
 
