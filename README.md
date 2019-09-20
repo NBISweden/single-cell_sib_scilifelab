@@ -1,6 +1,6 @@
-![logo](logos/sib_logo_high.jpg)
-![logo](logos/nbislogo-orange-txt.svg)
-![logo](logos/scilifelab-ws.jpg)
+![logo](logos/sib_logo_high.jpg | width=100)
+![logo](logos/nbislogo-orange-txt.svg | width=100)
+![logo](logos/scilifelab-ws.jpg | width=100)
 
 # Joint SIB / SciLifeLab Autumn School Single Cell Analysis
 
