@@ -69,7 +69,7 @@ After this course you will be able to:
 - Lars Borm, Department of Medical Biochemistry and Biophysics, Karolinska Institutet, Stockholm, Sweden
 - Maria Florescu, Hubrecht Institute, Developmental Biology and Stem Cell Research, Utrecht, Netherlands
 - Mark Robinson, Statistical Genomics, University of Zurich / SIB, Zurich, Switzerland 
-- Nadine Zangger, SIB, Basel, Switzerland
+- Nadine Zangger, Bioinformatics Core Facility, SIB, Lausanne, Switzerland
 - Panagiotis Papasaikas, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland
 - Paulo Czarnewski, NBIS, Stockholm University, SciLifeLab, Stockholm, Sweden
 - Sebastien Smallwood, Friedrich Miescher Institute for Biomedical Research, Basel, Switzerland
