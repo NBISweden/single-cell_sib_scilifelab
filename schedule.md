@@ -2,7 +2,7 @@
 
 ## Schedule
 
-### Monday 
+### Monday 14.10.2019
 
 * [Example lecuture](session-example/session-example.pdf)
 * [Example exercise](session-example/session-example.md)
@@ -16,7 +16,7 @@
 - **18:00 - 20:00** free time / spa 
 - **20:00** Dinner
 
-### Tuesday 
+### Tuesday 15.10.2019
 - **9:00 - 10:00** Batch correction: Panagiotis Papasaikas
 - **10:00 - 11:00** Clustering - methods overview: Charlotte Soneson
 - **11:00 - 11:30** Coffee break
@@ -26,7 +26,7 @@
 - **18:00 - 20:00** Free time / spa 
 - **20:00** Special dinner - Cheese fondue
 
-### Wednesday 
+### Wednesday 16.10.2019
 - **9:00 - 11.00** Differential expression: Charlotte Soneson
 - **11.00 - 11.30** Lunch break
 - **11.30 - 12.30** Short hands-on session (?) 
@@ -36,7 +36,7 @@
 - **20:00** Dinner
 
 
-### Thursday
+### Thursday 17.10.2019
 - **9:00 - 10:30** Transcriptome + proteome: Johan Reimegård
 - **10:30 - 11:00** Coffee break
 - **11:00 - 12:30** Differential abundance and differential state analysis of single cell cytometry data: Mark Robinson & Helena Crowell
@@ -45,7 +45,7 @@
 - **18:45** Dinner
 - **<20:00 - 22:00** Special late opening of the spa
 
-### Friday
+### Friday 18.10.2019
 - **9:00 - 10:00** Spatial mapping of scRNAseq: Lars Borm
 - **10:00 - 11:00** Lineage tracing and scRNA: Maria Florescu
 - **11:00 - 11:30** Coffee break
