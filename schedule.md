@@ -12,7 +12,7 @@
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** Dimensionality reduction: Paulo Czarnewski
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on including a coffee break (David + Paulo)
+- **14:00 - 18:00** Hands-on including a coffee break (David, Paulo)
 - **18:00 - 20:00** Free time / spa 
 - **20:00** Dinner
 
@@ -41,7 +41,7 @@
 - **10:30 - 11:00** Coffee break
 - **11:00 - 12:30** Differential abundance and differential state analysis of single cell cytometry data: Mark Robinson & Helena Crowell
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter)
+- **14:00 - 18:00** Hands-on including a coffee break (Johan, Mark, Helena)
 - **18:45** Dinner
 - **<20:00 - 22:00** Special late opening of the spa
 
