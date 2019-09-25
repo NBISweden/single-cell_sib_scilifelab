@@ -28,7 +28,7 @@
 
 ### Wednesday 16.10.2019
 - **9:00 - 11.00** Differential expression: Charlotte Soneson
-- **11.00 - 11.30** Lunch break
+- **11.00 - 11.30** Coffee break
 - **11.30 - 12.30** Hands-on
 - **12:30 - 14:00** Lunch break
 - **14.00 - ~18:00** Team activity (hiking or salt mines or castle or ?)
