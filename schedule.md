@@ -4,7 +4,7 @@
 
 ### Monday 14.10.2019
 
-* [Example lecuture](session-example/session-example.pdf)
+* [Example lecture](session-example/session-example.pdf)
 * [Example exercise](session-example/session-example.md)
 
 - **9:00 - 10:00** Introductory lecture: Vincent Gardeux
@@ -29,7 +29,7 @@
 ### Wednesday 16.10.2019
 - **9:00 - 11.00** Differential expression: Charlotte Soneson
 - **11.00 - 11.30** Lunch break
-- **11.30 - 12.30** Short hands-on session (?) 
+- **11.30 - 12.30** Hands-on
 - **12:30 - 14:00** Lunch break
 - **14.00 - ~18:00** Team activity (hiking or salt mines or castle or ?)
 - **18:30 - 19:30** Keynote lecture: Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuven, Belgium.
