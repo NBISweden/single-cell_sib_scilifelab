@@ -13,7 +13,7 @@
 - **11:30 - 12:30** Dimensionality reduction: Paulo Czarnewski
 - **12:30 - 14:00** Lunch break
 - **14:00 - 18:00** Hands-on including a coffee break (David + Paulo)
-- **18:00 - 20:00** free time / spa 
+- **18:00 - 20:00** Free time / spa 
 - **20:00** Dinner
 
 ### Tuesday 15.10.2019
