@@ -148,10 +148,11 @@ if( BiocManager::version() != .required_Bioc_version )
 ## Get list of packages to install
 lns <- readLines(.pkg_file)
 lns <- sub("^ *- *", "", lns)
-deps <- lns[grep("^[a-zA-Z0-9.]+$", lns)]
+deps <- unique(lns[grep("^[a-zA-Z0-9]+$", lns)])
 deps <- data.frame(name = gsub(x = deps, "^[[:alnum:]]+/", ""),
                    source = deps, 
                    stringsAsFactors = FALSE)
+cmds <- unique(lns[grep("^[a-zA-Z0-9._:]+\\(.*\\)$", lns)])
 
 
 ## omit packages not supported on WIN and MAC
@@ -189,6 +190,22 @@ if(.Platform$OS.type == "windows" || Sys.info()["sysname"] == "Darwin") {
 # ah <- AnnotationHub::AnnotationHub()
 # ah_91 <- AnnotationHub::query(ah, "EnsDb.Hsapiens.v91")
 # edb <- ah[[names(ah_91)]]
+fail.cmds <- NULL
+if (length(cmds) > 0) {
+    bp <- progress::progress_bar$new(total = length(cmds),
+                                     format = "Processing :current of :total expressions (:percent ) - current: :cmd",
+                                     show_after = 0,
+                                     clear = FALSE)
+    for (i in seq_along(cmds)) {
+        bp$tick(tokens = list(cmd = cmds[i]))
+        tryCatch(
+            suppressMessages( res <- eval(parse(text = cmds[i])) ),
+            error = function(e) { fail.cmds <- c(fail.cmds, cmds[i]) },
+            warning = function(w) { fail.cmds <- c(fail.cmds, cmds[i]) }
+        )
+    }
+    message("DONE!")
+}
 
 
 ##-------------------------
@@ -215,9 +232,13 @@ if(all( deps$name %in% rownames(installed.packages()) )) {
                 install_command, "\n\n")
     }
     
-    message("If you need help with troubleshooting, please contact the course organisers.")
-    
     #if( .Platform$pkgType == "source" ){
     #    message("Some of the packages (e.g. 'Cairo', 'mzR', rgl', 'RCurl', 'tiff', 'XML') that failed to install may require additional system libraries.*  Please check the documentation of these packages for unsatisfied dependencies.\n A list of required libraries for Ubuntu can be found at http://www.huber.embl.de/users/msmith/csama2019/linux_libraries.html \n\n")
     #}
+    
+    if (length(fail.cmds) > 0) {
+        message("Some of the commands to download datasets failed:\n   ", paste(fail.cmds, collapse = "\n   "), "\n")
+    }
+
+    message("If you need help with troubleshooting, please contact the course organisers.")
 }
