@@ -18,12 +18,18 @@
 - limma
 - MAST
 - mbkmeans
+- mclust
 - pheatmap
 - SC3
 - scater
 - scran
 - Seurat
 - SingleCellExperiment
+- TENxPBMCData
 - tidyverse
 - zinbwave
+
+## Add the following lines to the download script to download data 
+## sets from ExperimentHub (or other sources) in advance:
+TENxPBMCData::TENxPBMCData(dataset = "pbmc3k")
 
