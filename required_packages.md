@@ -23,7 +23,7 @@
 - SC3
 - scater
 - scran
-- Seurat
+- Seurat-3.1
 - SingleCellExperiment
 - TENxPBMCData
 - tidyverse
