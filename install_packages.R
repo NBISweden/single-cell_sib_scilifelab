@@ -3,7 +3,7 @@
 ## Autumn School Single Cell Analysis 2019
 ##------------------------------------------------------------
 ##
-## based on a script from Mike L. Smith written for CSAMA 2019
+## based on a script from Mike L. Smith created for CSAMA 2019
 ## https://www.huber.embl.de/users/msmith/csama2019/install_packages.R
 
 
@@ -22,6 +22,24 @@
 
 mem_pattern = "[0-9]+"
 min_mem = 4 # gigabytes
+
+
+##---------------------------
+## Obtained required packages/code to run
+##---------------------------
+lns <- readLines(.pkg_file)
+lns.pos <- match(c("## START-PACKAGES:", "## END-PACKAGES",
+                   "## START-EXPRESSIONS:", "## END-EXPRESSIONS"),
+                 lns)
+if (any(is.na(lns.pos)) || any(diff(lns.pos) < 0)) {
+    stop(.pkg_file, " does not contain expected anchors; please contact the course organizers.")
+}
+lns.pkgs <- unique(lns[seq(lns.pos[1] + 1L, lns.pos[2] - 1L)])
+deps <- data.frame(name = sub(x = lns.pkgs, "^([[:alnum:]]+/)?([a-zA-Z0-9.]+)(-([0-9.]+))?$", "\\2"),
+                   source = sub("-[0-9.]+$", "", lns.pkgs),
+                   min.version = sub(x = lns.pkgs, "^([[:alnum:]]+/)?([a-zA-Z0-9.]+)(-([0-9.]+))?$", "\\4"),
+                   stringsAsFactors = FALSE)
+cmds <- unique(lns[seq(lns.pos[3] + 1L, lns.pos[4] - 1L)])
 
 
 ##---------------------------
@@ -85,19 +103,19 @@ mem <-
            unix =
                if (file.exists("/proc/meminfo")) {
                    ## regular linux
-                   res <- system('grep "^MemTotal" /proc/meminfo', intern=TRUE)
-                   as.numeric(regmatches(res, regexpr(mem_pattern, res)))/10^6
+                   res <- system('grep "^MemTotal" /proc/meminfo', intern = TRUE)
+                   as.numeric(regmatches(res, regexpr(mem_pattern, res))) / 10^6
                } else {
                    if (file.exists("/usr/sbin/system_profiler")) {
                        ## try MAC os
-                       res <- system('/usr/sbin/system_profiler SPHardwareDataType | grep "Memory"', intern=TRUE)
+                       res <- system('/usr/sbin/system_profiler SPHardwareDataType | grep "Memory"', intern = TRUE)
                        as.numeric(regmatches(res, regexpr(mem_pattern, res)))
                    } else NULL
                },
            windows =
                tryCatch({
-                   res = system("wmic ComputerSystem get TotalPhysicalMemory", ignore.stderr=TRUE, intern=TRUE)[2L]
-                   as.numeric(regmatches(res, regexpr(mem_pattern, res)))/10^9
+                   res = system("wmic ComputerSystem get TotalPhysicalMemory", ignore.stderr = TRUE, intern = TRUE)[2L]
+                   as.numeric(regmatches(res, regexpr(mem_pattern, res))) / 10^9
                }, error = function(e) NULL),
            NULL)
 
@@ -111,28 +129,28 @@ if (is.null(mem)) {
 
 
 ## Check the R version
-R_version = paste(R.version$major, R.version$minor, sep=".")
-if( !(R_version %in% .required_R_version) )
+R_version = paste(R.version$major, R.version$minor, sep = ".")
+if ( !(R_version %in% .required_R_version) )
     stop(sprintf("You are using R-%s, which is not the one required for the course.\nPlease install R-%s\nR can be downloaded from here: %s",
                  R_version, .required_R_version[length(.required_R_version)], .r_url))
 
 
 ## Check Rstudio version
 .baseurl <- unique(c(BiocManager::repositories(), .course_repos))
-hasApistudio = suppressWarnings(require("rstudioapi", quietly=TRUE))
-if( !hasApistudio ){
-    BiocManager::install("rstudioapi", update=FALSE, siteRepos = .baseurl, quiet = TRUE, ask = FALSE)
-    suppressWarnings(require("rstudioapi", quietly=TRUE))
+hasApistudio = suppressWarnings(require("rstudioapi", quietly = TRUE))
+if ( !hasApistudio ) {
+    BiocManager::install("rstudioapi", update = FALSE, siteRepos = .baseurl, quiet = TRUE, ask = FALSE)
+    suppressWarnings(require("rstudioapi", quietly = TRUE))
 }
 
-.rstudioVersion = try( rstudioapi::versionInfo()$version, silent=TRUE )
-if( inherits( .rstudioVersion, "try-error" ) ){
+.rstudioVersion = try( rstudioapi::versionInfo()$version, silent = TRUE )
+if ( inherits( .rstudioVersion, "try-error" ) ) {
     .rstudioVersion = gsub("\n|Error : ", "", .rstudioVersion)
     rstudioError = sprintf("The following error was produced while checking your Rstudio version: \"%s\"\nPlease make sure that you are running this script from an Rstudio session. If you are doing so and the error persists, please contact the course organisers.\n", .rstudioVersion)
     stop( rstudioError )
 }
 
-if( !( .rstudioVersion >= .required_rstudio_version ) ){
+if ( !(.rstudioVersion >= .required_rstudio_version ) ) {
     rstudioVersionError = sprintf("You are using a Rstudio v%s, which is not the one required for the course.\nPlease install Rstudio v%s or higher.\nThe latest version of Rstudio can be found here: %s",
                                   .rstudioVersion, .required_rstudio_version, .rstudio_url)
     stop( rstudioVersionError )
@@ -140,19 +158,9 @@ if( !( .rstudioVersion >= .required_rstudio_version ) ){
 
 
 ## Check BioC version
-if( BiocManager::version() != .required_Bioc_version )
+if ( BiocManager::version() != .required_Bioc_version )
     stop(sprintf("You are using Bioconductor %s, which is not the one required for the course.\nPlease install Bioconductor %s\nInstallation instructions for Bioconductor are available here: %s\n",
                  BiocManager::version(), .required_Bioc_version, .bioc_url))
-
-
-## Get list of packages to install
-lns <- readLines(.pkg_file)
-lns <- sub("^ *- *", "", lns)
-deps <- unique(lns[grep("^[a-zA-Z0-9]+$", lns)])
-deps <- data.frame(name = gsub(x = deps, "^[[:alnum:]]+/", ""),
-                   source = deps,
-                   stringsAsFactors = FALSE)
-cmds <- unique(lns[grep("^[a-zA-Z0-9._:]+\\(.*\\)$", lns)])
 
 
 ## omit packages not supported on WIN and MAC
@@ -169,7 +177,7 @@ destdir = NULL
 
 ## do not compile from sources
 options(install.packages.compile.from.source = "never")
-if(.Platform$OS.type == "windows" || Sys.info()["sysname"] == "Darwin") {
+if (.Platform$OS.type == "windows" || Sys.info()["sysname"] == "Darwin") {
     BiocManager::install(toInstall, ask = FALSE, quiet = TRUE, update = FALSE)
 } else {
     fail <- installer_with_progress(toInstall)
@@ -217,14 +225,16 @@ if(all( deps$name %in% rownames(installed.packages()) )) {
     notinstalled <- deps[which( !deps$name %in% rownames(installed.packages()) ), "name"]
 
 
-    if( .Platform$pkgType == "win.binary" & 'Rsubread' %in% notinstalled ){
+    if ( .Platform$pkgType == "win.binary" & 'Rsubread' %in% notinstalled ) {
         cat("The windows binaries for the package 'Rsubread' are not available. However, this package is not absolutely necessary for the exercises. If this is the only package
     that was not installed, there is no reason to worry. \n")
     }
 
-    cat(sprintf("\nThe following package%s not installed:\n\n%s\n\n", if (length(notinstalled)<=1) " was" else "s were", paste( notinstalled, collapse="\n" )))
+    cat(sprintf("\nThe following package%s not installed:\n\n%s\n\n",
+                if (length(notinstalled) <= 1) " was" else "s were",
+                paste( notinstalled, collapse = "\n" )))
 
-    if( .Platform$pkgType != "source" ){
+    if ( .Platform$pkgType != "source" ) {
         message("Please try re-running the script to see whether the problem persists.")
     } else {
         install_command <- paste0("BiocManager::install(c('", paste(notinstalled, collapse = "', '"), "'))")
@@ -232,7 +242,7 @@ if(all( deps$name %in% rownames(installed.packages()) )) {
                 install_command, "\n\n")
     }
 
-    #if( .Platform$pkgType == "source" ){
+    #if ( .Platform$pkgType == "source" ) {
     #    message("Some of the packages (e.g. 'Cairo', 'mzR', rgl', 'RCurl', 'tiff', 'XML') that failed to install may require additional system libraries.*  Please check the documentation of these packages for unsatisfied dependencies.\n A list of required libraries for Ubuntu can be found at http://www.huber.embl.de/users/msmith/csama2019/linux_libraries.html \n\n")
     #}
 
