@@ -27,9 +27,9 @@ mem_pattern = "[0-9]+"
 min_mem = 4 # gigabytes
 
 
-##---------------------------
-## Obtained required packages/code to run
-##---------------------------
+##--------------------------------------
+## Obtain required packages/code to run
+##--------------------------------------
 lns <- readLines(.pkg_file)
 lns.pos <- match(c("## START-PACKAGES:", "## END-PACKAGES",
                    "## START-EXPRESSIONS:", "## END-EXPRESSIONS"),
@@ -187,22 +187,27 @@ if (.Platform$OS.type == "windows" || Sys.info()["sysname"] == "Darwin") {
 }
 
 
-##---------------------------
+##---------------------------------------
+## Checking minimal versions of packages
+##---------------------------------------
+if (any(needVersionCheck <- deps$min.version != "")) {
+    for (i in which(needVersionCheck)) {
+        if (packageVersion(deps[i, "name"]) < deps[i, "min.version"]) {
+            message("installing newer version of ", deps[i, "name"])
+            BiocManager::install(deps[i, "source"], ask = FALSE, quiet = TRUE, update = FALSE)
+        } else {
+            message(deps[i, "name"], "-", packageVersion(deps[i, "name"]),
+                    " already fulfills minimal version requirement (", deps[i, "min.version"], ")")
+        }
+    }
+}
+
+##----------------------------------
 ## Additional installation commands
-##---------------------------
-# if(Biobase::package.version("msdata") < "0.24.1") {
-#     BiocManager::install(msdata, ask = FALSE, quiet = TRUE, update = FALSE)
-# }
-#
-# TENxPBMCData::TENxPBMCData(dataset = "pbmc3k")
-# TENxPBMCData::TENxPBMCData(dataset = "pbmc4k")
-#
-# library("ensembldb")
-# ah <- AnnotationHub::AnnotationHub()
-# ah_91 <- AnnotationHub::query(ah, "EnsDb.Hsapiens.v91")
-# edb <- ah[[names(ah_91)]]
+##----------------------------------
 fail.cmds <- NULL
 if (length(cmds) > 0) {
+    message("Preparing additional requirements for course")
     bp <- progress::progress_bar$new(total = length(cmds),
                                      format = "Processing :current of :total expressions (:percent ) - current: :cmd",
                                      show_after = 0,
