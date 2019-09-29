@@ -18,7 +18,7 @@
 .rstudio_url              <- "https://www.rstudio.com/products/rstudio/download/"
 .bioc_url                 <- "http://www.bioconductor.org/install/"
 .course_repos             <- character(0)
-.pkg_file                 <- "required_packages.md"
+.pkg_file                 <- "https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/required_packages.md"
 
 mem_pattern = "[0-9]+"
 min_mem = 4 # gigabytes
@@ -40,21 +40,21 @@ options(warn = 1)
 ## installation function
 ##-------------------------------------------
 installer_with_progress <- function(pkgs) {
-    
+
     if (length(pkgs) == 0) { invisible(return(NULL)) }
-    
+
     if (!requireNamespace("progress", quietly = TRUE)) {
         suppressMessages(
             BiocManager::install('progress', quiet = TRUE, update = FALSE, ask = FALSE)
         )
     }
-    
+
     toInstall <- pkgs
     bp <- progress::progress_bar$new(total = length(toInstall),
                                      format = "Installed :current of :total (:percent ) - current package: :package",
                                      show_after = 0,
                                      clear = FALSE)
-    
+
     length_prev <- length(toInstall)
     fail <- NULL
     while (length(toInstall)) {
@@ -74,15 +74,15 @@ installer_with_progress <- function(pkgs) {
         }
     }
     bp$tick(length_prev - length(toInstall),  tokens = list(package = "DONE!"))
-    
+
     return(fail)
 }
 
 
 ## Check memory size
 mem <-
-    switch(.Platform$OS.type,         
-           unix = 
+    switch(.Platform$OS.type,
+           unix =
                if (file.exists("/proc/meminfo")) {
                    ## regular linux
                    res <- system('grep "^MemTotal" /proc/meminfo', intern=TRUE)
@@ -92,9 +92,9 @@ mem <-
                        ## try MAC os
                        res <- system('/usr/sbin/system_profiler SPHardwareDataType | grep "Memory"', intern=TRUE)
                        as.numeric(regmatches(res, regexpr(mem_pattern, res)))
-                   } else NULL  
+                   } else NULL
                },
-           windows = 
+           windows =
                tryCatch({
                    res = system("wmic ComputerSystem get TotalPhysicalMemory", ignore.stderr=TRUE, intern=TRUE)[2L]
                    as.numeric(regmatches(res, regexpr(mem_pattern, res)))/10^9
@@ -150,7 +150,7 @@ lns <- readLines(.pkg_file)
 lns <- sub("^ *- *", "", lns)
 deps <- unique(lns[grep("^[a-zA-Z0-9]+$", lns)])
 deps <- data.frame(name = gsub(x = deps, "^[[:alnum:]]+/", ""),
-                   source = deps, 
+                   source = deps,
                    stringsAsFactors = FALSE)
 cmds <- unique(lns[grep("^[a-zA-Z0-9._:]+\\(.*\\)$", lns)])
 
@@ -182,10 +182,10 @@ if(.Platform$OS.type == "windows" || Sys.info()["sysname"] == "Darwin") {
 # if(Biobase::package.version("msdata") < "0.24.1") {
 #     BiocManager::install(msdata, ask = FALSE, quiet = TRUE, update = FALSE)
 # }
-# 
+#
 # TENxPBMCData::TENxPBMCData(dataset = "pbmc3k")
 # TENxPBMCData::TENxPBMCData(dataset = "pbmc4k")
-# 
+#
 # library("ensembldb")
 # ah <- AnnotationHub::AnnotationHub()
 # ah_91 <- AnnotationHub::query(ah, "EnsDb.Hsapiens.v91")
@@ -215,15 +215,15 @@ if(all( deps$name %in% rownames(installed.packages()) )) {
     cat(sprintf("\nCongratulations! All packages were installed successfully :)\nWe are looking forward to seeing you at the course!\n\n"))
 } else {
     notinstalled <- deps[which( !deps$name %in% rownames(installed.packages()) ), "name"]
-    
-    
+
+
     if( .Platform$pkgType == "win.binary" & 'Rsubread' %in% notinstalled ){
         cat("The windows binaries for the package 'Rsubread' are not available. However, this package is not absolutely necessary for the exercises. If this is the only package
     that was not installed, there is no reason to worry. \n")
     }
-    
+
     cat(sprintf("\nThe following package%s not installed:\n\n%s\n\n", if (length(notinstalled)<=1) " was" else "s were", paste( notinstalled, collapse="\n" )))
-    
+
     if( .Platform$pkgType != "source" ){
         message("Please try re-running the script to see whether the problem persists.")
     } else {
@@ -231,11 +231,11 @@ if(all( deps$name %in% rownames(installed.packages()) )) {
         message("Please try running the following command to attempt installation again:\n\n",
                 install_command, "\n\n")
     }
-    
+
     #if( .Platform$pkgType == "source" ){
     #    message("Some of the packages (e.g. 'Cairo', 'mzR', rgl', 'RCurl', 'tiff', 'XML') that failed to install may require additional system libraries.*  Please check the documentation of these packages for unsatisfied dependencies.\n A list of required libraries for Ubuntu can be found at http://www.huber.embl.de/users/msmith/csama2019/linux_libraries.html \n\n")
     #}
-    
+
     if (length(fail.cmds) > 0) {
         message("Some of the commands to download datasets failed:\n   ", paste(fail.cmds, collapse = "\n   "), "\n")
     }
