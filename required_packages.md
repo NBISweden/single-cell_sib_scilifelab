@@ -5,7 +5,12 @@
 ##   START-EXPRESSIONS, END-EXPRESSIONS
 
 ## R packages: List here required packages for exercises for R 3.6.1, Bioc 3.9
-## (one package per line in format: pkgname[-minimal-version])
+## (one package per line in format:
+##     [github_repo/]pkgname[-min_version]
+## where
+##      'github_repo' is a github repository (optional)
+##      'pkgname' is the name of the package
+##      'min_version' is a minimal required version (optional))
 ## START-PACKAGES:
 AUCell
 BiocSingular
@@ -14,7 +19,7 @@ cluster
 clustree
 dendextend
 dynamicTreeCut
-dyno
+dynverse/dyno
 edgeR
 flowCore
 HDCytoData
