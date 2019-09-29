@@ -5,6 +5,9 @@
 ##
 ## based on a script from Mike L. Smith created for CSAMA 2019
 ## https://www.huber.embl.de/users/msmith/csama2019/install_packages.R
+##
+## invoke by:
+## source("https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/install_packages.R")
 
 
 ##-------------------------------------------
