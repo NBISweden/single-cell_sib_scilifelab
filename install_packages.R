@@ -21,7 +21,7 @@
 .rstudio_url              <- "https://www.rstudio.com/products/rstudio/download/"
 .bioc_url                 <- "http://www.bioconductor.org/install/"
 .course_repos             <- character(0)
-.pkg_file                 <- "https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/required_packages.md"
+.pkg_file                 <- "https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/required_packages.txt"
 
 mem_pattern = "[0-9]+"
 min_mem = 4 # gigabytes
