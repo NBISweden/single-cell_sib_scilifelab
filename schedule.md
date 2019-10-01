@@ -37,11 +37,13 @@
 
 
 ### Thursday 17.10.2019
-- **9:00 - 10:30** Transcriptome + proteome: Johan Reimegård
+- **9:00 - 10:30** Differential abundance (DA) and differential state (DS) analysis of single cell cytometry data: Mark Robinson & Helena Crowell
 - **10:30 - 11:00** Coffee break
-- **11:00 - 12:30** Differential abundance and differential state analysis of single cell cytometry data: Mark Robinson & Helena Crowell
+- **11:00 - 12:30** DA and DS cytometry Hands-on (Helena, Mark)
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on including a coffee break (Johan, Mark, Helena)
+- **14:00 - 15:30** Transcriptome + proteome: Johan Reimegård
+- **15:30 - 16:00** Coffee break
+- **16:00 - 17:30** Transcriptome/proteome Hands-on (Johan)
 - **18:45** Dinner
 - **<20:00 - 22:00** Special late opening of the spa
 
