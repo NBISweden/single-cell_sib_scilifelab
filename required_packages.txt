@@ -22,6 +22,7 @@ dynamicTreeCut
 dynverse/dyno
 edgeR
 flowCore
+ggplot2
 HDCytoData
 igraph
 iSEE
@@ -35,6 +36,7 @@ scater
 scran
 Seurat-3.1
 SingleCellExperiment
+SummarizedExperiment
 TENxPBMCData
 tidyverse
 zinbwave
