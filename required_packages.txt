@@ -33,6 +33,7 @@ mclust
 pheatmap
 SC3
 scater
+scone
 scran
 Seurat-3.1
 SingleCellExperiment
