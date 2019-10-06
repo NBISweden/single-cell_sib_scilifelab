@@ -14,9 +14,11 @@
 ## START-PACKAGES:
 AUCell
 BiocSingular
+BiocStyle
 CATALYST
 cluster
 clustree
+cowplot
 dendextend
 dynamicTreeCut
 dynverse/dyno
@@ -24,13 +26,18 @@ edgeR
 flowCore
 ggplot2
 HDCytoData
+htmltools
 igraph
 iSEE
+knitr
 limma
 MAST
 mbkmeans
 mclust
 pheatmap
+RColorBrewer
+rmarkdown
+Rtsne
 SC3
 scater
 scone
