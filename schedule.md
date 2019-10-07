@@ -48,10 +48,10 @@
 - **<20:00 - 22:00** Special late opening of the spa
 
 ### Friday 18.10.2019
-- **9:00 - 10:00** Spatial mapping of scRNAseq: Lars Borm
-- **10:00 - 11:00** Lineage tracing and scRNA: Maria Florescu
+- **9:00 - 10:00** Data integration methods: Sebastien Smallwood 
+- **10:00 - 11:00** Spatial mapping of scRNAseq: Lars Borm
 - **11:00 - 11:30** Coffee break
-- **11:30 - 12:30** Data integration methods: Sebastien Smallwood
+- **11:30 - 12:30** Lineage tracing and scRNA: Maria Florescu
 - **12:30 - 14:00** Lunch break
 - **14:00 - 14:20** Conclusion and wrap up
 - **14:20** End of the event
