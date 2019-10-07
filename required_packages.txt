@@ -23,6 +23,7 @@ clustree
 combat
 cowplot
 dendextend
+destiny
 dynamicTreeCut
 dynverse/dyno
 edgeR
@@ -51,11 +52,9 @@ SingleCellExperiment
 SummarizedExperiment
 TENxPBMCData
 tidyverse
-zinbwave
 umap
-destiny
-Rtsne
-
+uwot
+zinbwave
 ## END-PACKAGES
 
 ## Additional code: Add here additional expressions to be run, e.g. to download
