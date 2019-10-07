@@ -27,7 +27,7 @@
 - **20:00** Special dinner - Cheese fondue
 
 ### Wednesday 16.10.2019
-- **9:00 - 11.00** Differential expression: Charlotte Soneson
+- **9:00 - 11.00** Differential expression, interactive visualization: Charlotte Soneson
 - **11.00 - 11.30** Coffee break
 - **11.30 - 12.30** Hands-on
 - **12:30 - 14:00** Lunch break
