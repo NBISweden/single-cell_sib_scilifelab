@@ -13,11 +13,13 @@
 ##      'min_version' is a minimal required version (optional))
 ## START-PACKAGES:
 AUCell
+batchelor
 BiocSingular
 BiocStyle
 CATALYST
 cluster
 clustree
+combat
 cowplot
 dendextend
 dynamicTreeCut
