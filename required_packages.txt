@@ -48,6 +48,10 @@ SummarizedExperiment
 TENxPBMCData
 tidyverse
 zinbwave
+umap
+destiny
+Rtsne
+
 ## END-PACKAGES
 
 ## Additional code: Add here additional expressions to be run, e.g. to download
