@@ -51,9 +51,9 @@ cmds <- unique(lns[seq(lns.pos[3] + 1L, lns.pos[4] - 1L)])
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 if (!requireNamespace("remotes", quietly = TRUE))
-    BiocManager::install("remotes", quiet = TRUE, update = FALSE, ask = FALSE)
+    BiocManager::install("remotes", quiet = TRUE, update = FALSE, ask = FALSE, site_repository = .course_repos)
 if (!requireNamespace("Biobase", quietly = TRUE))
-    BiocManager::install("Biobase", quiet = TRUE, update = FALSE, ask = FALSE)
+    BiocManager::install("Biobase", quiet = TRUE, update = FALSE, ask = FALSE, site_repository = .course_repos)
 options(warn = 1)
 
 
@@ -66,7 +66,7 @@ installer_with_progress <- function(pkgs) {
 
     if (!requireNamespace("progress", quietly = TRUE)) {
         suppressMessages(
-            BiocManager::install('progress', quiet = TRUE, update = FALSE, ask = FALSE)
+            BiocManager::install('progress', quiet = TRUE, update = FALSE, ask = FALSE, site_repository = .course_repos)
         )
     }
 
@@ -87,6 +87,7 @@ installer_with_progress <- function(pkgs) {
         } else {
             tryCatch(
                 suppressMessages( BiocManager::install(pkg, quiet = TRUE, update = FALSE, ask = FALSE,
+                                                       site_repository = .course_repos,
                                                        Ncpus = parallel::detectCores() ) ),
                 error = function(e) { fail <<- c(fail, pkg) },
                 warning = function(w) { fail <<- c(fail, pkg) },
@@ -139,10 +140,9 @@ if ( !(R_version %in% .required_R_version) )
 
 
 ## Check Rstudio version
-.baseurl <- unique(c(BiocManager::repositories(), .course_repos))
 hasApistudio = suppressWarnings(require("rstudioapi", quietly = TRUE))
 if ( !hasApistudio ) {
-    BiocManager::install("rstudioapi", update = FALSE, siteRepos = .baseurl, quiet = TRUE, ask = FALSE)
+    BiocManager::install("rstudioapi", update = FALSE, site_repository = .course_repos, quiet = TRUE, ask = FALSE)
     suppressWarnings(require("rstudioapi", quietly = TRUE))
 }
 
@@ -181,7 +181,7 @@ destdir = NULL
 ## do not compile from sources
 options(install.packages.compile.from.source = "never")
 if (.Platform$OS.type == "windows" || Sys.info()["sysname"] == "Darwin") {
-    BiocManager::install(toInstall, ask = FALSE, quiet = TRUE, update = FALSE)
+    BiocManager::install(toInstall, ask = FALSE, quiet = TRUE, update = FALSE, site_repository = .course_repos)
 } else {
     fail <- installer_with_progress(toInstall)
 }
@@ -194,7 +194,7 @@ if (any(needVersionCheck <- deps$min.version != "")) {
     for (i in which(needVersionCheck)) {
         if (packageVersion(deps[i, "name"]) < deps[i, "min.version"]) {
             message("installing newer version of ", deps[i, "name"])
-            BiocManager::install(deps[i, "source"], ask = FALSE, quiet = TRUE, update = FALSE)
+            BiocManager::install(deps[i, "source"], ask = FALSE, quiet = TRUE, update = FALSE, site_repository = .course_repos)
         } else {
             message(deps[i, "name"], "-", packageVersion(deps[i, "name"]),
                     " already fulfills minimal version requirement (", deps[i, "min.version"], ")")
@@ -245,7 +245,7 @@ if(all( deps$name %in% rownames(installed.packages()) )) {
     if ( .Platform$pkgType != "source" ) {
         message("Please try re-running the script to see whether the problem persists.")
     } else {
-        install_command <- paste0("BiocManager::install(c('", paste(notinstalled, collapse = "', '"), "'))")
+        install_command <- paste0("BiocManager::install(c('", paste(notinstalled, collapse = "', '"), "'), site_repository = '", .course_repos, "')")
         message("Please try running the following command to attempt installation again:\n\n",
                 install_command, "\n\n")
     }
