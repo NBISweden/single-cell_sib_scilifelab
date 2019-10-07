@@ -1,0 +1,24 @@
+---
+title: "Single-cell trajectories"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Theory session
+
+[Slides](https://docs.google.com/presentation/d/1t_0yD7DxsMTK3fJPngNm9RN2CTgNJeeoBnxkd7c1mMc)
+
+## Practical session
+
+[① Quantification (Including RNA velocity): 1_quantify.md](1_quantify.md)
+
+[② Preprocessing oincluding RNA velocity): 2_preprocessing.md](2_preprocessing.md)
+
+[③ Trajectory analysis using slingshot: 3_slingshot.md](3_slingshot.md)
+
+[④ Velocity analysis using velocyto.R: 4_velocity.md](4_velocity.md)
+
+[⑤ Trajectory inference and plotting using dyno: 5_dyno.md](5_dyno.md)
