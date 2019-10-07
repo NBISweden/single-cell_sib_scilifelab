@@ -14,6 +14,7 @@
 ## START-PACKAGES:
 AUCell
 batchelor
+BiocNeighbors
 BiocSingular
 BiocStyle
 CATALYST
@@ -39,6 +40,7 @@ mclust
 pheatmap
 RColorBrewer
 rmarkdown
+rsvd
 Rtsne
 SC3
 scater
