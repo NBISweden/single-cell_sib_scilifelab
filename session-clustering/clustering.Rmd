@@ -1,0 +1,582 @@
+---
+title: "Clustering of scRNA-seq data"
+author: "Charlotte Soneson"
+date: "2019-10-15"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    fig_width: 5
+    keep_md: yes
+editor_options: 
+  chunk_output_type: console
+bibliography: clustering.bib
+---
+
+```{r setup, include=FALSE, eval = TRUE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+library(BiocStyle)
+BiocStyle::markdown()
+```
+
+# Introduction
+
+This lab covers some of the most commonly used clustering methods for
+single-cell RNA-seq. We will use an example data set consisting of 2,700 PBMCs,
+sequenced using 10x Genomics technology. In addition to performing the
+clustering, we will also look at ways to visualize and compare clusterings.
+
+Many parts of this tutorial are taken from, or inspired by, the online book
+["Orchestrating single-cell analysis with
+Bioconductor"](https://osca.bioconductor.org/), which is also an excellent
+resource for additional discussions on many of the steps performed here.
+
+# Load packages
+
+We first load the required R packages. 
+
+```{r}
+suppressPackageStartupMessages({
+  library(SummarizedExperiment)
+  library(SingleCellExperiment)
+  library(TENxPBMCData)
+  library(scater)
+  library(scran)
+  library(BiocSingular)
+  library(SC3)
+  library(clustree)
+  library(mclust)
+  library(pheatmap)
+  library(cluster)
+  library(Seurat)
+  library(dynamicTreeCut)
+  library(igraph)
+  library(ggplot2)
+})
+```
+
+# Load and preprocess data
+
+Next, we load the data (from the `r Biocpkg("TENxPBMCData")` package), calculate
+QC metrics with `r Biocpkg("scater")`, normalize and run denoising PCA with 
+`r Biocpkg("scran")` and apply tSNE using `r Biocpkg("scater")`, as we have seen
+previously in the course.
+
+```{r}
+## Load data
+sce <- TENxPBMCData::TENxPBMCData(dataset = "pbmc3k")
+
+## Add column names, and use gene symbol as row names wherever possible
+colnames(sce) <- paste0("Cell", seq_len(ncol(sce)))
+rownames(sce) <- scater::uniquifyFeatureNames(
+    ID = rowData(sce)$ENSEMBL_ID,
+    names = rowData(sce)$Symbol_TENx
+)
+
+## Calculate QC metrics and remove cells with more than 5% reads from
+## mitochondrial genes
+MT <- rownames(sce)[grep("^MT-", rownames(sce))]
+sce <- scater::calculateQCMetrics(
+  object = sce, 
+  feature_controls = list(MT = MT)
+)
+sce <- sce[, sce$pct_counts_MT < 5]
+
+## Calculate size factors and normalize
+## Note that the pre-clustering step has been excluded to save computational
+## time
+sce <- scran::computeSumFactors(sce, min.mean = 0.1)
+sce <- scater::normalize(sce)
+logcounts(sce) <- as.matrix(logcounts(sce))
+
+## Fit variance trend and apply denoising PCA
+new.trend <- scran::makeTechTrend(x = sce)
+fit <- scran::trendVar(sce, use.spikes = FALSE, loess.args = list(span = 0.05))
+fit$trend <- new.trend
+dec <- scran::decomposeVar(fit = fit)
+set.seed(123)
+sce <- scran::denoisePCA(sce, technical = new.trend, BSPARAM = IrlbaParam())
+
+## Apply tSNE
+set.seed(123)
+sce <- scater::runTSNE(sce, use_dimred = "PCA", perplexity = 30)
+```
+
+# Graph-based clustering
+
+In this section, we will apply graph-based clustering, using both 
+`r Biocpkg("scran")` + `r CRANpkg("igraph")` and `r CRANpkg("Seurat")`. Graph-based
+clustering is commonly used for scRNA-seq, and often shows good performance.
+
+## With scran + igraph
+
+First, we will use `r Biocpkg("scran")` to generate the shared nearest neighbor
+graph, which will then be subjected to community detection using algorithms
+implemented in the `r CRANpkg("igraph")` package. The SNN graph is constructed
+using the `buildSNNGraph` function in `r Biocpkg("scran")`, given the input
+space to use (here, we use the PCA representation calculated above) and the
+number of neighbors to use in the original KNN graph generation. We also specify
+the type of weighting to use when generating the SNN graph. The default is `type
+= "rank"`, which sets the weight between two nodes to _k - r/2_, where _r_ is
+the smallest sum of ranks for any shared neighbors [@Xu2015-rw]. Alternatively,
+`type = "number"` sets the weight to the number of shared neighbors.
+
+```{r}
+graph_k10 <- scran::buildSNNGraph(sce, k = 10, use.dimred = "PCA", type = "rank")
+```
+
+Once the SNN graph is generated, we can use any of the community detection
+algorithms in `r CRANpkg("igraph")` to find the clusters. Here, we illustrate
+two of these methods; the walktrap algorithm [@Pons2005-sh] and the Louvain
+method [@Blondel2008-ym]. The cluster assignments are included in the
+`membership` slot of the `communities` object returned by the community
+detection.
+
+```{r}
+clust_k10_walktrap <- igraph::cluster_walktrap(graph_k10)$membership
+clust_k10_louvain <- igraph::cluster_louvain(graph_k10)$membership
+```
+
+As discussed in the lecture, graph-based community detection algorithms are
+often evaluated in terms of their _modularity_. Given a graph and a set of
+cluster assignments, this can be calculated, for each cluster, using the
+`clusterModularity` function from `r Biocpkg("scran")`. With `get.values =
+FALSE` (default), the returned values are proportional to the difference between
+observed and expected edge weights between each pair of communities. By setting
+`get.values = TRUE`, we can get the observed and expected edge weights between
+each pair of clusters.
+
+```{r}
+## Get and plot modularity values
+mod_k10_walktrap <- scran::clusterModularity(
+  graph_k10, factor(clust_k10_walktrap),
+  get.values = FALSE
+)
+pheatmap::pheatmap(
+  mod_k10_walktrap, cluster_rows = FALSE, cluster_cols = FALSE,
+  color = colorRampPalette(c("white", "blue"))(100)
+)
+
+## Get observed and expected edge weights, plot the log-ratio
+mod_k10_walktrap <- scran::clusterModularity(
+  graph_k10, factor(clust_k10_walktrap),
+  get.values = TRUE
+)
+pheatmap::pheatmap(
+  log2(mod_k10_walktrap$observed/mod_k10_walktrap$expected + 1), 
+  cluster_rows = FALSE, cluster_cols = FALSE,
+  color = colorRampPalette(c("white", "blue"))(100)
+)
+```
+
+Repeat for the Louvain community detection:
+
+```{r}
+## Get and plot modularity values
+mod_k10_louvain <- scran::clusterModularity(
+  graph_k10, factor(clust_k10_louvain),
+  get.values = FALSE
+)
+pheatmap::pheatmap(
+  mod_k10_louvain, cluster_rows = FALSE, cluster_cols = FALSE,
+  color = colorRampPalette(c("white", "blue"))(100)
+)
+
+## Get observed and expected edge weights, plot the log-ratio
+mod_k10_louvain <- scran::clusterModularity(
+  graph_k10, factor(clust_k10_louvain),
+  get.values = TRUE
+)
+pheatmap::pheatmap(
+  log2(mod_k10_louvain$observed/mod_k10_louvain$expected + 1), 
+  cluster_rows = FALSE, cluster_cols = FALSE,
+  color = colorRampPalette(c("white", "blue"))(100)
+)
+
+```
+
+There are several ways in which we can explore the clustering results further.
+For example, we can look at the number of inferred communities, and the number
+of cells assigned to each of them:
+
+```{r}
+table(clust_k10_walktrap)
+table(clust_k10_louvain)
+```
+
+We can also compare the assignments between the two community detection methods,
+both numerically and graphically. A common metric for summarizing the agreement
+between two partitionings of the same set of cells is the _adjusted Rand index_
+[@Rand1971-ty; @Hubert1985-id] - the closer to 1 this value is, the more similar are the partitionings.
+
+```{r}
+table(clust_k10_walktrap, clust_k10_louvain)
+pheatmap::pheatmap(table(clust_k10_walktrap, clust_k10_louvain))
+mclust::adjustedRandIndex(clust_k10_walktrap, clust_k10_louvain)
+```
+
+Finally, we often want to overlay the cluster assignments in a reduced dimension
+representation, or in the original graph. One way of achieving the former is to
+add the cluster labels to the _SingleCellExperiment_ object, and use the
+`plotReducedDim` function from `r Biocpkg("scater")` to visualize the data. The
+latter can be achieved using functions from `r CRANpkg("igraph")`.
+
+```{r}
+## Add cluster assignments to the SingleCellExperiment object and visualize in
+## tSNE representation
+sce$cluster_walktrap_k10 <- factor(clust_k10_walktrap)
+sce$cluster_louvain_k10 <- factor(clust_k10_louvain)
+scater::plotReducedDim(sce, "TSNE", colour_by = "cluster_walktrap_k10")
+scater::plotReducedDim(sce, "TSNE", colour_by = "cluster_louvain_k10")
+```
+
+```{r}
+## Define a set of colors to use (must be at least as many as the number of
+## communities)
+cols <- RColorBrewer::brewer.pal(n = 12, name = "Paired")
+## Plot the graph, color by cluster assignment
+igraph::plot.igraph(
+  graph_k10, layout = layout_with_fr(graph_k10),
+  vertex.color = cols[clust_k10_walktrap],
+  vertex.size = 5, vertex.label = NA, main = "Walktrap"
+)
+igraph::plot.igraph(
+  graph_k10, layout = layout_with_fr(graph_k10),
+  vertex.color = cols[clust_k10_louvain],
+  vertex.size = 5, vertex.label = NA, main = "Louvain"
+)
+```
+
+Next, let's try generating the graph with different number of neighbors. Notice
+how it changes the number of communities that are detected. Feel free to explore
+with different community algorithms from `r CRANpkg("igraph")` and change the
+settings in other ways!
+
+```{r}
+## Smaller k
+graph_k5 <- scran::buildSNNGraph(sce, k = 5, use.dimred = "PCA", type = "rank")
+clust_k5_louvain <- igraph::cluster_louvain(graph_k5)$membership
+table(clust_k5_louvain)
+pheatmap::pheatmap(table(clust_k5_louvain, clust_k10_louvain))
+
+## Larger k
+graph_50 <- scran::buildSNNGraph(sce, k = 50, use.dimred = "PCA", type = "rank")
+clust_k50_louvain <- igraph::cluster_louvain(graph_50)$membership
+table(clust_k50_louvain)
+pheatmap::pheatmap(table(clust_k50_louvain, clust_k10_louvain))
+```
+
+### Specifying the number of clusters
+
+Some of the community detection algorithms in `r CRANpkg("igraph")` are
+_hierarchical_, which implies that there is an underlying hierarchy in the
+communities object that can be cut at a certain height in order to generate a
+pre-specified number of clusters (they will still return an "optimized" number
+of communities by default). In order to do this, we  must first generate the
+communities object, and check whether the method that we have applied is
+hierarchical.
+
+```{r}
+## Louvain is not hierarchical
+comm_k10_louvain <- igraph::cluster_louvain(graph_k10)
+igraph::is_hierarchical(comm_k10_louvain)
+
+## Walktrap is hierarchical
+comm_k10_walktrap <- igraph::cluster_walktrap(graph_k10)
+igraph::is_hierarchical(comm_k10_walktrap)
+```
+
+For hierarchical methods, we can then generate a given number of clusters using
+the `cut_at` function from `r CRANpkg("igraph")`.
+
+```{r}
+table(igraph::cut_at(comm_k10_walktrap, no = 2))
+table(igraph::cut_at(comm_k10_walktrap, no = 4))
+table(igraph::cut_at(comm_k10_walktrap, no = 8))
+table(igraph::cut_at(comm_k10_walktrap, no = 10))
+table(igraph::cut_at(comm_k10_walktrap, no = 15))
+```
+
+## With Seurat
+
+`r CRANpkg("Seurat")` also implements a graph-based clustering, by default using
+the Louvain community detection algorithm. Since `r CRANpkg("Seurat")` does not
+use the _SingleCellExperiment_ container, the first thing we need to do is to
+create a Seurat object for the downstream analysis. We generate this from the
+raw counts of the SingleCellExperiment object above, and apply the normalization
+methods of `r CRANpkg("Seurat")` to reprocess the data.
+
+```{r}
+so <- Seurat::CreateSeuratObject(
+  counts = counts(sce), project = "pbmc3k", 
+  min.cells = 3, min.features = 200
+)
+so <- Seurat::NormalizeData(
+  so, normalization.method = "LogNormalize", scale.factor = 10000
+)
+so <- Seurat::FindVariableFeatures(so, selection.method = "vst", nfeatures = 2000)
+so <- Seurat::ScaleData(so, features = rownames(so))
+so <- Seurat::RunPCA(
+  so, features = VariableFeatures(object = so), verbose = FALSE
+)
+```
+
+Next, we create the nearest neighbor graph, and find the communities. Note that
+`r CRANpkg("Seurat")` allows the specification of the resolution parameter. This
+will (implicitly) determine the number of communities, as discussed in the
+lecture. Here, we specify a range of resolutions, which will generate a
+collection of clustering results.
+
+```{r}
+so <- Seurat::FindNeighbors(so, dims = 1:10)
+so <- Seurat::FindClusters(
+  so, resolution = seq(from = 0.1, to = 1, by = 0.1), verbose = FALSE
+)
+```
+
+Finally, we can move the cluster labels back into the original
+SingleCellExperiment object, for further exploration (which can of course also
+be done using functions from `r CRANpkg("Seurat")`).
+
+```{r}
+## Check that cells are in the same order
+stopifnot(all(colnames(sce) == colnames(so)))
+
+## Get clustering results from the Seurat object
+clust_seurat <- so@meta.data %>% 
+  dplyr::select(dplyr::contains("RNA_snn_res."))
+
+## Add to the sce object
+colData(sce) <- cbind(colData(sce), DataFrame(clust_seurat))
+```
+
+The chain of clustering results obtained with different resolutions can be
+nicely visualized with the `r CRANpkg("clustree")` package, which operates on
+either SingleCellExperiment or Seurat objects.
+
+```{r, fig.height = 9}
+clustree::clustree(sce, prefix = "RNA_snn_res.")
+```
+
+<!--
+## With griph
+
+A third R implementation of graph-based clustering is available in the
+[_griph_](https://github.com/ppapasaikas/griph) package (which internally also
+uses community detection algorithms from `r CRANpkg("igraph")`). The basic
+outline of the griph algorithm is as follows:
+
+* Sample a small but representative set of cells for initial calculations
+* Select informative (highly variable) genes
+* Calculate similarities among cells, by combining four metrics: Canberra
+distance, Hellinger distance, Pearson correlation and Spearman correlation
+* Estimate a sparse graph structure using the graphical lasso. In this step,
+restrictions can be applied to adjust for batch effects, by effectively limiting
+cells from the same batch from being directly connected
+* Reweight edges to limit the impact of spurious structure caused by noise
+* Identify communities using the Louvain algorithm
+* Use the results from the representative set of cells to create a graph
+reconstruction and community detection for the full set of cells
+
+The input to griph is a matrix of _raw_ gene-level counts. Normalization and
+gene selection is performed internally.
+
+```{r, eval = FALSE}
+library(griph)
+clust_griph <- griph::griph_cluster(
+  as.matrix(counts(sce)), K = 20, plot_ = TRUE, use.par = FALSE
+)
+sce$cluster_griph <- factor(clust_griph$MEMB)
+scater::plotReducedDim(sce, "TSNE", colour_by = "cluster_griph")
+```
+-->
+
+# K-means clustering
+
+K-means is a generic clustering algorithm that has been used in many application
+areas. In R, it can be applied via the `kmeans` function. Typically, it is
+applied to a reduced dimension representation of the expression data (most often
+PCA, because of the interpretability of the low-dimensional distances). We need
+to define the number of clusters in advance. Since the results depend on the
+initialization of the cluster centers, it is typically recommended to run
+K-means with multiple starting configurations (via the `nstart` argument).
+
+```{r}
+set.seed(123)
+clust_kmeans_k10 <- kmeans(reducedDim(sce, "PCA"), centers = 10, nstart = 25)
+table(clust_kmeans_k10$cluster)
+sce$cluster_kmeans_k10 <- factor(clust_kmeans_k10$cluster)
+plotReducedDim(sce, "TSNE", colour_by = "cluster_kmeans_k10")
+```
+
+As we saw in the lecture, the gap statistic is one approach to compare
+clusterings with different number of clusters. We set the number of random
+starts to 5 and the number of bootstraps to 25, to reduce computational time.
+
+```{r, warning = FALSE}
+set.seed(123)
+gaps <- cluster::clusGap(
+  reducedDim(sce, "PCA"), kmeans, 
+  K.max = 20, nstart = 5, B = 25
+)
+
+## Find the "best" k
+best.k <- cluster::maxSE(gaps$Tab[, "gap"], gaps$Tab[, "SE.sim"])
+best.k
+ggplot(as.data.frame(gaps$Tab), aes(x = seq_along(gap), y = gap)) + 
+  geom_point(size = 4) + geom_vline(xintercept = best.k, color = "red") + 
+  theme_bw() + xlab("Number of clusters")
+```
+
+# Hierarchical clustering
+
+Hierarchical clustering is another generic form of clustering that can be
+applied also to scRNA-seq data. As K-means, it is typically applied to a reduced
+dimension representation of the data. Hierarchical clustering returns an entire
+hierarchy of partitionings (a dendrogram) that can be cut at different levels.
+
+```{r}
+## Calculate pairwise distances among cells
+distsce <- dist(reducedDim(sce, "PCA"))
+hcl <- hclust(distsce, method = "ward.D2")
+plot(hcl, labels = FALSE)
+```
+
+The choice of linkage method can have a large influence on the resulting
+dendrogram. To illustrate this, we change the `method` argument of `hclust` and
+compare the results.
+
+```{r}
+hcl_single <- hclust(distsce, method = "single")
+plot(hcl_single, labels = FALSE)
+hcl_complete <- hclust(distsce, method = "complete")
+plot(hcl_complete, labels = FALSE)
+```
+
+Given a dendrogram, it can be cut in different ways to create discrete clusters. 
+The `cutree` function will cut it at a given height, determined either 
+explicitly or implicitly (by providing the desired number of clusters).
+
+```{r}
+clust_hcl_k10 <- cutree(hcl, k = 10)
+table(clust_hcl_k10)
+sce$cluster_hcl_k10 <- factor(clust_hcl_k10)
+plotReducedDim(sce, "TSNE", colour_by = "cluster_hcl_k10")
+```
+
+However, it is not always optimal to use a single cutoff for the entire
+dendrogram. The `r CRANpkg("dynamicTreeCut")` package allows a dynamic cut,
+which may be performed at different heights in different parts of the tree.
+
+```{r}
+clust_hcl_dyn <- dynamicTreeCut::cutreeDynamic(
+  hcl, distM = as.matrix(distsce),
+  minClusterSize = 10, deepSplit = 1
+)
+table(clust_hcl_dyn)
+table(clust_hcl_k10, clust_hcl_dyn)
+
+sce$cluster_hcl_dyn <- factor(clust_hcl_dyn)
+plotReducedDim(sce, "TSNE", colour_by = "cluster_hcl_dyn")
+```
+
+Clustering methods can also be combined, e.g., by first applying K-means to
+cluster the cells into a relatively large number of clusters, and then use
+hierarchical clustering to cluster the resulting cluster centroids, with the aim
+of finding associations among the original K-means clusters.
+
+```{r}
+set.seed(123)
+clust_kmeans_k20 <- kmeans(reducedDim(sce, "PCA"), centers = 20)
+sce$cluster_kmeans_k20 <- factor(clust_kmeans_k20$cluster)
+plotReducedDim(sce, "TSNE", colour_by = "cluster_kmeans_k20")
+centroid_tree <- hclust(dist(clust_kmeans_k20$centers), method = "ward.D2")
+plot(centroid_tree)
+```
+
+# SC3
+
+The final method we will try is implemented in the `r Biocpkg("SC3")` package.
+As we saw in the lecture, SC3 performs multiple clusterings, based on different
+dissimilarity metrics and data representations, and returns a consensus
+partitioning of the cells. Since SC3 currently runs quite slowly with large data
+sets, we generate a subset of the original data, containing 300 randomly
+selected cells. In addition, SC3 assumes that there is a column named
+`feature_symbol` in the `rowData` of the SingleCellExperiment object, and thus
+we'll add that as well.
+
+```{r}
+## Subsample cells
+scesub <- sce[, sample(seq_len(ncol(sce)), 300)]
+
+## Add feature_symbol column
+rowData(scesub)$feature_symbol <- rownames(scesub)
+
+## Convert sparse count matrix to regular matrix
+counts(scesub) <- as.matrix(counts(scesub))
+```
+
+Next, we run the `sc3` wrapper function, specifying the number of clusters that
+we would like to try (with the `ks` argument). Note that this will take a few
+minutes to run.
+
+```{r}
+scesub <- SC3::sc3(scesub, ks = 10:12, biology = TRUE, n_cores = 1)
+```
+
+The results of the clustering are added to the `colData` slot of the
+SingleCellExperiment object.
+
+```{r}
+head(colData(scesub)[, grep("sc3_", colnames(colData(scesub)))])
+```
+
+`r Biocpkg("SC3")` contains several functions for exploring and visualizing the
+clustering results. For example, we can plot the consensus matrix and add
+annotations for the rows and columns:
+
+```{r, fig.width = 7}
+SC3::sc3_plot_consensus(
+    scesub, k = 10, 
+    show_pdata = c(
+        "sc3_10_clusters", 
+        "sc3_10_log2_outlier_score"
+    )
+)
+```
+
+We can also plot the silhouette scores, as well as summarized expression levels
+across the cells.
+
+```{r, fig.width = 8, fig.height = 8}
+SC3::sc3_plot_silhouette(scesub, k = 10)
+SC3::sc3_plot_expression(
+    scesub, k = 10, 
+    show_pdata = c(
+        "sc3_10_clusters", 
+        "sc3_10_log2_outlier_score"
+    )
+)
+```
+
+Finally, `r Biocpkg("SC3")` also returns "differentially expressed genes" as
+well as "marker genes". This information is stored in the `rowData` slot of the
+SingleCellExperiment object, and can be visualized as well. Check the help pages
+for the respective functions to see how the genes to show are selected.
+
+```{r, fig.width = 8}
+head(rowData(scesub)[, grep("sc3_", colnames(rowData(scesub)))])
+
+SC3::sc3_plot_de_genes(scesub, k = 10)
+SC3::sc3_plot_markers(scesub, k = 10)
+```
+
+
+# Session info
+
+```{r}
+sessionInfo()
+```
+
+# References
