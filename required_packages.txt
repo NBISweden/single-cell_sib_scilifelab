@@ -13,27 +13,40 @@
 ##      'min_version' is a minimal required version (optional))
 ## START-PACKAGES:
 AUCell
+batchelor
+BiocNeighbors
 BiocSingular
+BiocStyle
 CATALYST
 cluster
 clustree
+combat
+cowplot
 dendextend
 DropletUtils
+destiny
 dynamicTreeCut
 dyndimred
 edgeR
 flowCore
 ggplot2
 HDCytoData
+htmltools
 igraph
 iSEE
+knitr
 limma
 MAST
 mbkmeans
 mclust
 pheatmap
+RColorBrewer
+rmarkdown
+rsvd
+Rtsne
 SC3
 scater
+scone
 scran
 Seurat-3.1
 SingleCellExperiment
@@ -42,6 +55,7 @@ SummarizedExperiment
 TENxPBMCData
 tradeSeq
 tidyverse
+umap
 uwot
 zinbwave
 ## END-PACKAGES

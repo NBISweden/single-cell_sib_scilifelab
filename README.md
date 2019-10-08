@@ -49,9 +49,10 @@ Departure: Friday around 14h30
 
 #### Friday: Other omics and integration
 
+* Data integration methods (Sebastien Smallwood)
 * Spatial mapping of scRNAseq (Lars Borm)
 * Lineage tracing and scRNA (Maria Florescu)
-* Data integration methods (Sebastien Smallwood)
+
 
 ## Learning objectives
 After this course you will be able to:
