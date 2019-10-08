@@ -1,0 +1,462 @@
+---
+title: "Finding marker genes in scRNA-seq data"
+author: "Charlotte Soneson"
+date: "2019-10-16"
+output:
+  rmarkdown::html_document:
+    highlight: pygments
+    toc: true
+    toc_depth: 3
+    keep_md: yes
+editor_options: 
+  chunk_output_type: console
+bibliography: differential_expression.bib
+---
+
+```{r setup, include=FALSE, eval = TRUE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+library(BiocStyle)
+BiocStyle::markdown()
+```
+
+# Introduction
+
+This lab covers some of the most commonly used methods for finding
+differentially expressed genes ("marker genes") between clusters in single-cell
+RNA-seq. We will use an example data set consisting of 2,700 PBMCs, sequenced
+using 10x Genomics technology.
+
+We note that some care should be taken when interpreting the p-values from any
+test applied in this context, since the testing is performed on the _same_ data
+that is used to extract the clusters in the first place. Thus, almost by
+construction, there will be some genes that are differentially expressed between
+the different clusters.
+
+Many parts of this tutorial are taken from, or inspired by, the online book
+["Orchestrating single-cell analysis with
+Bioconductor"](https://osca.bioconductor.org/), which is also an excellent
+resource for additional discussions on many of the steps performed here.
+
+# Load packages
+
+We first load the required R packages. 
+
+```{r}
+suppressPackageStartupMessages({
+  library(SummarizedExperiment)
+  library(SingleCellExperiment)
+  library(TENxPBMCData)
+  library(scater)
+  library(scran)
+  library(BiocSingular)
+  library(pheatmap)
+  library(Seurat)
+  library(igraph)
+  library(ggplot2)
+  library(limma)
+  library(edgeR)
+  library(MAST)
+})
+```
+
+# Load and preprocess data
+
+Next, we load the data (from the `r Biocpkg("TENxPBMCData")` package), calculate
+QC metrics with `r Biocpkg("scater")`, normalize and run denoising PCA with 
+`r Biocpkg("scran")` and apply tSNE using `r Biocpkg("scater")`, as we have seen
+previously in the course. We also apply a graph-based community detection
+algorithm in order to partition the cells into discrete clusters.
+
+```{r}
+## Load data
+sce <- TENxPBMCData::TENxPBMCData(dataset = "pbmc3k")
+
+## Add column names, and use gene symbol as row names wherever possible
+colnames(sce) <- paste0("Cell", seq_len(ncol(sce)))
+rownames(sce) <- scater::uniquifyFeatureNames(
+    ID = rowData(sce)$ENSEMBL_ID,
+    names = rowData(sce)$Symbol_TENx
+)
+
+## Calculate QC metrics and remove cells with more than 5% reads from
+## mitochondrial genes
+MT <- rownames(sce)[grep("^MT-", rownames(sce))]
+sce <- scater::calculateQCMetrics(
+  object = sce, 
+  feature_controls = list(MT = MT)
+)
+sce <- sce[, sce$pct_counts_MT < 5]
+
+## Calculate size factors and normalize
+## Note that the pre-clustering step has been excluded to save computational
+## time
+sce <- scran::computeSumFactors(sce, min.mean = 0.1)
+sce <- scater::normalize(sce)
+logcounts(sce) <- as.matrix(logcounts(sce))
+
+## Fit variance trend and apply denoising PCA
+new.trend <- scran::makeTechTrend(x = sce)
+fit <- scran::trendVar(sce, use.spikes = FALSE, loess.args = list(span = 0.05))
+fit$trend <- new.trend
+dec <- scran::decomposeVar(fit = fit)
+set.seed(123)
+sce <- scran::denoisePCA(sce, technical = new.trend, BSPARAM = IrlbaParam())
+
+## Apply tSNE
+set.seed(123)
+sce <- scater::runTSNE(sce, use_dimred = "PCA", perplexity = 30)
+
+## Cluster
+graph_k10 <- scran::buildSNNGraph(sce, k = 10, use.dimred = "PCA", type = "rank")
+clust_k10_louvain <- igraph::cluster_louvain(graph_k10)$membership
+sce$cluster_louvain_k10 <- factor(clust_k10_louvain)
+scater::plotReducedDim(sce, "TSNE", colour_by = "cluster_louvain_k10")
+
+## Create Seurat object, calculate centered and scaled data, and assign identity labels
+so <- Seurat::as.Seurat(sce)
+so <- Seurat::ScaleData(so)
+Seurat::Idents(so) <- "cluster_louvain_k10"
+Seurat::DimPlot(so)
+```
+
+# Pairwise t-tests with scran
+
+The t-test is a natural choice for comparing observed expression levels in two
+groups (e.g., clusters). It has been shown to be competitive also in terms of
+performance on scRNA-seq data [@Soneson2018-hg]. 
+
+The `r Biocpkg("scran")` package contains a function named `pairwiseTTests`,
+which will, as the name suggests, perform a t-test between each pair of
+clusters. The input is a matrix of normalized, log-transformed expression
+values, and a vector of cluster labels. The output of this function call is a
+list with two elements: `statistics` and `pairs`. Each element of `statistics`
+is a `DataFrame` giving the results of the applied test for a given pair of
+clusters (the corresponding pair is obtained from the `pairs` object). The
+`direction` argument specifies whether we are interested in genes regulated in
+any direction, or only up- or down-regulated genes, respectively.
+
+```{r}
+pwtt <- scran::pairwiseTTests(
+  x = logcounts(sce), clusters = sce$cluster_louvain_k10, 
+  direction = "up"
+)
+names(pwtt)
+length(pwtt$statistics)
+head(pwtt$statistics[[1]])
+head(pwtt$pairs)
+```
+
+While the `pairwiseTTests` function (and the similar `pairwiseWilcox` function)
+provides a very convenient and efficient way of performing all pairwise
+comparisons, in practice we often want to summarize or combine the results
+across several of these comparisons. For example, as discussed in the lecture we
+may be interested in finding genes that are upregulated in a specific cluster
+compared to _each_ of the other clusters, or compared to _at least one_ of them.
+The function `combineMarkers` from `r Biocpkg("scran")` was written for this
+purpose, and allows the user to combine the list of pairwise results in several
+ways. For example, in order to test, for each cluster, whether each gene is
+significantly upregulated with respect to all other clusters, we can do:
+
+```{r}
+cbm_all <- scran::combineMarkers(
+  de.lists = pwtt$statistics, pairs = pwtt$pairs,
+  pval.type = "all"
+)
+```
+
+The result of this function call is a list, containing one `DataFrame` for each
+original cluster. This `DataFrame` contains, in addition to the logFCs compared
+to each of the other clusters, a nominal and an adjusted p-value testing the
+hypothesis that the gene is not DE in all the contrasts involving the cluster of
+interest. Thus, the top-ranked markers for a given cluster can be seen as
+"specific" marker genes for that cluster.
+
+It is often helpful from an interpretation point of view to explore the detected marker genes visually. `r Biocpkg("scater")` contains many useful functions for creating such static plots, and other packages like `r Biocpkg("iSEE")` can be used for interactive exploration. Here, we illustrate how to show the expression of marker genes across cells in the various clusters, as well as on top of a reduced dimension representation.
+
+```{r}
+head(cbm_all[["1"]])
+scater::plotExpression(sce, features = c("CD79A", "MS4A1"), 
+                       x = "cluster_louvain_k10")
+cowplot::plot_grid(scater::plotTSNE(sce, colour_by = "CD79A"),
+                   scater::plotTSNE(sce, colour_by = "MS4A1"))
+```
+
+It is worth pointing out that in practice, we do not need to go through the two
+individual steps above (first doing all pairwise tests, and then combining the
+results). The `findMarkers` function from `r Biocpkg("scran")` will do this for
+us, given a specification of how we wish to combine the results across
+contrasts. To illustrate this, we instead search for genes that are upregulated
+in a cluster compared to _any_ of the other clusters (i.e., testing the null
+hypothesis that the gene is not DE in any of the contrasts).
+
+```{r}
+cbm_any <- scran::findMarkers(
+  sce, clusters = sce$cluster_louvain_k10, 
+  pval.type = "any", direction = "up"
+)
+```
+
+Again, the output of the above command is a list of `DataFrame`s, one for each
+cluster. Each `DataFrame` contains the logFC with respect to all other cluster,
+and a nominal and an adjusted p-value. There is also a column named `Top`, which
+gives the minimum rank for the gene across all pairwise comparisons. For
+example, if `Top` = 1, the gene is the top-ranked one in at least one comparison
+of the cluster of interest to the other clusters.
+
+To illustrate the difference between the two types of tests, let's plot the
+p-values obtained for cluster 1 in the two approaches.
+
+```{r}
+df_all <- as.data.frame(cbm_all[["1"]]) %>% 
+  tibble::rownames_to_column("gene") %>% 
+  dplyr::select(gene, p.value) %>% 
+  setNames(c("gene", "p.value.all"))
+df_any <- as.data.frame(cbm_any[["1"]]) %>% 
+  tibble::rownames_to_column("gene") %>%
+  dplyr::select(gene, p.value) %>%
+  setNames(c("gene", "p.value.any"))
+df <- dplyr::inner_join(df_all, df_any)
+ggplot(df, aes(x = p.value.all, y = p.value.any)) + 
+  geom_point() + scale_x_log10() + scale_y_log10() + 
+  theme_bw()
+```
+
+We will look at one of the genes that are among the top-ranked ones in both
+types of comparisons, and one of the genes that is top-ranked only in the
+`"any"` approach.
+
+```{r}
+genes <- c("CD79A", "RPS16")
+subset(df, gene %in% genes)
+scater::plotExpression(sce, features = genes, x = "cluster_louvain_k10")
+```
+
+Note the difference between a gene that is upregulated in cluster 1 compared to
+_all_ other clusters, and one that is upregulated to _at least one_ other
+cluster.
+
+In order to illustrate another pitfall, let's artifically split the cells in
+cluster 1 into two clusters (call one of the groups "1b"), and redo the test to
+find genes that are upregulated in cluster 1 compared to _all_ other clusters.
+
+```{r}
+tmp <- as.character(sce$cluster_louvain_k10)
+set.seed(123)
+tmp[sample(which(tmp == "1"), sum(tmp == "1")/2)] <- "1b"
+sce$cluster_louvain_k10_mod <- factor(tmp)
+cbm_all_mod <- scran::findMarkers(
+  sce, clusters = sce$cluster_louvain_k10_mod,
+  pval.type = "all"
+)
+cbm_all_mod[["1"]]["CD79A", ]
+scater::plotExpression(sce, features = "CD79A", x = "cluster_louvain_k10_mod")
+```
+
+Note that now, the gene that was strongly upregulated in cluster 1 compared to
+_all_ other clusters before, is no longer so, since it is expressed also in
+cluster 1b. This is important to consider in cases where the data may be
+overclustered, and thus there may be several clusters corresponding to the same
+underlying cell type. This could also happen, for example, if clusters 1 and 1b
+were different types of T-cells - no general T-cell markers would be upregulated
+in any of these clusters compared to _all_ the other clusters.
+
+Going back to the genes that are upregulated in cluster 1 compared to at least
+one other cluster, we can visualize the top ones in a heatmap to better
+understand their expression patterns.
+
+```{r}
+## Select genes with Top <= 5
+topgenes_any <- as.data.frame(subset(cbm_any[["1"]], Top <= 5)) %>%
+  dplyr::select(-Top, -p.value, -FDR)
+pheatmap::pheatmap(topgenes_any, breaks = seq(-5, 5, length.out = 101))
+```
+
+**Note**: From the next release of Bioconductor (3.10, Oct/Nov 2019), the
+`findMarkers` function provides an interface to several different types of tests
+- in addition to the default t-test, it is possible to perform Wilcoxon tests or
+binomial tests (testing for differences in the presence/absence pattern of genes
+between clusters) using the same interface, by specifying the `test` argument
+(see https://osca.bioconductor.org/marker-gene-detection.html for an
+illustration).
+
+# Pairwise testing with any method
+
+The `findMarkers` function can, as indicated above, perform t-tests, Wilcoxon tests and binomial tests between each pair of clustesr, and summarize the results in various ways. If we prefer to use another method for statistical testing (e.g., `r Biocpkg("edgeR")`, `r Biocpkg("DESeq2")`, `r Biocpkg("limma")`), we can manually do that for each pair of clusters, and use the `combineMarkers` function to combine the results across comparisons. Here we illustrate this approach using `r Biocpkg("limma")` to perform the pairwise tests.
+
+```{r}
+design <- model.matrix(~ 0 + cluster_louvain_k10, data = colData(sce))
+colnames(design) <- gsub("_louvain_k10", "", colnames(design))
+colnames(design)
+
+## Remove some very lowly expressed genes
+aveExpr <- scater::calculateAverage(sce)
+keep <- aveExpr > 0.1 
+summary(keep)
+
+## Convert to DGEList, calculate CPMs
+dge <- scran::convertTo(sce, type = "edgeR", subset.row = keep)
+y <- new("EList")
+y$E <- edgeR::cpm(dge, log = TRUE, prior.count = 3)
+fit <- limma::lmFit(y, design)
+
+## Perform pairwise comparisons
+nclust <- length(unique(sce$cluster_louvain_k10))
+all.results <- all.pairs <- list()
+counter <- 1L
+
+for (i in seq_len(nclust)) {
+    for (j in seq_len(i - 1L)) {
+        con <- integer(ncol(design))
+        con[i] <- 1
+        con[j] <- -1
+        fit2 <- limma::contrasts.fit(fit, con)
+        fit2 <- limma::eBayes(fit2, trend = TRUE, robust = TRUE)
+
+        res <- limma::topTable(fit2, number = Inf, sort.by = "none")
+        all.results[[counter]] <- res
+        all.pairs[[counter]] <- colnames(design)[c(i, j)]
+        counter <- counter + 1L
+
+        ## Also filling the reverse comparison.
+        res$logFC <- -res$logFC
+        all.results[[counter]] <- res
+        all.pairs[[counter]] <- colnames(design)[c(j, i)]
+        counter <- counter + 1L
+    }
+}
+
+## Combine results across all pairwise tests
+all.pairs <- do.call(rbind, all.pairs)
+combined <- scran::combineMarkers(all.results, all.pairs, 
+                                  pval.field = "P.Value",
+                                  pval.type = "any")
+head(combined[["cluster1"]])
+```
+
+```{r, eval = FALSE, include = FALSE}
+cbm_any_any <- scran::findMarkers(
+  sce, clusters = sce$cluster_louvain_k10, 
+  pval.type = "any", direction = "any"
+)
+
+df0 <- as.data.frame(cbm_any_any[["1"]]) %>% tibble::rownames_to_column("gene") %>%
+  dplyr::select(gene, p.value) %>% setNames(c("gene", "pvalue_ttest"))
+df1 <- as.data.frame(combined[["cluster1"]]) %>% tibble::rownames_to_column("gene") %>%
+  dplyr::select(gene, p.value) %>% setNames(c("gene", "pvalue_limma"))
+df2 <- dplyr::inner_join(df0, df1)
+df2$aveExpr <- aveExpr[df2$gene]
+ggplot(df2, aes(x = pvalue_ttest+1e-300, y = pvalue_limma+1e-300, 
+                color = log10(aveExpr))) + geom_point() + 
+  scale_x_log10() +scale_y_log10()
+ggplot(df2, aes(x = pvalue_ttest+1e-300, y = pvalue_limma+1e-300, 
+                color = log10(aveExpr))) + geom_point()
+ggplot(df2, aes(x = log10(aveExpr), 
+                y = log10(pvalue_ttest + 1e-300) - log10(pvalue_limma + 1e-300))) + 
+  geom_point() + geom_smooth()
+(tmp1 <- df2 %>% dplyr::arrange(log10(pvalue_ttest + 1e-300) - 
+                                  log10(pvalue_limma + 1e-300)) %>% head)
+plotExpression(sce, features = tmp1$gene, x = "cluster_louvain_k10")
+(tmp2 <- df2 %>% dplyr::arrange(log10(pvalue_ttest + 1e-300) - 
+                                  log10(pvalue_limma + 1e-300)) %>% tail)
+plotExpression(sce, features = tmp2$gene, x = "cluster_louvain_k10")
+(tmp3 <- df2 %>% dplyr::filter(pvalue_limma > 0.25) %>%
+    dplyr::arrange(pvalue_ttest) %>% head)
+plotExpression(sce, features = tmp3$gene, x = "cluster_louvain_k10")
+(tmp4 <- df2 %>% dplyr::filter(pvalue_ttest > 0.25) %>%
+    dplyr::arrange(pvalue_limma) %>% head)
+plotExpression(sce, features = tmp4$gene, x = "cluster_louvain_k10")
+```
+
+# Differential expression in the presence of batch effects
+
+In the presence of strong batch effects (e.g., when cells come from different studies or are prepared in multiple batches), these should be accounted for in the differential expression analysis. One way of doing this is to use the `block` argument of `findMarkers`, which effectively performs the cluster comparisons in each batch, and subsequently combines the results into a single p-value. Here, we illustrate this procedure using a data set of cells from three different studies, each containing three different breast cancer cell types. 
+
+```{r, fig.width = 8, fig.height = 7}
+## Download the data and set row names to gene symbols whenever possible
+bct <- readRDS(gzcon(url("https://github.com/NBISweden/single-cell_sib_scilifelab/blob/master/datasets/SCE_MammaryEpithelial_x3.rds?raw=true")))
+rownames(bct) <- scater::uniquifyFeatureNames(
+  ID = rownames(bct), 
+  names = as.character(rowData(bct)$gene.symbols)
+)
+
+## Run PCA and tSNE (for later visualization purposes)
+## The "study" column represents the blocking factor (the batch)
+## The "cell.class" column contains the cell type information
+bct <- scater::runPCA(bct, ncomponents = 30)
+bct <- scater::runTSNE(bct, dimred = "PCA")
+plotTSNE(bct, colour_by = "study")
+plotTSNE(bct, colour_by = "cell.class")
+
+## Find marker genes, first considering all cells together (without accounting for the batches) and second after blocking on the batch factor
+markers_all <- scran::findMarkers(
+  bct, clusters = bct$cell.class, lfc = 0.5,
+  pval.type = "all", direction = "up"
+)
+markers_block <- scran::findMarkers(
+  bct, clusters = bct$cell.class, lfc = 0.5,
+  block = bct$study, pval.type = "all", direction = "up"
+)
+bct$group <- paste(bct$study, bct$cell.class, sep = ".")
+
+## Genes only found as significant without batch correction
+(s_all <- intersect(
+  rownames(markers_all$basal[markers_all$basal$p.value < 0.05, ]),
+  rownames(markers_block$basal[markers_block$basal$p.value > 0.95, ]))
+)
+markers_all$basal[s_all, ]
+markers_block$basal[s_all, ]
+scater::plotExpression(bct, features = s_all, 
+                       x = "group", colour_by = "cell.class") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  ggtitle("Only detected when considering all cells together")
+scater::plotExpression(bct, features = s_all, 
+                       x = "cell.class", colour_by = "cell.class") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  ggtitle("Only detected when considering all cells together")
+
+## Genes only found with batch correction
+(s_block <- intersect(
+  rownames(markers_all$basal[markers_all$basal$p.value > 0.95, ]),
+  rownames(markers_block$basal[markers_block$basal$p.value < 0.05, ]))
+)
+markers_all$basal[s_block, ]
+markers_block$basal[s_block, ]
+scater::plotExpression(bct, features = s_block, 
+                       x = "group", colour_by = "cell.class") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  ggtitle("Only detected when accounting for batches")
+scater::plotExpression(bct, features = s_block, 
+                       x = "cell.class", colour_by = "cell.class") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  ggtitle("Only detected when accounting for batches")
+```
+
+# Cluster-wise t-tests with Seurat
+
+The default testing regime of `r CRANpkg("Seurat")` differs from that of `r Biocpkg("scran")` in that the former compares the expression levels in one cluster to those of all cells outside of the cluster. The default test is a Wilcoxon test, but other options are available via the `test.use` argument. The `FindMarkers` function can be used to compare one cluster to the rest of the cells, or two specified clusters against each other. The `FindAllMarkers` function automates the comparison of each of the clusters to the cells outside that cluster. Using the Seurat object created in the beginning of the exercise, we find the genes that are most discriminative of each cluster with respect to genes outside the cluster. 
+
+```{r}
+seurat_markers <- Seurat::FindAllMarkers(
+  so, test.use = "wilcox", only.pos = TRUE, 
+  min.pct = 0.25, logfc.threshold = 0.25
+)
+(top2 <- seurat_markers %>% dplyr::group_by(cluster) %>% 
+    dplyr::top_n(n = 2, wt = -p_val))
+```
+
+Seurat also contains functions to visualize the expression of individual genes across clusters, in reduced dimension representations, and in a heatmap.
+
+```{r}
+Seurat::VlnPlot(so, features = c("MS4A1", "CD79A"), pt.size = 0.25)
+Seurat::FeaturePlot(so, features = c("MS4A1", "CD79A"))
+Seurat::DoHeatmap(so, features = top2$gene) + NoLegend()
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
+
+# References
+
