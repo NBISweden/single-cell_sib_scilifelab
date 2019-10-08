@@ -8,7 +8,7 @@ Single-cell trajectories
 ## Practical session
 
 [① Quantification (Including RNA velocity):
-1\_quauntify.md](1_quantify.md)
+1\_quantify.md](1_quantify.md)
 
 [② Preprocessing oincluding RNA velocity):
 2\_preprocessing.md](2_preprocessing.md)
@@ -17,4 +17,8 @@ Single-cell trajectories
 
 [④ Velocity analysis using velocyto.R: 4\_velocity.md](4_velocity.md)
 
-[⑤ Trajectory inference and plotting using dyno: 5\_dyno.md](5_dyno.md)
+We make use of several packages which should have already been installed
+using the `install_packages.R` script. Several of these packages are
+located on github only (but most will be available in the next
+Bioconductor release), and to ease installation we created our own R
+repository containing the latest source code of these packages.

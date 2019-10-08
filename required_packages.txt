@@ -18,8 +18,9 @@ CATALYST
 cluster
 clustree
 dendextend
+DropletUtils
 dynamicTreeCut
-dynverse/dyno
+dyndimred
 edgeR
 flowCore
 ggplot2
@@ -36,9 +37,12 @@ scater
 scran
 Seurat-3.1
 SingleCellExperiment
+slingshot
 SummarizedExperiment
 TENxPBMCData
+tradeSeq
 tidyverse
+uwot
 zinbwave
 ## END-PACKAGES
 

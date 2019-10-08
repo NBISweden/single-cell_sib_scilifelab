@@ -1,10 +1,11 @@
 ---
-title: "Preprocessing"
-output: html_document
+title: "Preprocessing of single-cell RNA-sea and RNA velocity data"
+output: github_document
+bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.path = '.images/')
 ```
 
 ```{r, results='hide', message=FALSE, warning=FALSE}
@@ -16,10 +17,10 @@ library(SeuratWrappers)
 library(DropletUtils)
 ```
 
-We get two matrices here, for both spliced and unspliced counts. Note that these are loaded in as sparse matrices.
+We get two matrices here, for both spliced and unspliced counts. Note that these are (luckily) loaded in as sparse matrices.
 
 ```{r}
-sample_folder <- function(x) {paste0("../data/adipose_differentiation-merick/SRR8906269/", x)}
+sample_folder <- function(x) {paste0("data/adipose_differentiation-merick/SRR8906269/", x)}
 velocity_output <- read_velocity_output(
   spliced_dir = sample_folder("introns"),
   spliced_name = "s",
@@ -38,11 +39,11 @@ dim(spliced)
 dim(unspliced)
 ```
 
-
+The spliced matrix contains a lot more cells than the unspliced matrix. A first indication that we have much more spliced UMIs than unspliced ones.
 
 # Filtering empty droplets
 
-The kallisto/BUStools pipeline does not do any filtering on the features or cells, so it makes sense that most droplets contain only a very tiny number of UMIs.
+The kallisto/BUStools pipeline does not do any filtering on the features or cells (except for zero counts), so it makes sense that most droplets contain only a very tiny number of UMIs.
 
 ```{r}
 qplot(Matrix::colSums(spliced) + 1) +
@@ -80,7 +81,9 @@ tibble(rank = bc_rank_spliced$rank, total = bc_rank_spliced$total, matrix = "spl
   theme_classic()
 ```
 
-In this sample, it is clear that a sizeable group of cells has large spliced UMI counts (1000 - 10000). Note that although the total UMI counts are different between spliced and unspliced counts, the y location of the inflection point does not change that much. Moreover, the same empty droplets are retained in both analyses:
+(Note that this rank vs total count plot is transposed compared to the plot shown typically shown by e.g. CellRanger)
+
+In this sample, it is clear that a sizeable group of cells has large spliced UMI counts (1000 - 10000). Note that although the total UMI counts are different between spliced and unspliced counts, the y location of the inflection point does not change that much. Moreover, about same empty droplets are retained in both analyses:
 
 ```{r}
 bcs_filtered_spliced <- colnames(spliced)[colSums(spliced) > metadata(bc_rank_spliced)$inflection]
@@ -106,6 +109,8 @@ dim(spliced_filtered)
 
 # RNA velocity QC
 
+We'll have a quick look at some statistics about the spliced vs unspliced reads in the sample, to confirm whether the separate quantification was succesful.
+
 ## Proportion of unspliced reads
 
 ```{r}
@@ -113,7 +118,7 @@ overall_ratio <- sum(unspliced_filtered@x) / (sum(unspliced_filtered@x) + sum(sp
 overall_ratio
 ```
 
-The proportion of unspliced reads is typically around 20%, irregardless of the technology. This was already described in [@mannoRNAVelocitySingle2018]. Although slight deviations between 10% and 50% are quite common (especially outside of mammals), extreme values might indicate that something went wrong in the detection of unspliced reads.
+The proportion of unspliced reads is typically around 20%, irregardless of the technology. This was already described in [@mannoRNAVelocitySingle2018]. Although slight deviations between 10% and 50% are possible (especially outside of mammals), extreme values might indicate that something went wrong in the detection of unspliced reads.
 
 ## Gene-wise proportion
 
@@ -145,17 +150,17 @@ ratios %>%
 
 The proportions spliced vs unspliced can be very variable between genes. This makes sense, given the (probable) variability of splicing efficiency and the presence and size of introns. Some of this variability might also be caused by incorrect annotations.
 
-0 = no unspliced  
-1 = both spliced and unspliced  
-Inf = no spliced  
-NA = no spliced or unspliced  
-
 ```{r}
 ratios %>% 
   mutate(ratio = ifelse(ratio > 0 & ratio < Inf, 1, ratio)) %>% 
   pull(ratio) %>% 
   table(useNA = "ifany")
 ```
+
+0 = no unspliced  
+1 = both spliced and unspliced  
+Inf = no spliced  
+NA = no spliced or unspliced  
 
 Ideally, a majority of genes should have both spliced and unspliced UMIs. Of course, a sizeable set of genes do not have any unspliced UMIs.
 
@@ -183,11 +188,6 @@ ratios %>%
 
 The proportions spliced vs unspliced per cell is typically more centered around the "average" proportion. If you see some weird distributions here, this might indicate that the filtering of cells was not stringent enough, or that there are batch effects.
 
-0 = no unspliced  
-1 = both spliced and unspliced  
-Inf = no spliced  
-NA = no spliced or unspliced  
-
 ```{r}
 ratios %>% 
   mutate(ratio = ifelse(ratio > 0 & ratio < Inf, 1, ratio)) %>% 
@@ -195,13 +195,16 @@ ratios %>%
   table(useNA = "ifany")
 ```
 
+0 = no unspliced  
+1 = both spliced and unspliced  
+Inf = no spliced  
+NA = no spliced or unspliced 
+
 Ideally, most of the cells should have both spliced and unspliced UMIs.
 
 ## Normalization
 
-Let's do a basic log2 and size factors normalization. SCTransform [@hafemeisterNormalizationVarianceStabilization2019] can also be used here, but for the sake of 
-
-Of course, the 
+Let's do a basic log2 and size factors normalization. SCTransform [@hafemeisterNormalizationVarianceStabilization2019] can also be used here.
 
 ```{r}
 seu <- CreateSeuratObject(spliced_filtered, assay = "spliced", min.cells = 3, min.features = 200) %>%
@@ -244,7 +247,7 @@ seu <- RunUMAP(seu, dims = 1:50, umap.method = "uwot")
 DimPlot(seu, reduction = "umap",pt.size = 0.5, label = TRUE, repel = TRUE)
 ```
 
-Do you see the trajectory appearing?
+Do you see the trajectory appearing? Most TI methods assume that only one trajectory is present in the dataset, with all cells being connected to this trajectory. We therefore filter those cells out, although you may want to try a different method, such as PAGA, if you don't want to bias the analysis.
 
 ```{r}
 cells_trajectory <- seu@meta.data %>%
@@ -258,6 +261,7 @@ seu_trajectory <- seu[, cells_trajectory]
 We'll have a look at RNA velocity and trajectories in the next notebooks.
 
 ```{r}
-write_rds(seu, "../data/adipose_differentiation-merick/seu_trajectory.rds")
-write_rds(seu_trajectory, "../data/adipose_differentiation-merick/seu_trajectory.rds")
+write_rds(seu_trajectory, "data/adipose_differentiation-merick/seu_trajectory.rds")
 ```
+
+## References

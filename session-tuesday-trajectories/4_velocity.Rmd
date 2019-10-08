@@ -17,8 +17,8 @@ library(SeuratWrappers)
 ```
 
 ```{r}
-seu_trajectory <- read_rds("../data/adipose_differentiation-merick/seu_trajectory.rds")
-feature_info <- read_tsv("../data/adipose_differentiation-merick/feature_info.tsv")
+seu_trajectory <- read_rds("data/adipose_differentiation-merick/seu_trajectory.rds")
+feature_info <- read_tsv("data/adipose_differentiation-merick/feature_info.tsv")
 feature_mapper <- function(x) {feature_info %>% dplyr::slice(base::match(symbol, x)) %>% dplyr::pull(feature_id)}
 ```
 
@@ -150,7 +150,7 @@ cc_mds <- velocyto.R::show.velocity.on.embedding.cor(
 )
 ```
 
-We have to tune some parameters here to get this right
+We have to tune some parameters here to make this chaotic plot more interpretable
 
 ```{r}
 cc_mds <- velocyto.R::show.velocity.on.embedding.cor(
@@ -202,8 +202,9 @@ Plotting RNA velocity vectors is still a bit of a tricky business, because there
 Observe how even a small change in parameters (mds vs umap) impacts the velocity vectors. Although the main message remains the same
 This result will likely become more robust if we include more cells, instead of the subsample of cells that was used here.
 
-Plotting RNA velocity on an existing dimensionality reduction may introduce some artifacts, particularly for cells at the "border". What if their future cell state is not contained in any of the other cells in the dataset? Observe how the arrows at the end of the two terminal populations 
+Plotting RNA velocity on an existing dimensionality reduction may introduce some artifacts, particularly for cells at the "border". What if their future cell state is not contained in any of the other cells in the dataset? Observe how the arrows at the end of the two terminal populations often point inwards. This makes sense, given that the 
 
+Alternatively, we can also create an embedding in wich both the cells and their projected state are embedded at the same time. velocyto.R only provides functions to do this for PCA and UMAP, e.g.:
 
 ```{r}
 cc_mds <- velocyto.R::tSNE.velocity.plot(
@@ -223,3 +224,4 @@ cc_mds <- velocyto.R::tSNE.velocity.plot(
 )
 ```
 
+This may take quite a while to run, given that 
