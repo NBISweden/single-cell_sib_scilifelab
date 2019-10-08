@@ -21,7 +21,7 @@ e.g. session-example
 +-- session-example_files
 |   +-- figure-gmf
 |       +-- pressure.png
-+-- session-example.md  
++-- session-example.md
 +-- session-example.Rmd
 ```
 
