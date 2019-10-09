@@ -15,10 +15,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [① Quantification (Including RNA velocity): 1_quantify.md](1_quantify.md)
 
-[② Preprocessing oincluding RNA velocity): 2_preprocessing.md](2_preprocessing.md)
+[② Preprocessing including RNA velocity): 2_preprocessing.md](2_preprocessing.md)
 
 [③ Trajectory analysis using slingshot: 3_slingshot.md](3_slingshot.md)
 
 [④ Velocity analysis using velocyto.R: 4_velocity.md](4_velocity.md)
 
-We make use of several packages which should have already been installed using the `install_packages.R` script. Several of these packages are located on github only (but most will be available in the next Bioconductor release), and to ease installation we created our own R repository containing the latest source code of these packages.
+We make use of several packages which should have already been installed using the `install_packages.R` script. Several of these packages are located on github only (but most will be available in the next Bioconductor release). These packages are:
+
+- BUStools/**BUSpaRse**
+- velocyto-team/**velocyto.R**
+- satijalab/**seurat-wrappers**
+- dynverse/**tradeSeq**
