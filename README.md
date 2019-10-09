@@ -33,7 +33,7 @@ Departure: Friday around 14h30
 
 ***
 
-For the full schedule, please go to: [**Schedule**](schedule.md)
+For the full schedule, please go to: **[Schedule](schedule.md)**
 
 #### Sunday
 
