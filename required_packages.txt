@@ -21,12 +21,14 @@ BUStools/BUSpaRse
 CATALYST
 cluster
 clustree
+coop
 cowplot
 dendextend
 DropletUtils
 destiny
 dynamicTreeCut
 dyndimred
+e1071
 edgeR
 flowCore
 ggplot2
