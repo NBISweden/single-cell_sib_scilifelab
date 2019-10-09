@@ -11,7 +11,6 @@
 
 ### <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Location
 ***
-
 Hotel Central Residence & Spa, Leysin, Switzerland.
 
 Arrival: Sunday before 18h
@@ -22,7 +21,6 @@ Departure: Friday around 14h30
 
 ## <img border="0" src="https://www.svgrepo.com/show/158264/schedule.svg" width="40" height="40"> Programme
 ***
-
 #### Sunday
 
 * ≈17-18h: arrival of the participants, check-in
@@ -60,7 +58,6 @@ Departure: Friday around 14h30
 
 ## <img border="0" src="https://www.svgrepo.com/show/410/list.svg" width="40" height="40"> Learning objectives
 ***
-
 After this course you will be able to:
 - use a range of bioinformatics tools to analyze single cell RNA-seq data
 - discuss a variety of aspects of single cell RNA-seq data analysis
@@ -68,7 +65,6 @@ After this course you will be able to:
 
 ## <img border="0" src="https://www.svgrepo.com/show/38706/group-of-people.svg" width="40" height="40"> Lecturers
 ***
-
 - Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuwen, Belgium
 - Åsa Björklund, NBIS, Uppsala University, SciLifeLab, Uppsala, Sweden
 - Charlotte Soneson, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland
