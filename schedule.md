@@ -3,10 +3,6 @@
 ## Schedule
 
 ### Monday 14.10.2019
-
-* [Example lecture](session-example/session-example.pdf)
-* [Example exercise](session-example/session-example.md)
-
 - **9:00 - 10:00** Introductory lecture: Vincent Gardeux
 - **10:00 - 11:00** Quantification, QC & Normalization: Davide Risso
 - **11:00 - 11:30** Coffee break
