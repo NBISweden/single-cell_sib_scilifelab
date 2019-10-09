@@ -5,7 +5,7 @@
 ***
 
 ### Monday 14.10.2019
-- **9:00 - 10:00**\t  Introductory lecture (Vincent Gardeux)
+- **09:00 - 10:00** Introductory lecture (Vincent Gardeux)
 - **10:00 - 11:00** Quantification, QC & Normalization (Davide Risso)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** [Dimensionality reduction](session-dimensionality-reduction/lecture_dimensionality_reduction.pdf) (Paulo Czarnewski)
@@ -15,7 +15,7 @@
 - **20:00** Dinner
 
 ### Tuesday 15.10.2019
-- **9:00 - 10:00**  Batch correction (Panagiotis Papasaikas)
+- **09:00 - 10:00** Batch correction (Panagiotis Papasaikas)
 - **10:00 - 11:00** Clustering - methods overview (Charlotte Soneson)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** Cell fate mapping and trajectories (Wouter Saelens)
@@ -25,7 +25,7 @@
 - **20:00** Special dinner - Cheese fondue
 
 ### Wednesday 16.10.2019
-- **9:00 - 11.00**  Differential expression, interactive visualization (Charlotte Soneson)
+- **09:00 - 11.00** Differential expression, interactive visualization (Charlotte Soneson)
 - **11.00 - 11.30** Coffee break
 - **11.30 - 12.30** Hands-on
 - **12:30 - 14:00** Lunch break
@@ -35,7 +35,7 @@
 
 
 ### Thursday 17.10.2019
-- **9:00 - 10:30** Differential abundance (DA) and differential state (DS) analysis of single cell cytometry data: Mark Robinson & Helena Crowell
+- **09:00 - 10:30** Differential abundance (DA) and differential state (DS) analysis of single cell cytometry data: Mark Robinson & Helena Crowell
 - **10:30 - 11:00** Coffee break
 - **11:00 - 12:30** DA and DS cytometry Hands-on (Helena, Mark)
 - **12:30 - 14:00** Lunch break
@@ -43,10 +43,10 @@
 - **15:30 - 16:00** Coffee break
 - **16:00 - 17:30** Transcriptome/proteome Hands-on (Johan Reimegård)
 - **18:45** Dinner
-- **<20:00 - 22:00** Special late opening of the spa
+- **20:00 - 22:00** Special late opening of the spa
 
 ### Friday 18.10.2019
-- **9:00 - 10:00** Data integration methods (Sebastien Smallwood)
+- **09:00 - 10:00** Data integration methods (Sebastien Smallwood)
 - **10:00 - 11:00** Spatial mapping of scRNAseq (Lars Borm)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** Lineage tracing and scRNA (Maria Florescu)
