@@ -2,9 +2,7 @@
 
 # Single Cell Analysis Course
 
-<br/>
-
-### October 2019
+13 - 18 October 2019 - Leysin, Switzerland
 
 
 <br/>
