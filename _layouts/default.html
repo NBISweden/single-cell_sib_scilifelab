@@ -12,15 +12,22 @@
     <![endif]-->
   </head>
   <body>
-    <div class="wrapper" align="right">
+    <style>
+    div {
+      height: 100px;
+      width: 15%;
+      background-color: #f2f2f2;
+    }
+    </style>
+    <div class="wrapper">
       <header>
         <h1>SingleCellSchool </h1>
 
-        <img src="logos/sib_logo_high.jpg" width="200">
+        <img src="logos/sib_logo_high.jpg" width="120">
         <br>
-        <img src="logos/nbislogo-orange-txt.svg" width="200">
+        <img src="logos/nbislogo-orange-txt.svg" width="100">
         <br>
-        <img src="logos/scilifelab-ws.jpg" width="200">
+        <img src="logos/scilifelab-ws.jpg" width="150">
         <br>
         <br/>
         <a href="README.md">Home</a>
@@ -51,6 +58,12 @@
           </ul>
         {% endif %}
       </header>
+      <style>
+      section {
+        height: 100%;
+        width: 85%;
+      }
+      </style>
       <section>
 
       {{ content }}
