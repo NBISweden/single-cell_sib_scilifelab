@@ -1,6 +1,6 @@
-title: Single RNA-seq data analysis with R
-description: ELIXIR EXCELERATE
-theme: jekyll-theme-leap-day
+title: Single Cell Workshop
+description: SIB / NBIS
+theme: jekyll-theme-minimal
 plugins:
   - jekyll-relative-links
 relative_links:
