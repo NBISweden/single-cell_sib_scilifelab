@@ -1,5 +1,11 @@
-# Joint SIB and NBIS/SciLifeLab Autumn School, 2019
-# Single Cell Analysis
+### Joint SIB and NBIS/SciLifeLab Autumn School
+
+# Single Cell Analysis Course
+
+<br/>
+
+### October 2019
+
 
 <br/>
 
