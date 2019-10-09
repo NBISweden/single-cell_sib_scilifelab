@@ -80,6 +80,9 @@ rownames(bct) <- scater::uniquifyFeatureNames(
   names = as.character(rowData(bct)$gene.symbols)
 )
 
+#Subsample to speed up knitting
+bct <- bct[, c(1:200,3000:3200,7000:7200)]
+
 ## Dataset compostion per cell type and study:  
 table(colData(bct)$study , colData(bct)$cell.class)
 ```
@@ -87,9 +90,9 @@ table(colData(bct)$study , colData(bct)$cell.class)
 ```
 ##      
 ##       luminal_progenitor basal luminal_mature
-##   spk               1097   475           1043
-##   vis                694  1257           1096
-##   wal                729   780           2117
+##   spk                 46    26             81
+##   vis                 64   103             81
+##   wal                 51    53             97
 ```
 
 
@@ -144,22 +147,25 @@ cowplot::plot_grid(scater::plotTSNE(bct, colour_by = "study" ),
 
 We saw above that our data form distinct clusters according for both study origin as well as biological cell type.
 We now take a first step towards batch correction using approaches for 
-A. library normalization and 
-B. PCA 
+
+* A. library normalization and 
+* B. PCA 
 that explicitly account for the presence of batches.
 
-
 The new library normalization strategy is essentially a 3-step process:
+
 1. Similar cells (cell with similar expression profiles) are pooled together using the scran function quickCluster (or any othe sensible clustering method).
 2. Size factors are computed using the deconvolution method (Lun et al., 2016) and using the scran function computeSumFactors
 3. Systematic differences in coverage across batches are removed by rescaling the size factors using median-based
 normalization on the ratio of the average counts between batches.This is done using the multiBatchNorm() function  from the batchelor package. 
 The function multiBatchNorm from the scran package provides identical functionality.
 
+
 The new PCA strategy is performed using the multibatchPCA function from the batchelor package. This is essentially
 performing PCA on the merged matrxi of the three batches but now each batch is "forced" to contribute equally to the
 identification of the loading vectors. In addition each batch's contribution to the gene-gene covariance matrix is 
 normalized by the corresponding number of cells.
+
 
 
 ```r
@@ -176,8 +182,8 @@ print(table(clusters))
 
 ```
 ## clusters
-##    1    2    3    4    5    6    7    8    9   10   11   12   13 
-## 1112 1032 1253  608  849  692 1280  794  331  707  200  204  226
+##   1   2   3   4 
+## 181 158 104 159
 ```
 
 ```r
@@ -198,14 +204,6 @@ bct.mBN <- cbind( mBN$V, mBN$W, mBN$S)
 
 # Mutli-batch PCA that makes sure each batch contributes equally to the loading vectors:
 mB.PCA <- batchelor::multiBatchPCA( bct.mBN, batch=colData(bct.mBN)$study, d=32, preserve.single = TRUE)
-```
-
-```
-## Warning in sweep(centered, 2, w, "/", check.margin = FALSE): 'check.margin' is ignored when 'x' is a DelayedArray object or
-##   derivative
-```
-
-```r
 reducedDim(bct.mBN , "PCA" )  <- mB.PCA[[1]]
 
 # Let's now recalculate the projection and see if the improved normalization
@@ -261,14 +259,6 @@ library normalization has not taken into account the presence of batches. Do you
 ```r
 d <- 32
 FMNN.out <-  batchelor::fastMNN( bct.mBN  , batch=bct.mBN$study , use.dimred="PCA", d=d ) 
-```
-
-```
-## Warning in (function (jobs, data, centers, info, distance, k, query,
-## get.index, : tied distances detected in nearest-neighbor calculation
-```
-
-```r
 reducedDim (bct.mBN, "PCA.FMNN" ) <- FMNN.out$corrected 
 
 reducedDim(bct.mBN, "TSNE" ) <- Rtsne( bct.mBN@reducedDims$PCA.FMNN, perplexity = 30, initial_dims=64, pca=FALSE,num_threads=32,theta=0.25)$Y

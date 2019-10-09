@@ -74,13 +74,16 @@ suppressPackageStartupMessages({
 Next, we load the preprocessed dataset and have a first look at the 
 composition of the dataset:
 
-```{r, fig.width = 8, fig.height = 7}
+```{r}
 ## Download the data and set row names to gene symbols whenever possible
 bct <- readRDS(gzcon(url("https://github.com/NBISweden/single-cell_sib_scilifelab/blob/master/datasets/SCE_MammaryEpithelial_x3.rds?raw=true")))
 rownames(bct) <- scater::uniquifyFeatureNames(
   ID = rownames(bct), 
   names = as.character(rowData(bct)$gene.symbols)
 )
+
+#Subsample to speed up knitting
+bct <- bct[, c(1:200,3000:3200,7000:7200)]
 
 ## Dataset compostion per cell type and study:  
 table(colData(bct)$study , colData(bct)$cell.class)
@@ -114,7 +117,7 @@ Let's now take a look at the impact of the batch in the TSNE projections generat
 without taking any steps for batch correction (apart from a simple library normalization ):
 
 
-```{r}
+```{r,  fig.width = 12, fig.height = 6,  warning=FALSE}
 # We first normalize all cells for library size.
 assays(bct )[["lognorm"]] <- lin_norm_log(as.matrix(  logcounts(bct) ), factor=1e+04)  
 reducedDim(bct, "PCA" )  <- rsvd::rpca(t( bct@assays[["lognorm"]]  ),k=32,retx=TRUE,center=TRUE,scale=FALSE)$x
@@ -128,24 +131,27 @@ cowplot::plot_grid(scater::plotTSNE(bct, colour_by = "study" ),
 
 We saw above that our data form distinct clusters according for both study origin as well as biological cell type.
 We now take a first step towards batch correction using approaches for 
-A. library normalization and 
-B. PCA 
+
+* A. library normalization and 
+* B. PCA 
 that explicitly account for the presence of batches.
 
-
 The new library normalization strategy is essentially a 3-step process:
+
 1. Similar cells (cell with similar expression profiles) are pooled together using the scran function quickCluster (or any othe sensible clustering method).
 2. Size factors are computed using the deconvolution method (Lun et al., 2016) and using the scran function computeSumFactors
 3. Systematic differences in coverage across batches are removed by rescaling the size factors using median-based
 normalization on the ratio of the average counts between batches.This is done using the multiBatchNorm() function  from the batchelor package. 
 The function multiBatchNorm from the scran package provides identical functionality.
 
+
 The new PCA strategy is performed using the multibatchPCA function from the batchelor package. This is essentially
 performing PCA on the merged matrxi of the three batches but now each batch is "forced" to contribute equally to the
 identification of the loading vectors. In addition each batch's contribution to the gene-gene covariance matrix is 
 normalized by the corresponding number of cells.
 
-```{r}
+
+```{r,  fig.width = 12, fig.height = 6, warning=FALSE}
 bct.mBN <- bct #Create a copy of the single cell experiment
 
 # Clustering:
@@ -196,7 +202,7 @@ single-cell regime. Specifically, for each gene, the mean expression in each bat
 lowest mean across all batches. 
 
 
-```{r}
+```{r,  fig.width = 12, fig.height = 6,  warning=FALSE}
 bct.linCor <- bct.mBN 
 bct.linCor  <- batchelor::rescaleBatches(bct.linCor, batch=colData(bct.linCor)$study)
 colData(bct.linCor) <-  colData(bct.mBN )  
@@ -219,7 +225,7 @@ library normalization has not taken into account the presence of batches. Do you
 
 
 
-```{r}
+```{r,  fig.width = 12, fig.height = 6}
 d <- 32
 FMNN.out <-  batchelor::fastMNN( bct.mBN  , batch=bct.mBN$study , use.dimred="PCA", d=d ) 
 reducedDim (bct.mBN, "PCA.FMNN" ) <- FMNN.out$corrected 
