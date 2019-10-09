@@ -17,10 +17,10 @@ batchelor
 BiocNeighbors
 BiocSingular
 BiocStyle
+BUStools/BUSpaRse
 CATALYST
 cluster
 clustree
-combat
 cowplot
 dendextend
 DropletUtils
@@ -49,14 +49,17 @@ scater
 scone
 scran
 Seurat-3.1
+satijalab/seurat-wrappers
 SingleCellExperiment
 slingshot
 SummarizedExperiment
+sva
 TENxPBMCData
-tradeSeq
+dynverse/tradeSeq
 tidyverse
 umap
 uwot
+velocyto-team/velocyto.R
 zinbwave
 ## END-PACKAGES
 
