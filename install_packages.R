@@ -272,5 +272,5 @@ if (all( deps$name %in% rownames(installed.packages()) )) {
         message("Some of the commands to download datasets failed:\n   ", paste(fail.cmds, collapse = "\n   "), "\n")
     }
 
-    message("If you need help with troubleshooting, please contact the course organisers.")
+    message("Don't worry if not all packages were installed successfully.\nIf you need help with troubleshooting, please contact the course organisers,\neither by email or on Sunday before dinner.")
 }
