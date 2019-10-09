@@ -1,11 +1,15 @@
 # Joint SIB and NBIS/SciLifeLab Autumn School, 2019
 # Single Cell Analysis
 
+<br/>
+
 ### <img border="0" src="https://www.svgrepo.com/show/20800/event-date-and-time-symbol.svg" width="40" height="40"> Date
 
 ***
 
 13.10.2019 - 18.10.2019
+
+<br/>
 
 ### <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Location
 
@@ -16,6 +20,8 @@ Hotel Central Residence & Spa, Leysin, Switzerland.
 Arrival: Sunday before 18h
 
 Departure: Friday around 14h30
+
+<br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/158264/schedule.svg" width="40" height="40"> Programme
 
@@ -57,6 +63,7 @@ Departure: Friday around 14h30
 * Spatial mapping of scRNAseq (Lars Borm)
 * Lineage tracing and scRNA (Maria Florescu)
 
+<br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/410/list.svg" width="40" height="40"> Learning objectives
 
@@ -66,6 +73,8 @@ After this course you will be able to:
 - use a range of bioinformatics tools to analyze single cell RNA-seq data
 - discuss a variety of aspects of single cell RNA-seq data analysis
 - understand the advantages and limitations of single cell RNA-seq data analysis
+
+<br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/38706/group-of-people.svg" width="40" height="40"> Lecturers
 
