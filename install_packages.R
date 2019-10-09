@@ -22,6 +22,7 @@
 .bioc_url                 <- "http://www.bioconductor.org/install/"
 .course_repos             <- character(0)
 .pkg_file                 <- "https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/required_packages.txt"
+.pkg_name_subst           <- c("seurat-wrappers" = "SeuratWrappers")
 
 mem_pattern = "[0-9]+"
 min_mem = 4 # gigabytes
@@ -38,10 +39,13 @@ if (any(is.na(lns.pos)) || any(diff(lns.pos) < 0)) {
     stop(.pkg_file, " does not contain expected anchors; please contact the course organizers.")
 }
 lns.pkgs <- unique(lns[seq(lns.pos[1] + 1L, lns.pos[2] - 1L)])
-deps <- data.frame(name = sub(x = lns.pkgs, "^([[:alnum:]]+/)?([a-zA-Z0-9.]+)(-([0-9.]+))?$", "\\2"),
+deps <- data.frame(name = sub(x = lns.pkgs, "^([^/]+/)?([a-zA-Z0-9.-]+?)(-([0-9.]+))?$", "\\2"),
                    source = sub("-[0-9.]+$", "", lns.pkgs),
-                   min.version = sub(x = lns.pkgs, "^([[:alnum:]]+/)?([a-zA-Z0-9.]+)(-([0-9.]+))?$", "\\4"),
+                   min.version = sub(x = lns.pkgs, "^([^/]+/)?([a-zA-Z0-9.-]+?)(-([0-9.]+))?$", "\\4"),
                    stringsAsFactors = FALSE)
+if (any(deps$name %in% names(.pkg_name_subst))) {
+    deps[match(names(.pkg_name_subst), deps$name), "name"] <- .pkg_name_subst[deps[match(names(.pkg_name_subst), deps$name), "name"]]
+}
 cmds <- unique(lns[seq(lns.pos[3] + 1L, lns.pos[4] - 1L)])
 
 
@@ -134,10 +138,12 @@ if (is.null(mem)) {
 
 ## Check the R version
 R_version = paste(R.version$major, R.version$minor, sep = ".")
-if ( !(R_version %in% .required_R_version) )
+if ( !(R_version %in% .required_R_version) ) {
     stop(sprintf("You are using R-%s, which is not the one required for the course.\nPlease install R-%s\nR can be downloaded from here: %s",
                  R_version, .required_R_version[length(.required_R_version)], .r_url))
-
+} else {
+    message("You have the correct version of R (", R_version, ")")
+}
 
 ## Check Rstudio version
 hasApistudio = suppressWarnings(require("rstudioapi", quietly = TRUE))
@@ -154,17 +160,21 @@ if ( inherits( .rstudioVersion, "try-error" ) ) {
 }
 
 if ( !(.rstudioVersion >= .required_rstudio_version ) ) {
-    rstudioVersionError = sprintf("You are using a Rstudio v%s, which is not the one required for the course.\nPlease install Rstudio v%s or higher.\nThe latest version of Rstudio can be found here: %s",
+    rstudioVersionError = sprintf("You are using a RStudio v%s, which is not the one required for the course.\nPlease install Rstudio v%s or higher.\nThe latest version of Rstudio can be found here: %s",
                                   .rstudioVersion, .required_rstudio_version, .rstudio_url)
     stop( rstudioVersionError )
+} else {
+    message("You have the correct version of RStudio (", .rstudioVersion, ")")
 }
 
 
 ## Check BioC version
-if ( BiocManager::version() != .required_Bioc_version )
+if ( BiocManager::version() != .required_Bioc_version ) {
     stop(sprintf("You are using Bioconductor %s, which is not the one required for the course.\nPlease install Bioconductor %s\nInstallation instructions for Bioconductor are available here: %s\n",
                  BiocManager::version(), .required_Bioc_version, .bioc_url))
-
+} else {
+    message("You have the correct version of Bioconductor (", BiocManager::version(), ")")
+}
 
 ## omit packages not supported on WIN and MAC
 #type = getOption("pkgType")
@@ -227,7 +237,7 @@ if (length(cmds) > 0) {
 ##-------------------------
 ## Feedback on installation
 ##---------------------------
-if(all( deps$name %in% rownames(installed.packages()) )) {
+if (all( deps$name %in% rownames(installed.packages()) )) {
     cat(sprintf("\nCongratulations! All packages were installed successfully :)\nWe are looking forward to seeing you at the course!\n\n"))
 } else {
     notinstalled <- deps[which( !deps$name %in% rownames(installed.packages()) ), "name"]
