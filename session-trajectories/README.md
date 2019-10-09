@@ -10,7 +10,7 @@ Single-cell trajectories
 [① Quantification (Including RNA velocity):
 1\_quantify.md](1_quantify.md)
 
-[② Preprocessing oincluding RNA velocity):
+[② Preprocessing including RNA velocity):
 2\_preprocessing.md](2_preprocessing.md)
 
 [③ Trajectory analysis using slingshot: 3\_slingshot.md](3_slingshot.md)
@@ -20,5 +20,9 @@ Single-cell trajectories
 We make use of several packages which should have already been installed
 using the `install_packages.R` script. Several of these packages are
 located on github only (but most will be available in the next
-Bioconductor release), and to ease installation we created our own R
-repository containing the latest source code of these packages.
+Bioconductor release). These packages are:
+
+  - BUStools/**BUSpaRse**
+  - velocyto-team/**velocyto.R**
+  - satijalab/**seurat-wrappers**
+  - dynverse/**tradeSeq**

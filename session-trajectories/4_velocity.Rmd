@@ -3,10 +3,9 @@ title: "Inferring a trajectory with slingshot"
 output: github_document
 bibliography: bibliography.bib
 ---
-  
-  
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.path = '.images/')
 ```
 
 ```{r, message=FALSE, results='hide', warning=FALSE}
@@ -206,7 +205,7 @@ Plotting RNA velocity on an existing dimensionality reduction may introduce some
 
 Alternatively, we can also create an embedding in wich both the cells and their projected state are embedded at the same time. velocyto.R only provides functions to do this for PCA and UMAP, e.g.:
 
-```{r}
+```r
 cc_mds <- velocyto.R::tSNE.velocity.plot(
   vel = Tool(seu_velocity, slot = "RunVelocity"),
   show.grid.flow = TRUE,
@@ -224,4 +223,5 @@ cc_mds <- velocyto.R::tSNE.velocity.plot(
 )
 ```
 
-This may take quite a while to run, given that 
+This may take quite a while to run, given that the t-SNE has to be computed on double the number of cells.
+
