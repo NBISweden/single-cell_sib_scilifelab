@@ -1,15 +1,21 @@
-<img src="./logos/sib_logo_high.jpg" width="250">          <img src="logos/nbislogo-orange-txt.svg" width="200">          <img src="logos/scilifelab-ws.jpg" width="300">
+### Joint SIB and NBIS/SciLifeLab Autumn School
 
-# Joint SIB and NBIS/SciLifeLab Autumn School, 2019
-# Single Cell Analysis
+# Single Cell Analysis Course
 
-### [Schedule](schedule.md)
+<br/>
+
+### October 2019
+
+
+<br/>
 
 ### <img border="0" src="https://www.svgrepo.com/show/20800/event-date-and-time-symbol.svg" width="40" height="40"> Date
 
 ***
 
 13.10.2019 - 18.10.2019
+
+<br/>
 
 ### <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Location
 
@@ -21,11 +27,13 @@ Arrival: Sunday before 18h
 
 Departure: Friday around 14h30
 
-### Course computing environment
+<br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/158264/schedule.svg" width="40" height="40"> Programme
 
 ***
+
+For the full schedule, please go to: **[Schedule](schedule.md)**
 
 #### Sunday
 
@@ -61,6 +69,7 @@ Departure: Friday around 14h30
 * Spatial mapping of scRNAseq (Lars Borm)
 * Lineage tracing and scRNA (Maria Florescu)
 
+<br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/410/list.svg" width="40" height="40"> Learning objectives
 
@@ -70,6 +79,8 @@ After this course you will be able to:
 - use a range of bioinformatics tools to analyze single cell RNA-seq data
 - discuss a variety of aspects of single cell RNA-seq data analysis
 - understand the advantages and limitations of single cell RNA-seq data analysis
+
+<br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/38706/group-of-people.svg" width="40" height="40"> Lecturers
 
@@ -83,7 +94,7 @@ After this course you will be able to:
 - Johan Reimegård, NBIS, Uppsala University, SciLifeLab, Uppsala, Sweden
 - Lars Borm, Department of Medical Biochemistry and Biophysics, Karolinska Institutet, Stockholm, Sweden
 - Maria Florescu, Hubrecht Institute, Developmental Biology and Stem Cell Research, Utrecht, Netherlands
-- Mark Robinson, Statistical Genomics, University of Zurich / SIB, Zurich, Switzerland 
+- Mark Robinson, Statistical Genomics, University of Zurich / SIB, Zurich, Switzerland
 - Nadine Zangger, Bioinformatics Core Facility, SIB, Lausanne, Switzerland
 - Panagiotis Papasaikas, Computational Biology Group, Friedrich Miescher Institute for Biomedical Research / SIB, Basel, Switzerland
 - Paulo Czarnewski, NBIS, Stockholm University, SciLifeLab, Stockholm, Sweden
@@ -98,4 +109,3 @@ Coordination: Björn Nystedt (NBIS/SciLifeLab), Grégoire Rossier (SIB).
 Scientific Committe: Åsa Björklund (NBIS/SciLifeLab), Michael Stadler & Charlotte Soneson (SIB and FMI Basel), Vincent Gardeux (EPFL).
 
 For more information, please contact Grégoire Rossier.
-
