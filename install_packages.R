@@ -255,7 +255,11 @@ if (all( deps$name %in% rownames(installed.packages()) )) {
     if ( .Platform$pkgType != "source" ) {
         message("Please try re-running the script to see whether the problem persists.")
     } else {
-        install_command <- paste0("BiocManager::install(c('", paste(notinstalled, collapse = "', '"), "'), site_repository = '", .course_repos, "')")
+        if (length(.course_repos) > 0) {
+            install_command <- paste0("BiocManager::install(c('", paste(notinstalled, collapse = "', '"), "'), site_repository = '", .course_repos, "')")
+        } else {
+            install_command <- paste0("BiocManager::install(c('", paste(notinstalled, collapse = "', '"), "'))")
+        }
         message("Please try running the following command to attempt installation again:\n\n",
                 install_command, "\n\n")
     }
