@@ -20,7 +20,6 @@ BiocStyle
 CATALYST
 cluster
 clustree
-combat
 cowplot
 dendextend
 destiny
@@ -50,6 +49,7 @@ scran
 Seurat-3.1
 SingleCellExperiment
 SummarizedExperiment
+sva
 TENxPBMCData
 tidyverse
 umap
