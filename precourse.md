@@ -1,6 +1,8 @@
-# <img border="0" src="https://www.svgrepo.com/show/19652/maths-class-materials-cross-of-a-pencil-and-a-ruler.svg" width="40" height="40"> Pre-course
+# <img border="0" src="https://www.svgrepo.com/show/19652/maths-class-materials-cross-of-a-pencil-and-a-ruler.svg" width="40" height="40"> Pre-course Materials
 
 ***
+
+<br/>
 
 In preparation for the practical sessions, you should install required software on the computer that you will bring to the autumn school.
 
@@ -17,3 +19,7 @@ During the installation, you may be prompted to update existing packages (recomm
 Don’t worry if not everything is installed successfully - please contact the course organisers for help, either by email or on Sunday before dinner.
 
 We are looking forward to meet you all in Leysin!
+
+<br/>
+
+### [Back to main](README.md)

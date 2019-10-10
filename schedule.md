@@ -1,8 +1,10 @@
 
 
-## <img border="0" src="https://www.svgrepo.com/show/158264/schedule.svg" width="40" height="40"> Schedule
+# <img border="0" src="https://www.svgrepo.com/show/158264/schedule.svg" width="40" height="40"> Schedule
 
 ***
+
+<br/>
 
 ### Monday 14.10.2019
 - **09:00 - 10:00** Introductory lecture (Vincent Gardeux)
@@ -55,5 +57,6 @@
 - **14:20** End of the event
 - **14:58** Train from Leysin-Feydey station
 
+<br/>
 
-## [Back to main](README.md)
+### [Back to main](README.md)

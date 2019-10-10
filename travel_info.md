@@ -1,7 +1,9 @@
 
-# <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Location
+# <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Travel Info
 
 ***
+
+<br/>
 
 Location: Hotel Central Residence & Spa, Leysin, Switzerland
 
@@ -31,5 +33,7 @@ Detailed timetable on https://www.sbb.ch/en/home.html
 
 ![](https://edu.sib.swiss/pluginfile.php/7429/course/section/2389/train-Leysin-Geneva.jpg)
 
+<br/>
 
+### [Back to main](README.md)
 
