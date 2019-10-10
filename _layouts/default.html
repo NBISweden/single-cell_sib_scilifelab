@@ -10,6 +10,9 @@
     body{ /* Normal  */ font-size: 12px; }
     td {  /* Table  */ font-size: 12px; }
     pre { /* Code block - determines code spacing between lines */ font-size: 12px; }
+    
+    header{ width: 20% }
+    section{ width: 80% }
     </style>
 
     <meta charset="utf-8">
@@ -24,9 +27,13 @@
 
   </head>
   <body>
-    <style> header{ width: 20% } </style>
+      <section>
 
-    <div class="wrapper">
+      {{ content }}
+
+      </section>
+    
+      <div class="wrapper">
       <header>
 
         <br/>
@@ -83,13 +90,7 @@
           </ul>
         {% endif %}
       </header>
-
-      <style> section{ width: 80% } </style>
-      <section>
-
-      {{ content }}
-
-      </section>
+        
       <footer>
         {% if site.github.is_project_page %}
         <p><a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
