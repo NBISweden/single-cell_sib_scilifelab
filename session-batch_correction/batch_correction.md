@@ -38,11 +38,13 @@ differentially expressed genes ("marker genes") between clusters in single-cell
 RNA-seq. We will use an example data set consisting of 2,700 PBMCs, sequenced
 using 10x Genomics technology.
 
-Several of the methods outlined here are based on the batchelor package developed
-by the lab of Aaron lun and thus the corresponding R vignette and manual are excellent
-sources of additional information ["Single-cell correction with batchelor"](https://bioconductor.org/packages/release/bioc/vignettes/batchelor/inst/doc/correction.html).
+Several of the methods outlined here are based on the scran and batchelor packages
+developed by the lab of Aaron lun and thus the corresponding R vignette and manual
+are excellent sources of additional information ["Single-cell correction with batchelor"](https://bioconductor.org/packages/release/bioc/vignettes/batchelor/inst/doc/correction.html).
 The student can also refer to the Integrating datasets chapther of ["Orchestrating single-cell analysis with Bioconductor"](https://osca.bioconductor.org/integrating-datasets.html).
 which is also largely based on the batchelor package.
+
+
 
 # Load packages
 
@@ -62,9 +64,12 @@ suppressPackageStartupMessages({
   library(e1071)
   library(coop)
   library(Rtsne)
-  source("Helper_Functions.R")
+  source("https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/session-batch_correction/Helper_Functions.R")
 })
 ```
+
+
+
 
 # Load the pre-processed dataset:
 
@@ -94,6 +99,8 @@ table(colData(bct)$study , colData(bct)$cell.class)
 ##   vis                 64   103             81
 ##   wal                 51    53             97
 ```
+
+
 
 
 # Batch effect diagnosis:
@@ -142,6 +149,9 @@ cowplot::plot_grid(scater::plotTSNE(bct, colour_by = "study" ),
 ```
 
 ![](batch_correction_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+
+
 
 # Library normalization and PCA methods customized for the presence of batches
 
@@ -194,16 +204,16 @@ bct.mBN <- scran::computeSumFactors(bct.mBN , min.mean = 0.1, cluster = clusters
 
 
 # Library normalization that corrects for batch-specific difference in size factors:
-mBN <- batchelor::multiBatchNorm(V = bct.mBN[,colData(bct.mBN )$study=="vis"],
-                                 W = bct.mBN[,colData(bct.mBN )$study=="wal"],
-                                 S = bct.mBN[,colData(bct.mBN )$study=="spk"])
+mBN <- batchelor::multiBatchNorm(V = bct.mBN[,bct.mBN$study=="vis"],
+                                 W = bct.mBN[,bct.mBN$study=="wal"],
+                                 S = bct.mBN[,bct.mBN$study=="spk"])
 bct.mBN <- cbind( mBN$V, mBN$W, mBN$S) 
 # Notice that only the logcount slot that is affected. 
 # The counts (and the custom lognorm assays) of the original bct object 
 # are unaffected.
 
 # Mutli-batch PCA that makes sure each batch contributes equally to the loading vectors:
-mB.PCA <- batchelor::multiBatchPCA( bct.mBN, batch=colData(bct.mBN)$study, d=32, preserve.single = TRUE)
+mB.PCA <- batchelor::multiBatchPCA( bct.mBN, batch=bct.mBN$study, d=32, preserve.single = TRUE)
 reducedDim(bct.mBN , "PCA" )  <- mB.PCA[[1]]
 
 # Let's now recalculate the projection and see if the improved normalization
@@ -216,6 +226,9 @@ cowplot::plot_grid(scater::plotTSNE(bct.mBN, colour_by = "study" ),
 ```
 
 ![](batch_correction_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+
+
 
 # Batch effect correction using linear regression
 
@@ -251,28 +264,71 @@ library normalization has not taken into account the presence of batches. Do you
 
 
 
+
 # Batch effect correction using fast-MNN
 
+Now we will use the matching mutual nearest neighbors technique first proposed by (Haghverdi et al. 2018).
+The function that implments this is fastMNN from the batchelor package.
+The input to this function should be the object containing the result of the multiBatchNorm method that
+we used above. 
+If multiBatchPCA has not already been performed then this is done internally. In this case since we have 
+pre-calculated  we will skip recalculation.
 
 
 
 ```r
 d <- 32
 FMNN.out <-  batchelor::fastMNN( bct.mBN  , batch=bct.mBN$study , use.dimred="PCA", d=d ) 
+# Notice that the type of object the function returns depends on the input as well as on 
+# whether the use.dimred argument is set. In this case we get back a dataframe with a matrix
+# corrected low-dimensional coordinates and a batch slot specifying batch origin.
 reducedDim (bct.mBN, "PCA.FMNN" ) <- FMNN.out$corrected 
 
-reducedDim(bct.mBN, "TSNE" ) <- Rtsne( bct.mBN@reducedDims$PCA.FMNN, perplexity = 30, initial_dims=64, pca=FALSE,num_threads=32,theta=0.25)$Y
+reducedDim(bct.mBN, "TSNE.FMNN" ) <- Rtsne( bct.mBN@reducedDims$PCA.FMNN, perplexity = 30, initial_dims=64, pca=FALSE,num_threads=32,theta=0.25)$Y
 
-cowplot::plot_grid(scater::plotTSNE(bct.mBN, colour_by = "study" ),
-                   scater::plotTSNE(bct.mBN, colour_by = "cell.class")
+cowplot::plot_grid(scater::plotReducedDim(bct.mBN, colour_by = "study", use_dimred="TSNE.FMNN" ),
+                   scater::plotReducedDim(bct.mBN, colour_by = "cell.class", use_dimred="TSNE.FMNN")
                    )
 ```
 
 ![](batch_correction_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
+Comparing visually the results from the linear regression and MNN batch correction methods does one 
+seem to be performing better?
+Sometime it is hard to visually assess the quality of the batch correction. In the next section we
+will explore some metrics that can help with quality assessment of batch correction.
 
 
 # Assessment of the quality of batch correction
+
+There are several consideration when evaluating the quality of batch correction.
+First is the efficiency of mixing, that is how intermixed are the cell from different 
+batches. 
+Here we will evaluate this by asking how good a job a non-linear classifier (radial SVM)
+can do in terms of separating the batches before and after correction. The harder it is
+to separate the batches the better the mixing quality.
+The calculation is performed by the function mixing.svm that can be found in the Helper_Functions
+script that returns the cross-validation accuracy of the classifier:
+
+
+```r
+svm_res <- data.frame (
+name=c("pre-BC","LinRegr","FMNN"),
+cv.acc=c( mixing.svm(bct@reducedDims$PCA, as.vector(bct$study) ) ,
+mixing.svm(bct.linCor@reducedDims$PCA, as.vector(bct.linCor$study) ),
+mixing.svm(bct.mBN@reducedDims$PCA.FMNN, as.vector(bct.mBN$study) ) )
+)
+
+p<-ggplot(data=svm_res, mapping=aes(x=name, y=cv.acc)) + 
+  geom_bar(stat="identity",fill="steelblue") + coord_flip(ylim=c(33,100)) +
+  geom_text(aes(label=signif(svm_res$cv.acc,3)),  hjust=2, vjust=1.6, color="white", size=4) +
+  theme(axis.title.y=element_blank()) + ggtitle("Mixing efficiency (lower is better)")
+p
+```
+
+![](batch_correction_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+
 
 
 
@@ -346,3 +402,6 @@ sessionInfo()
 
 # References
 
+1. Haghverdi L, Lun ATL, Morgan MD, Marioni JC (2018). Batch effects in single-cell RNA-sequencing data are corrected by matching mutual nearest neighbors. Nat. Biotechnol. 36(5):421
+
+2. 
