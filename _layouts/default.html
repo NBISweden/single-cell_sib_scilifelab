@@ -11,7 +11,7 @@
     td {  /* Table  */ font-size: 12px; }
     pre { /* Code block - determines code spacing between lines */ font-size: 12px; }
     
-    header{ width: 20% }
+    header{ width: 10% }
     section{ width: 80% }
     </style>
 
@@ -27,12 +27,6 @@
 
   </head>
   <body>
-      <section>
-
-      {{ content }}
-
-      </section>
-    
       <div class="wrapper">
       <header>
 
@@ -98,6 +92,14 @@
         <p><small>Theme: <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
+    
+      <section>
+
+      {{ content }}
+
+      </section>
+    
+      
     <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
   </body>
 </html>
