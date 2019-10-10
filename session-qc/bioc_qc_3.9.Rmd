@@ -150,9 +150,9 @@ We identify cells that are outliers for the various QC metrics, based on the med
 
 ```{r,message='hide',warning='hide', results='hold',results='hold',fig.height=5,fig.width=4}
 qc.lib <- isOutlier(sce$total_counts, log=TRUE, nmads=3, type="lower")
-qc.nexprs <- isOutlier(df$total_features_by_counts, nmads=3, log=TRUE, type="lower")
-qc.mito <- isOutlier(df$pct_counts_Mito, nmads=3, type="higher")
-qc.ribo <- isOutlier(df$pct_counts_Ribo, nmads=3, type="higher")
+qc.nexprs <- isOutlier(sce$total_features_by_counts, nmads=3, log=TRUE, type="lower")
+qc.mito <- isOutlier(sce$pct_counts_Mito, nmads=3, type="higher")
+qc.ribo <- isOutlier(sce$pct_counts_Ribo, nmads=3, type="higher")
 
 discard <- qc.lib | qc.nexprs | qc.mito | qc.ribo
 table(discard)
