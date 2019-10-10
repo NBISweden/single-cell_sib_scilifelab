@@ -12,10 +12,8 @@
     pre { /* Code block - determines code spacing between lines */ font-size: 12px; }
     </style>
     
-    <style>
-    header{ width: 13% }
-    section{ width: 85% }
-    </style>
+
+    
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -29,7 +27,9 @@
 
   </head>
   <body>
+
       <div class="wrapper">
+      <style> header{ width: 13% } </style>
       <header>
 
         <br/>
@@ -86,6 +86,14 @@
           </ul>
         {% endif %}
       </header>
+      
+    
+      <style> section{ width: 85% } </style>
+      <section>
+
+      {{ content }}
+
+      </section>
         
       <footer>
         {% if site.github.is_project_page %}
@@ -94,14 +102,7 @@
         <p><small>Theme: <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-    
-      <section>
 
-      {{ content }}
-
-      </section>
-    
-      
     <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
   </body>
 </html>
