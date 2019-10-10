@@ -1,5 +1,4 @@
-### Joint SIB and NBIS/SciLifeLab Autumn School
-
+# Joint SIB and NBIS/SciLifeLab Autumn School
 # Single Cell Analysis Course
 
 13 - 18 October 2019 - Leysin, Switzerland
@@ -7,7 +6,7 @@
 
 <br/>
 
-### <img border="0" src="https://www.svgrepo.com/show/20800/event-date-and-time-symbol.svg" width="40" height="40"> Date
+## <img border="0" src="https://www.svgrepo.com/show/20800/event-date-and-time-symbol.svg" width="40" height="40"> Date
 
 ***
 
@@ -15,7 +14,7 @@
 
 <br/>
 
-### <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Location
+## <img border="0" src="https://www.svgrepo.com/show/4199/placeholder-on-a-map.svg" width="40" height="40"> Location
 
 ***
 
@@ -100,7 +99,7 @@ After this course you will be able to:
 - Vincent Gardeux, Laboratory of Systems and Genetics, EPFL / SIB, Lausanne, Switzerland
 - Wouter Saelens, VIB-UGent Center for Inflammation Research, Gent, Belgium
 
-### Additional information
+**Additional information**
 
 Coordination: Björn Nystedt (NBIS/SciLifeLab), Grégoire Rossier (SIB).
 
