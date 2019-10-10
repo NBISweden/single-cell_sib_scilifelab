@@ -36,14 +36,8 @@ been pre-filtered to include only cells that are assigned unambiguously
 to one of three major  cell types:
 luminal progenitors, luminal mature and basal.
 
-
-covers some of the most commonly used methods for finding
-differentially expressed genes ("marker genes") between clusters in single-cell
-RNA-seq. We will use an example data set consisting of 2,700 PBMCs, sequenced
-using 10x Genomics technology.
-
 Several of the methods outlined here are based on the scran and batchelor packages
-developed by the lab of Aaron lun and thus the corresponding R vignette and manual
+developed by Aaron Lun adn colleagues and thus the corresponding R vignette and manual
 are excellent sources of additional information ["Single-cell correction with batchelor"](https://bioconductor.org/packages/release/bioc/vignettes/batchelor/inst/doc/correction.html).
 The student can also refer to the Integrating datasets chapther of ["Orchestrating single-cell analysis with Bioconductor"](https://osca.bioconductor.org/integrating-datasets.html).
 which is also largely based on the batchelor package.
@@ -67,6 +61,8 @@ suppressPackageStartupMessages({
   library(e1071)
   library(coop)
   library(Rtsne)
+  library(tidyr)
+  library(dplyr)
   source("https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/session-batch_correction/Helper_Functions.R")
 })
 ```
@@ -87,8 +83,10 @@ rownames(bct) <- scater::uniquifyFeatureNames(
   names = as.character(rowData(bct)$gene.symbols)
 )
 
-#Subsample to speed up knitting
-bct <- bct[, c(1:200,3000:3200,7000:7200)]
+#Subsample cells to speed up knitting / processing
+set.seed(42)
+n=3000
+bct <- bct[, sample(1:ncol(bct), n )  ]
 
 ## Dataset compostion per cell type and study:  
 table(colData(bct)$study , colData(bct)$cell.class)
@@ -127,8 +125,8 @@ without taking any steps for batch correction (apart from a simple library norma
 ```{r,  fig.width = 12, fig.height = 6,  warning=FALSE}
 # We first normalize all cells for library size.
 assays(bct )[["lognorm"]] <- lin_norm_log(as.matrix(  logcounts(bct) ), factor=1e+04)  
-reducedDim(bct, "PCA" )  <- rsvd::rpca(t( bct@assays[["lognorm"]]  ),k=32,retx=TRUE,center=TRUE,scale=FALSE)$x
-reducedDim(bct, "TSNE" ) <- Rtsne(bct@reducedDims$PCA, perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
+reducedDim(bct, "PCA" )  <- rsvd::rpca(t( assay(bct,"lognorm") ),k=32,retx=TRUE,center=TRUE,scale=FALSE)$x
+reducedDim(bct, "TSNE" ) <- Rtsne( reducedDim(bct,"PCA"), perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
 
 cowplot::plot_grid(scater::plotTSNE(bct, colour_by = "study" ),
                    scater::plotTSNE(bct, colour_by = "cell.class"))
@@ -175,7 +173,7 @@ print(table(clusters))
 # Size factor calculation using the deconvolution method:
 bct.mBN <- scran::computeSumFactors(bct.mBN , min.mean = 0.1, cluster = clusters,
                                 #BPPARAM = MulticoreParam(workers = 16)
-                                ) # 30"-60" running time
+                                ) 
 
 
 # Library normalization that corrects for batch-specific difference in size factors:
@@ -193,7 +191,7 @@ reducedDim(bct.mBN , "PCA" )  <- mB.PCA[[1]]
 
 # Let's now recalculate the projection and see if the improved normalization
 # affected the quality of the projections:
-reducedDim(bct.mBN , "TSNE" ) <- Rtsne(bct.mBN@reducedDims$PCA, perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
+reducedDim(bct.mBN , "TSNE" ) <- Rtsne(reducedDim(bct.mBN,"PCA"), perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
 
 cowplot::plot_grid(scater::plotTSNE(bct.mBN, colour_by = "study" ),
                    scater::plotTSNE(bct.mBN, colour_by = "cell.class")
@@ -217,12 +215,12 @@ lowest mean across all batches.
 
 ```{r,  fig.width = 12, fig.height = 6,  warning=FALSE}
 bct.linCor <- bct.mBN 
-bct.linCor  <- batchelor::rescaleBatches(bct.linCor, batch=colData(bct.linCor)$study)
+bct.linCor  <- batchelor::rescaleBatches(bct.linCor, batch=bct.linCor$study)
 colData(bct.linCor) <-  colData(bct.mBN )  
 
 
-reducedDim(bct.linCor, "PCA" )  <- rsvd::rpca(t( bct.linCor@assays[["corrected"]]  ),k=32,retx=TRUE,center=TRUE,scale=FALSE)$x
-reducedDim(bct.linCor, "TSNE" ) <- Rtsne(bct.linCor@reducedDims$PCA, perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
+reducedDim(bct.linCor, "PCA" )  <- rsvd::rpca( t( assay(bct.linCor,"corrected") ) ,k=32,retx=TRUE,center=TRUE,scale=FALSE)$x
+reducedDim(bct.linCor, "TSNE" ) <- Rtsne(reducedDim(bct.linCor, "PCA"), perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
 
 cowplot::plot_grid(scater::plotTSNE(bct.linCor, colour_by = "study" ),
                    scater::plotTSNE(bct.linCor, colour_by = "cell.class")
@@ -253,50 +251,106 @@ FMNN.out <-  batchelor::fastMNN( bct.mBN  , batch=bct.mBN$study , use.dimred="PC
 # corrected low-dimensional coordinates and a batch slot specifying batch origin.
 reducedDim (bct.mBN, "PCA.FMNN" ) <- FMNN.out$corrected 
 
-reducedDim(bct.mBN, "TSNE.FMNN" ) <- Rtsne( bct.mBN@reducedDims$PCA.FMNN, perplexity = 30, initial_dims=64, pca=FALSE,num_threads=32,theta=0.25)$Y
+reducedDim(bct.mBN, "TSNE.FMNN" ) <- Rtsne( reducedDim(bct.mBN, "PCA.FMNN"), perplexity = 30, initial_dims=64, pca=FALSE,num_threads=32,theta=0.25)$Y
 
 cowplot::plot_grid(scater::plotReducedDim(bct.mBN, colour_by = "study", use_dimred="TSNE.FMNN" ),
                    scater::plotReducedDim(bct.mBN, colour_by = "cell.class", use_dimred="TSNE.FMNN")
                    )
-
+# We can also check the proportion of variance lost from each batch
+# and in each merge step of FMNN. In the following matrix rows
+# correspond to merge steps and columns to the thre batches (according to input order):
+metadata(FMNN.out)$merge.info$lost.var
 ```
 
 Comparing visually the results from the linear regression and MNN batch correction methods does one 
 seem to be performing better?
-Sometime it is hard to visually assess the quality of the batch correction. In the next section we
-will explore some metrics that can help with quality assessment of batch correction.
+
+Often it is hard to visually assess the quality of the batch correction. In the next section we
+will  some metrics that can help with the quality assessment of batch correction.
 
 
 # Assessment of the quality of batch correction
 
-There are several consideration when evaluating the quality of batch correction.
-First is the efficiency of mixing, that is how intermixed are the cell from different 
+There are several considerations when evaluating the quality of batch correction.
+First is the efficiency of mixing, that is, how intermixed are the cell from different 
 batches. 
+
 Here we will evaluate this by asking how good a job a non-linear classifier (radial SVM)
 can do in terms of separating the batches before and after correction. The harder it is
-to separate the batches the better the mixing quality.
+to separate the batches the better the mixing efficiency.
 The calculation is performed by the function mixing.svm that can be found in the Helper_Functions
 script that returns the cross-validation accuracy of the classifier:
 
-```{r,  fig.width = 12, fig.height = 6}
+```{r,  fig.width = 9, fig.height = 4}
 svm_res <- data.frame (
 name=c("pre-BC","LinRegr","FMNN"),
-cv.acc=c( mixing.svm(bct@reducedDims$PCA, as.vector(bct$study) ) ,
-mixing.svm(bct.linCor@reducedDims$PCA, as.vector(bct.linCor$study) ),
-mixing.svm(bct.mBN@reducedDims$PCA.FMNN, as.vector(bct.mBN$study) ) )
+cv.acc=c( mixing.svm( reducedDim(bct,"PCA"), as.vector(bct$study) ) ,    # Reduced dim. data before bc
+          mixing.svm( reducedDim(bct.linCor,"PCA"), as.vector(bct.linCor$study) ), # Reduced dim. data after linear regression bc
+          mixing.svm( reducedDim(bct.mBN, "PCA.FMNN"), as.vector(bct.mBN$study) ) ) # Reduced dim. data after FMNN bc
 )
 
 p<-ggplot(data=svm_res, mapping=aes(x=name, y=cv.acc)) + 
   geom_bar(stat="identity",fill="steelblue") + coord_flip(ylim=c(33,100)) +
   geom_text(aes(label=signif(svm_res$cv.acc,3)),  hjust=2, vjust=1.6, color="white", size=4) +
-  theme(axis.title.y=element_blank()) + ggtitle("Mixing efficiency (lower is better)")
+  theme(axis.title.y=element_blank()) + ggtitle("Batch discrimination accuracy (lower is better)")
 p
 
 ```
 
+While adequate mixing of the batches in important, it is equally critical
+to make certain that a batch correction method does not "overmix" the data,
+resulting in the loss of biologically meaningful information in the process.
+
+Ideally we would like the batch correction to preserve as much as possible of
+the within batch heterogeneity reflected in the structure of the date before 
+batch correction.
+
+Here we will use two functions that assess preservation of global and local
+structure chracteristics within each batch before and after correction.
+The first function global.dist() evaluates similarity of distance distribution
+between cells within batch before and after batch correction.
+The second function local.dist() evaluates similarity in the local neighborhood
+of cells in terms of nearest neighbors overlap before and after correction.
+
+
+```{r,  fig.width = 6, fig.height = 6}
+# First calculate PCs for the three batches separately:
+individual.PCAs <- lapply(levels(bct$study), function(x) rsvd::rpca(t( assay(bct,"lognorm")[,bct$study==x] ),k=32,retx=TRUE,center=TRUE,scale=FALSE)$x )
+names(individual.PCAs) <- levels(bct$study)
+# Next evaluate global dist for each batch and for the two methods:
+GD.linCor <- sapply(  levels(bct$study), function(x) 
+             global.dist(   individual.PCAs[[x]],  reducedDim(bct.linCor,"PCA")[bct.linCor$study==x,], metric="Sp.rho"  )
+             )
+
+GD.FMNN <- sapply(  levels(bct$study), function(x) 
+           global.dist(   individual.PCAs[[x]],  reducedDim(bct.mBN,"PCA.FMNN")[bct.mBN$study==x,], metric="Sp.rho"  )  
+           )
+
+GD.res <- data.frame(names=levels(bct$study), cbind(GD.linCor,GD.FMNN)  )
 
 
 
+# Finally evaluate local dist for each batch and for the two methods:
+LD.linCor <- sapply(  levels(bct$study), function(x) 
+             local.dist(   individual.PCAs[[x]],  reducedDim(bct.linCor,"PCA")[bct.linCor$study==x,] )
+             )
+
+LD.FMNN <- sapply(  levels(bct$study), function(x) 
+           local.dist(   individual.PCAs[[x]],  reducedDim(bct.mBN,"PCA.FMNN")[bct.mBN$study==x,] )  
+           )
+LD.res <- data.frame(names=levels(bct$study), cbind(LD.linCor,LD.FMNN)  )
+
+tidyr::gather(GD.res, key = "method", value = "global_distance", -names) %>% 
+ggplot(aes(x = names, y = global_distance, fill = method)) + geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.title.x=element_blank() )  + coord_cartesian(ylim=c(0,1) ) +
+  ggtitle("Global structure dissimilarity (lower is better)")
+
+tidyr::gather(LD.res, key = "method", value = "local_distance", -names) %>% 
+ggplot(aes(x = names, y = local_distance, fill = method)) + geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.title.x=element_blank()) + coord_cartesian(ylim=c(0,1) ) +
+  ggtitle("Local structure dissimilarity (lower is better)")
+
+```
 
 # Session info
 
