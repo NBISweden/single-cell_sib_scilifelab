@@ -1,0 +1,311 @@
+---
+title: "Bioconductor: Quality control and normalization"
+author: "Davide Risso (inspired by Åsa Björklund  &  Paulo Czarnewski and by Aaron Lun)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    self_contained: true
+    highlight: tango
+    df_print: paged
+    toc: yes
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+  html_notebook:
+    self_contained: true
+    highlight: tango
+    df_print: paged
+    toc: yes
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+---
+
+
+# Get data
+
+In this tutorial, we will be using a publicly available dataset from 10X Genomics, available throught the Bioconductor `TENxPBMCData` package. The package uses `AnnotationHub` to download the required data and store them on local cache for reuse.
+
+```{r, message=FALSE, warning=FALSE}
+library(TENxPBMCData)
+sce1 <- TENxPBMCData(dataset = "pbmc3k")
+sce2 <- TENxPBMCData(dataset = "pbmc4k")
+
+rowData(sce1) <- rowData(sce1)[,c(1, 3)]
+common <- intersect(rownames(sce1), rownames(sce2))
+sce <- cbind(sce1[common,], sce2[common,])
+sce
+```
+
+The data are stored in a [`SingleCellExperiment` object](https://osca.bioconductor.org/data-infrastructure.html#the-singlecellexperiment-class).
+
+Note that the data are internally stored in a HDF5 file (.h5), which means that they are not loaded in memory, until it is necessary to do so. Many Bioconductor packages, including the ones that we will use in this tutorial, use block processing to ensure that we can work even with datasets larger than the available RAM.
+
+```{r}
+counts(sce)
+seedApply(counts(sce), identity)
+object.size(sce)
+```
+
+Note that the `sce` object already includes several metadata, called "column data", which can be accessed with the `colData` function.
+
+```{r}
+colData(sce)
+```
+
+Similarly, the object contains information on the genes, called "row data", which can be accessed with the `rowData` function.
+
+```{r}
+rowData(sce)
+```
+
+With data in place, now we can start loading the libraries we will use in this tutorial.
+
+```{r, message='hide',warning='hide',results='hold'}
+library(DropletUtils)
+library(scater)
+library(scran)
+library(mbkmeans)
+
+BiocParallel::register(BiocParallel::SerialParam())
+```
+
+# Identifying empty droplets
+
+In droplet data (e.g., 10X Genomics, Dropseq) the libraries are made from the droplets, which are not guaranteed to cvontain a cell. Thus, we need to distinguish between cells and empty droplets based on the observed expression profiles. A complication is that empty droplets may contain ambient (i.e., extracellular) RNA that can be captured and sequenced, resulting in non-zero counts for libraries that do not contain any cell.
+
+This step should be carried on starting from the "unfiltered" matrices from CellRanger (or similar pipeline), because these pipelines usually include a heuristic to filter out empty droplets. Here, we show how to use the functions on the `pbmc4k` data, for illustration purposes. We will use the default filtering employed by CellRanger for the remainder of the tutorial, hence the following chunks do not need to be run for the rest of the tutorial to work.
+
+```{r, eval=FALSE}
+library(BiocFileCache)
+bfc <- BiocFileCache("raw_data", ask = FALSE)
+raw.path <- bfcrpath(bfc, file.path("http://cf.10xgenomics.com/samples",
+    "cell-exp/2.1.0/pbmc4k/pbmc4k_raw_gene_bc_matrices.tar.gz"))
+untar(raw.path, exdir=file.path(tempdir(), "pbmc4k"))
+
+fname <- file.path(tempdir(), "pbmc4k/raw_gene_bc_matrices/GRCh38")
+sce.full <- read10xCounts(fname, col.names=TRUE)
+
+bcrank <- barcodeRanks(counts(sce.full))
+
+# Only showing unique points for plotting speed.
+uniq <- !duplicated(bcrank$rank)
+plot(bcrank$rank[uniq], bcrank$total[uniq], log="xy",
+    xlab="Rank", ylab="Total UMI count", cex.lab=1.2)
+
+abline(h=metadata(bcrank)$inflection, col="darkgreen", lty=2)
+abline(h=metadata(bcrank)$knee, col="dodgerblue", lty=2)
+
+legend("bottomleft", legend=c("Inflection", "Knee"), 
+        col=c("darkgreen", "dodgerblue"), lty=2, cex=1.2)
+```
+
+## Testing for empty droplets
+
+```{r, eval=FALSE}
+set.seed(124)
+e.out <- emptyDrops(counts(sce.full))
+table(e.out$FDR <= 0.001)
+ncol(sce2)
+```
+
+`emptyDrops()` computes Monte Carlo p-values based on a Dirichlet-multinomial model of sampling molecules into droplets. 
+
+`emptyDrops()` assumes that libraries with total UMI counts below a certain threshold (`lower=100` by default) correspond to empty droplets. These are used to estimate the ambient expression profile against which the remaining libraries are tested. Under this definition, these low-count libraries cannot be cell-containing droplets and are excluded from the hypothesis testing.
+
+To retain only the detected cells, we would subset our SingleCellExperiment object.
+
+```{r, eval=FALSE}
+sce.full <- sce.full[,which(e.out$FDR <= 0.001)]
+sce.full
+```
+
+# Calculate QC
+
+Having removed the empty droplets, we can start calculating some quality metrics. We can for example calculate the percentage of mitocondrial and ribossomal genes per cell and add to the metadata. This will be helpfull to visualize them across different metadata parameteres (i.e. datasetID and chemistry version). There are several ways of doing this, and here manually calculate the proportion of mitochondrial reads and add to the metadata table.
+
+Citing from "Simple Single Cell" workflows (Lun, McCarthy & Marioni, 2017): "High proportions are indicative of poor-quality cells (Islam et al. 2014; Ilicic et al. 2016), possibly because of loss of cytoplasmic RNA from perforated cells. The reasoning is that mitochondria are larger than individual transcript molecules and less likely to escape through tears in the cell membrane."
+
+Analogously, we can calculate the proportion of gene expression coming from ribosomal proteins.
+
+Given these set of genes, the `scater` package automatically calculates several per-cell QC metrics.
+
+```{r, results='hold'}
+mito_genes <- grep("^MT-",rowData(sce)$Symbol_TENx)
+ribo_genes <- grep("^RP[SL]",rowData(sce)$Symbol_TENx)
+head(mito_genes,10)
+
+df <- perCellQCMetrics(sce, subsets=list(Mito = mito_genes, Ribo = ribo_genes))
+df
+
+colData(sce) <- cbind(colData(sce), df)
+```
+
+Alternatively, we can use the `addQCPerCell()` function to add these QC metrics to the `colData` of the object.
+
+Similarly, we can compute per-gene QC metrics with the `perFeatureQCMetrics()` function.
+
+## QC-based filtering
+
+A standard approach is to filter cells with low amount of reads as well as genes that are present in at least a certain amount of cells. While simple, using fixed thresholds requires knowledge of the experiment and of the experimental protocol.
+
+An alternative approach is to use adaptive, data-driven thresholds to identify outlying cells, based on the set of QC metrics just calculated.
+
+We identify cells that are outliers for the various QC metrics, based on the median absolute deviation (MAD) from the median value of each metric across all cells. Specifically, a value is considered an outlier if it is more than 3 MADs from the median in the “problematic” direction.
+
+```{r,message='hide',warning='hide', results='hold',results='hold',fig.height=5,fig.width=4}
+qc.lib <- isOutlier(df$sum, log=TRUE, nmads=3, type="lower")
+qc.nexprs <- isOutlier(df$detected, nmads=3, log=TRUE, type="lower")
+qc.mito <- isOutlier(df$subsets_Mito_percent, nmads=3, type="higher")
+qc.ribo <- isOutlier(df$subsets_Ribo_percent, nmads=3, type="higher")
+
+discard <- qc.lib | qc.nexprs | qc.mito | qc.ribo
+table(discard)
+sce$discard <- discard
+```
+
+Additionaly, Extremely high number of detected genes could indicate doublets. However, depending on the cell type composition in your sample, you may have cells with higher number of genes (and also higher counts) from one cell type. In these datasets, there is also a clear difference between the v1 vs v2 10x chemistry with regards to gene detection, so it may not be fair to apply the same cutoffs to all of them. Hence, we do not discard cells that have a high number of detected genes and use specific tools to detect doublets later on.
+
+A similar approach is implemented in the `metric_sample_filter` function of the `scone` Bioconductor package.
+
+# Plot QC
+
+Now we can plot some of the QC-features as violin plots.
+
+```{r,message='hide',warning='hide', results='hold',results='hold',fig.height=5,fig.width=16}
+plotColData(sce, x = "Chemistry", y="sum", colour_by = "discard") + scale_y_log10() + ggtitle("Total count")
+plotColData(sce, x = "Chemistry", y="detected", colour_by = "discard") + scale_y_log10() + ggtitle("Detected features")
+plotColData(sce, x = "Chemistry", y="subsets_Mito_percent", colour_by = "discard") + ggtitle("Mito Percent")
+plotColData(sce, x = "Chemistry", y="subsets_Ribo_percent", colour_by = "discard") + ggtitle("Ribo Percent")
+```
+
+As you can see, the v2 chemistry gives higher gene detection, but similar percentage of ribosomal and mitochondrial genes. As the ribosomal proteins are highly expressed they will make up a larger proportion of the transcriptional landscape when fewer of the lowly expressed genes are detected. We can plot the different QC-measures as scatter plots.
+
+```{r,message='hide',warning='hide', results='hold',results='hold',fig.height=5,fig.width=16}
+plotColData(sce, x = "sum", y = "subsets_Mito_percent", colour_by = "discard", shape_by = "Chemistry") + scale_x_log10()
+plotColData(sce, x = "sum", y = "subsets_Ribo_percent", colour_by = "discard", shape_by = "Chemistry") + scale_x_log10()
+```
+
+# Filtering
+
+## Cell filtering
+
+Until now we only _marked_ low-quality cells. We could decide to keep all the data in the object, including the low-quality cells, and "keep an eye" on the low-quality cells at the interpretation stage.
+
+For simplicity, it is often better to discard the low-quality cells at the QC stage. To do so it is sufficient to subset the `sce` object.
+
+```{r}
+sce <- sce[,!discard]
+sce
+```
+
+## Gene filtering
+
+Naturally, we want to exclude genes that are not expressed in our system, as they do not contribute any information to our experiment.
+
+```{r}
+table(rowSums(counts(sce)) == 0)
+```
+
+In addition, very lowly expressed genes may only contribute noise. Hence, it is often suggested to remove genes that are not expressed in at least a certain proportion of cells in the dataset. Here, we keep those genes that are expressed in at least 5% of the data.
+
+```{r}
+num_umis <- 1
+num_cells <- 0.05*ncol(sce)
+is_expressed <- rowSums(counts(sce) >= num_umis ) >= num_cells
+sce <- sce[is_expressed,]
+sce
+```
+
+Note that if we expect one or more rare cell populations we might need to decrease the percentage of cells.
+
+# Normalization
+
+Each cell is sequenced at a different sequencing depth. This difference is a combination of different experimental factors, such as cDNA capture and PCR amplification. Normalization aims to remove these differences to ensure that the when we compare expression profiles between cells we are measuring biology and not technical biases.
+
+Here, we focus on "scaling normalization", which is the simplest and most common normalization strategy.
+As the name suggests, it simply involves scaling the number of reads by a cell-specific factor, often known as a _size factor_.
+
+The easiest option is to divide the counts of each cell by the total number of reads. This can be done in the `scater`.
+
+```{r}
+lib.sf <- librarySizeFactors(sce)
+summary(lib.sf)
+hist(log10(lib.sf), xlab="Log10 Size factor", col='grey80')
+```
+
+While simple and intuitive, this strategy may be problematic when there is an imbalance in differential expression among cells, e.g., when few highly expressed genes are also those that mark each cell type.
+This is a well-known problem in bulk RNA-seq and many normalization methods have been shown to work better than library size normalization (e.g., TMM or DESeq normalization).
+
+However, single-cell data can be problematic for these methods, due to the large number of zero and low counts.
+To overcome this, the `scran` normalization pools together similar cells to compute and then deconvolve size factors. To avoid pooling together very different cells, a quick clustering is performed prior to the pooling and only cells from the same cluster can be pooled.
+
+The `scran` package has a `quickCluster` function, but here we use the faster mini-batch k-means algorithm for this initial step.
+
+```{r}
+set.seed(243)
+mbkm <- mbkmeans(sce, clusters = 10, reduceMethod = NA)
+table(mbkm$Clusters)
+
+scran.sf <- calculateSumFactors(sce, cluster=mbkm$Clusters)
+
+plot(lib.sf, scran.sf, xlab="Library size factor",
+    ylab="Deconvolution size factor", log='xy', pch=16,
+    col=mbkm$Clusters)
+abline(a=0, b=1, col="red")
+```
+
+Once we have the appropriate size factors, we can transform the data using the `scater` package.
+
+```{r}
+sce <- logNormCounts(sce)
+sce
+logcounts(sce)
+```
+
+This function adds a `logcounts` slot to the object with the normalized data.
+
+# Doublet detection
+
+Doublets are artifactual libraries generated from two cells. This happens if two cells are mistakenly captured in the same droplet. Doublets are particularly problematic for two reasons: (a) having twice as much the RNA of a single cell they appear as an extremely good quality sample; (b) they can be mistaken for intermediate populations or transitory states that do not actually exist.
+
+We can infer doublets with computational approaches. Two approaches are implemented in the `scran` package. One needs cluster information and one does not. Here, we use the clustering results obtained earlier for simplicity, but a proper cluster analysis (seen in later lectures) would be preferable here.
+
+## Using cluster information
+
+The `doubletCluster()` function identifes _clusters_ with expression profiles lying between two other clusters.
+Considering every possible triplet of clusters, the method uses the number of DE genes, the median library size, and the proporion of cells in the cluster to mark clusters as possible doublets.
+
+```{r}
+set.seed(333)
+dbl.out <- doubletCluster(sce, mbkm$Clusters)
+dbl.out
+rownames(dbl.out)[isOutlier(dbl.out$N, type="lower", nmads=3, log=TRUE)]
+```
+
+In this case, the first cluster is marked as a possible doublet cluster, so care should be taken when interpreting its biological identity.
+
+## Using simulations
+
+The other approach uses simulation of in silico doublets, which are then compared to the original cells. If some cells look similar to the simulated doublets, they are likely to be doublets themselves.
+
+The advantage of this approach is that it produces a "doublet score" for each cell, at a cost of more computational burden.
+
+```{r, eval=FALSE}
+dbl.dens <- doubletCells(sce)
+summary(dbl.dens)
+sce$DoubletScore <- log10(dbl.dens+1)
+boxplot(sce$DoubletScore ~ mbkm$Clusters)
+```
+
+Finally, let's save the QC-filtered, normalized data for further analysis. Because our data are in HDF5 format, we use a specialized function.
+
+```{r,message='hide',warning='hide', results='hold'}
+saveHDF5SummarizedExperiment(sce, dir="data/se", replace = TRUE)
+```
+
+```{r}
+sessionInfo()
+```
