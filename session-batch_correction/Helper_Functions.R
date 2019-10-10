@@ -44,8 +44,6 @@ map2color<-function(x,pal,limits=NULL){
 }
 
 
-
-
 # Calculates KNN smoothened expression values for one or more genes.
 # Uses a reduced dim representation for KNN identification {proj: cells x features }
 # and an expression matrix (typically logexpr) for gene expression value lookup {exp.matrix: fetures x cells }
@@ -66,6 +64,143 @@ marker.levels <- rowMeans(marker.vals)
 }
 
 
+
+
+
+
+##### Functions for evaluating bc performance:
+
+#### A. Mixing:
+### Check if a simple svm model can discriminate between batches
+### Input is a K x d matrix X with K samples and d features and an annotation vector Y
+### n: Number of samples to use
+### seed: FALSE or a number for setting the random seed
+### ... Additional arguments passed to e1071::svm
+### Returns cross validation classification accuracy (0-100).
+### Lower is better
+library(e1071)
+mixing.svm <- function (X, Y, n=1000, seed=1, balanced=TRUE, ...) {
+    svm.args <- list(...)
+    if (is.null(svm.args$kernel)) svm.args$kernel <- "radial" # use kernel="linear" for linear SVM. kernel="radial" for non-linear SVM
+    if (is.null(svm.args$cost))   svm.args$cost <- 10
+    if (is.null(svm.args$scale))  svm.args$scale <- TRUE
+    if (is.null(svm.args$cross))  svm.args$cross <- 5
+    if (seed){
+        set.seed(seed)
+    }
+    
+    if (balanced) {
+        nb <- min( floor( n/length(unique(Y) ) ) , min(table(Y))  )
+        s <- sapply(unique(Y), function(x) sample( which(Y==x), nb ),simplify = TRUE   )
+    }  else{  
+        s <- sample(1:nrow(X), min(n, nrow(X)) )
+    }
+    
+    dat <- data.frame( x=X[s,], y=as.factor(Y[s]) )  
+    
+    svmfit <- do.call(svm, c( list(y ~ . , data=dat ),svm.args)     )
+    accuracy <- svmfit$tot.accuracy
+    return(accuracy)
+}
+#e.g test <- mixing.svm(M3,study_annot,n=700, balanced=TRUE)
+
+
+
+#### B1. Structure preservation. Local:
+### Input are two K x d matrices M1, M2 with K samples and d features.
+### n is the sample size of K
+### Average Jaccard distance between a sample of n vertices before and after mixing
+### Ranges from 0-1. Lower is better.
+library(BiocNeighbors)
+library(scran)
+local.dist <- function (m1, m2, metric=c("Jaccard"), n=1000, k=20,  seed=1, cosnorm=FALSE ) {
+    
+    if (!identical(dim(m1), dim(m2))) {
+        stop("The two input matrices must have the same dimensions")
+    }
+    
+    if (seed){
+        set.seed(seed)
+    }
+    
+    s <- sample(1:nrow(m1), min(n, nrow(m1)) )
+    m1  <- m1[s,]
+    m2  <- m2[s,] 
+    
+    # Cosine normalization of feature matrices:
+    if (cosnorm) {
+        m1 <-   t(scran::cosineNorm( t(m1) ))
+        m2 <-   t(scran::cosineNorm( t(m2) ))
+    }
+    
+    #Find kNNs for each point in m1, m2
+    N1 <- BiocNeighbors::findKNN(m1, k=k, get.dist=FALSE)$index
+    N2 <- BiocNeighbors::findKNN(m2, k=k, get.dist=FALSE)$index
+    
+    #Calculate average Jaccard similarity:
+    Jindex <- mean ( sapply(1:nrow(N1), function(x)  { C=sum(N1[x,] %in% N2[x,]);  C / (2*k-C) }   ) )
+    return(1-Jindex)
+}
+#e.g local.dist(  M1[study_annot=="facs",], fMNNcor[study_annot=="facs",], cosnorm=TRUE )
+
+
+
+#### B2. Structure preservation. Global:
+### Input are two K x d matrices M1, M2 with K samples and d features.
+### n is the sample size of K
+### The function first calculates two  n x n distance matrices corresponding to the n samples from M1, M2
+### Then the vectorized forms of the two (upper/lower triangular) distance matrices are compared
+### using one of: 1. KStest D statistic 2. 1-cosine similarity 3. 1-pearson's rho or 4. 1-Spearman's rho 
+### to derive a single distance index.
+### Ranges from 0-1. Lower is better.
+library(coop)
+library(scran)
+global.dist <- function (m1, m2, metric=c("KStest","cosine","rho","Sp.rho"), n=1000, seed=1, cosnorm=FALSE ) {
+    
+    if (!identical(dim(m1), dim(m2))) {
+        stop("The two input matrices must have the same dimensions")
+    }
+    
+    
+    if (seed){
+        set.seed(seed)
+    }
+    
+    s <- sample(1:nrow(m1), min(n, nrow(m1)) )
+    m1  <- m1[s,]
+    m2  <- m2[s,] 
+    
+    # Cosine normalization of feature matrices:
+    if (cosnorm) {
+        m1 <-   t(scran::cosineNorm( t(m1) ))
+        m2 <-   t(scran::cosineNorm( t(m2) ))
+    }
+    
+    #Compute distance matrices and vectorize:
+    m1 <- as.matrix(dist(m1))
+    m2 <- as.matrix(dist(m2))
+    v1 <- as.vector(m1[upper.tri(m1)])
+    v2 <- as.vector(m2[upper.tri(m2)])
+    
+    if (metric=="cosine"){
+        D <- 1 - coop::cosine(v1 ,v2)
+    }
+    else if (metric=="rho"){
+        D <- 1 - coop::pcor(v1, v2) 
+    }
+    else if (metric=="Sp.rho"){
+        v1 <- rank(v1)
+        v2 <- rank(v2)
+        D <- 1 - coop::pcor(v1, v2)
+    }
+    else if (metric=="KStest"){
+        D <- ks.test(v1 - mean(v1), v2 - mean(v2) )
+        D <- D$statistic
+    }
+    return(D)
+}
+
+#e.g global.dist(  M1[study_annot=="facs",], fMNNcor[study_annot=="facs",], cosnorm=TRUE, n=2000 )
 
 
 
