@@ -1,6 +1,17 @@
 <!doctype html>
 <html>
   <head>
+    <style type="text/css">
+    h1.title { font-size: 40px; color: DarkRed; }
+    h1 { /* Header 1 */ font-size: 40px; color: DarkRed;  }
+    h2 { /* Header 2 */ font-size: 16px; }
+    h3 { /* Header 3 */ font-size: 18px; }
+    code.r{ /* Code block */ font-size: 12px; }
+    body{ /* Normal  */ font-size: 12px; }
+    td {  /* Table  */ font-size: 12px; }
+    pre { /* Code block - determines code spacing between lines */ font-size: 12px; }
+    </style>
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>{{ site.title | default: site.github.repository_name }} by {{ site.github.owner_name }}</title>
@@ -12,7 +23,6 @@
     <![endif]-->
 
   </head>
-
   <body>
     <style> header{ width: 20% } </style>
 
@@ -22,12 +32,14 @@
         <br/>
         <img src="/single-cell_sib_scilifelab/logos/sib_logo_high.jpg" height="70">
         <br/>
+        <br/>
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXrM7nmHWY7IctvH_9tb8YpqNbbSjaFxHkyMmZFaYkehgGER8X" height="40">
+        <br/>
         <br/>
         <img src="/single-cell_sib_scilifelab/logos/nbislogo-orange-txt.svg" height="60">
         <br/>
         <br/>
-
+        <br/>
 
         <a href="/single-cell_sib_scilifelab/README.html"><img border="0" src="https://cdn2.iconfinder.com/data/icons/inverticons-stroke-vol-1/32/home_house_building_main_page-512.png" width="20" height="20"> Main Page</a>
         <br/>
@@ -53,9 +65,10 @@
         <a href="/single-cell_sib_scilifelab/session-dimensionality-reduction/scater/scater_02_dim_reduction_compiled.html">QC_scater</a>
         <br>
 -->
-
+        
+        
         {% if site.github.is_project_page %}
-          <p class="view"><a href="{{ site.github.repository_url }}">View on GitHub <small>{{ github_name }}</small></a></p>
+          <p class="view"><a href="{{ site.github.repository_url }}"><img border="0" src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="20" height="20">View on GitHub<small>{{ github_name }}</small></a></p>
         {% endif %}
 
         {% if site.github.is_user_page %}
@@ -81,7 +94,7 @@
         {% if site.github.is_project_page %}
         <p><a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
         {% endif %}
-        <p><small>Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+        <p><small>Theme: <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
     <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
