@@ -113,7 +113,7 @@ mixing.svm <- function (X, Y, n=1000, seed=1, balanced=TRUE, ...) {
 ### Ranges from 0-1. Lower is better.
 library(BiocNeighbors)
 library(scran)
-local.dist <- function (m1, m2, metric=c("Jaccard"), n=1000, k=20,  seed=1, cosnorm=FALSE ) {
+local.dist <- function (m1, m2, metric=c("Jaccard"), n=1000, k=20,  seed=1, cosnorm=TRUE ) {
     
     if (!identical(dim(m1), dim(m2))) {
         stop("The two input matrices must have the same dimensions")
@@ -155,7 +155,7 @@ local.dist <- function (m1, m2, metric=c("Jaccard"), n=1000, k=20,  seed=1, cosn
 ### Ranges from 0-1. Lower is better.
 library(coop)
 library(scran)
-global.dist <- function (m1, m2, metric=c("KStest","cosine","rho","Sp.rho"), n=1000, seed=1, cosnorm=FALSE ) {
+global.dist <- function (m1, m2, metric=c("KStest","cosine","rho","Sp.rho"), n=1000, seed=1, cosnorm=TRUE ) {
     
     if (!identical(dim(m1), dim(m2))) {
         stop("The two input matrices must have the same dimensions")
