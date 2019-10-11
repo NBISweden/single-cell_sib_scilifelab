@@ -6,6 +6,9 @@
 
 In the last case scenario, if you are having problems installing R packages, please follow these instructions to setup a docker container with R and Rstudio. Then you will need to install packages as usual. See the [pre-course material](/single-cell_sib_scilifelab/precourse.md) for package installations.
 
+<br/>
+
+<img border="0" src="https://quppler.com/wp-content/uploads/2019/03/DockerComponents.png" width="700">
 
 <br/>
 
