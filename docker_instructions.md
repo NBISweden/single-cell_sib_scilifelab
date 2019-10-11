@@ -153,7 +153,7 @@ docker push yourhubusername/gapminder_my_analysis
 <br/>
 
 
-## <img border="0" src="https://cdn4.iconfinder.com/data/icons/proglyphs-computers-and-development/512/Terminal-512.png" width="40" height="40"> Useful commands
+## <img border="0" src="https://cdn4.iconfinder.com/data/icons/proglyphs-computers-and-development/512/Terminal-512.png" width="40" height="40"> Useful Commands and links
 
 ***
 
@@ -176,6 +176,12 @@ docker rmi <image_id>
 #You can use them separately
 docker run -it -v $(pwd):/home/rstudio <docker_name>
 ```
+
+Usefull Links:
+
+* [https://ropenscilabs.github.io/r-docker-tutorial/](https://ropenscilabs.github.io/r-docker-tutorial/)
+* [https://rmarkdown.rstudio.com/articles_integration.html](https://rmarkdown.rstudio.com/articles_integration.html)
+* [https://github.com/rocker-org/rocker/wiki/How-to-save-data](https://github.com/rocker-org/rocker/wiki/How-to-save-data)
 
 <br/>
 
