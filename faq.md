@@ -8,4 +8,4 @@ For more information, please contact Grégoire Rossier.
 
 ## [Back to main](README.md)
 
-<span style="color:white">As a last resource in case you are having installation issues, please try following these [docker_instructions](docker_instructions.md)</span>
+<span style="color:white">As a last resource in case you are having installation issues, please try following these [<span style="color:white">docker_instructions</span>](docker_instructions.md)</span>
