@@ -3,3 +3,9 @@
 ***
 
 For more information, please contact Grégoire Rossier.
+
+<br/>
+
+## [Back to main](README.md)
+
+<span style="color:white">As a last resource in case you are having installation issues, please try following these [docker_instructions](docker_instructions.md)</span>
