@@ -4,11 +4,14 @@
 
 <br/>
 
-In the last case scenario, if you are having problems installing R packages, please follow these instructions to setup a docker container with R and Rstudio. Then you will need to install packages as usual.
+In the last case scenario, if you are having problems installing R packages, please follow these instructions to setup a docker container with R and Rstudio. Then you will need to install packages as usual. See the [pre-course material](/single-cell_sib_scilifelab/precourse.md) for package installations.
+
 
 <br/>
 
-## <img border="0" src="https://www.svgrepo.com/show/19652/maths-class-materials-cross-of-a-pencil-and-a-ruler.svg" width="40" height="40"> Installation Instructions
+## <img border="0" src="https://www.svgrepo.com/show/4795/installation-symbol.svg" width="40" height="40"> Installation Instructions
+
+***
 
 1. Install docker. You need permission to both install and use `sudo` commands.
 
@@ -71,6 +74,8 @@ See the [pre-course material](/single-cell_sib_scilifelab/precourse.md)
 
 
 ## <img border="0" src="https://cdn4.iconfinder.com/data/icons/proglyphs-computers-and-development/512/Terminal-512.png" width="40" height="40"> Useful commands
+
+***
 
 Some of these commands can be used in
 
