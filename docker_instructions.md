@@ -50,14 +50,29 @@ docker-machine stop
 
 <br/>
 
-## <img border="0" src="https://www.svgrepo.com/show/264/user.svg" width="40" height="40"> Using a pre-made container
+## <img border="0" src="https://www.svgrepo.com/show/264/user.svg" width="40" height="40"> Using the SingleCellSchool container
 
 ***
 
-Now that you are setup with docker you can launch/fire the container from a repository. If you already have a copy on your computer it will launch it, otherwise it will download it from the repositiory first and then launch it.
+Go to a folder where you can safelly download the course materials (to make them visible to the container). you can simply use 
 
 ```bash
-docker run -d -rm -v $(pwd):/home/rstudio --memory=8g -p 8787:8787 -e PASSWORD=test czarnewski/single_cell_school
+git clone https://github.com/NBISweden/single-cell_sib_scilifelab
+```
+
+or
+
+```bash
+cd ~/
+svn export -O https://github.com/NBISweden/single-cell_sib_scilifelab/trunk
+mv trunk SingleCellSchool
+cd SingleCellSchool
+```
+
+Now that you are setup with docker you can launch/fire the container with all packages from the course from a repository. If you already have a copy on your computer it will launch it, otherwise it will download it from the repositiory first and then launch it. `czarnewski/single_cell_school` is where the docker image is located.
+
+```bash
+docker run -d --rm -v $(pwd):/home/rstudio --memory=8g -p 8787:8787 -e PASSWORD=test czarnewski/single_cell_school
 ```
 If no errors are thrown, you will be able to connect to your Rstudio machine using a webbrowser, just type the IP.
 
@@ -71,16 +86,35 @@ You can alternativelly check your docker container IP and replace the (192.168.9
 docker-machine ip
 ```
 
+Your RStudio session should look like this now:
+
+<img border="0" src="https://github.com/NBISweden/single-cell_sib_scilifelab/raw/master/logos/SingleCellSchool_Docker.png" width="500">
+
+You should have for example the package `Seurat` installed and also be able to see the files from the course on your home folder. Just by navigating thought there you will be able to open the exercise files (.Rmd extension). 
+
+You can save your container back to an image at any time by typing into the terminal. To run it again just repeat the `docker run` step above .
+
+```bash
+docker commit <container_ID> YOURusername/NEWimagename
+```
+
+You can stop a container from running with:
+
+```bash
+docker container stop <container_ID>
+```
+
+
 <br/>
 
 ## <img border="0" src="https://www.svgrepo.com/show/2270/pin-tool.svg" width="40" height="40"> Building a Docker Container from scratch
 
 ***
 
-7.Now we can download a pre-made docker container containing both the latest version R and RStudio (rocker). Here we need to set a new password for the container, which we can set as "test". The `-p 8787:8787` indicates which ports are visible between your computer and the container for visualizing Rstudio. `-rm` will remove the container after use. `-e` sets the password and
+7.Now we can download a pre-made docker container containing both the latest version R and RStudio (rocker). Here we need to set a new password for the container, which we can set as "test". The `-p 8787:8787` indicates which ports are visible between your computer and the container for visualizing Rstudio. `--rm` will remove the container after use. `-e` sets the password.
 
 ```bash
-docker run -d -rm --memory=8g -p 8787:8787 -e PASSWORD=test --name rstudio rocker/verse
+docker run -d --rm --memory=8g -p 8787:8787 -e PASSWORD=test --name rstudio rocker/verse
 ```
 
 If no errors are thrown, you will be able to connect to your Rstudio machine using a webbrowser, just type the IP.
