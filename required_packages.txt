@@ -69,4 +69,5 @@ zinbwave
 ## data sets from ExperimentHub (or other sources) in advance
 ## START-EXPRESSIONS:
 TENxPBMCData::TENxPBMCData(dataset = "pbmc3k")
+TENxPBMCData::TENxPBMCData(dataset = "pbmc4k")
 ## END-EXPRESSIONS
