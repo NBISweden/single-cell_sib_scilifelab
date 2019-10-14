@@ -12,7 +12,7 @@
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** [Dimensionality reduction](session-dimensionality-reduction/lecture_dimensionality_reduction.pdf) (Paulo Czarnewski)
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on + Coffee break (Davide, Paulo): [Scater_DR](session-dimensionality-reduction/scater_02_dim_reduction_compiled.Rmd) ([html](session-dimensionality-reduction/scater_02_dim_reduction_compiled.nb.html))
+- **14:00 - 18:00** Hands-on + Coffee break (Davide, Paulo): [Scater_QC](session-qc/bioc_qc_3.9.Rmd) | [Scater_DR](session-dimensionality-reduction/scater_02_dim_reduction_compiled.Rmd) ([html](session-dimensionality-reduction/scater_02_dim_reduction_compiled.nb.html))
 - **18:00 - 20:00** Free time / spa
 - **20:00** Dinner
 
