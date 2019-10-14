@@ -8,7 +8,7 @@
 
 ### Monday 14.10.2019
 - **09:00 - 10:00** Introductory lecture (Vincent Gardeux)
-- **10:00 - 11:00** Quantification, QC & Normalization (Davide Risso)
+- **10:00 - 11:00** [Quantification, QC & Normalization](session-qc/qc_lecture.pdf) (Davide Risso)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** [Dimensionality reduction](session-dimensionality-reduction/lecture_dimensionality_reduction.pdf) (Paulo Czarnewski)
 - **12:30 - 14:00** Lunch break
