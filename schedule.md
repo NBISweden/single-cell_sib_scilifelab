@@ -13,6 +13,8 @@
 - **11:30 - 12:30** [Dimensionality reduction](session-dimensionality-reduction/lecture_dimensionality_reduction.pdf) (Paulo Czarnewski)
 - **12:30 - 14:00** Lunch break
 - **14:00 - 18:00** Hands-on + Coffee break (Davide, Paulo): [Scater_QC](session-qc/bioc_qc_3.9.Rmd) ([html](session-qc/bioc_qc_3.9.html)) ([Bioc 3.10](session-qc/bioc_qc.Rmd)), [Scater_DR](session-dimensionality-reduction/scater_02_dim_reduction_compiled.Rmd) ([html](session-dimensionality-reduction/scater_02_dim_reduction_compiled.nb.html))
+- Seurat analysis pipeline: [Seurat_qc](session-dimensionality-reduction/seurat_01_qc_compiled.Rmd), [Seurat_DR](session-dimensionality-reduction/seurat_02_dim_reduction_compiled.Rmd)
+seurat_01_qc_compiled.Rmd
 - **18:00 - 20:00** Free time / spa
 - **20:00** Dinner
 
