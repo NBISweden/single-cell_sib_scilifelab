@@ -23,7 +23,7 @@
 - **11:30 - 12:30** [Cell fate mapping and trajectories](https://docs.google.com/presentation/d/1t_0yD7DxsMTK3fJPngNm9RN2CTgNJeeoBnxkd7c1mMc) (Wouter Saelens)
 - **12:30 - 14:00** Lunch break
 - **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter): 
-[Batch Correction](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-batch_correction)
+[Batch Correction](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-batch_correction), 
 [Trajectories and RNA velocity](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-trajectories#practical-session)
 
 - **18:00 - 20:00** Free time / spa
