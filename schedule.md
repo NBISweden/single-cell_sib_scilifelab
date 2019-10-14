@@ -22,7 +22,10 @@
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** Cell fate mapping and trajectories (Wouter Saelens)
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter): [Trajectories and RNA velocity](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-trajectories#practical-session)
+- **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter): 
+[Batch Correction](https://github.com/NBISweden/single-cell_sib_scilifelab/master/session-batch_correction)
+[Trajectories and RNA velocity](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-trajectories#practical-session)
+
 - **18:00 - 20:00** Free time / spa
 - **20:00** Special dinner - Cheese fondue
 
