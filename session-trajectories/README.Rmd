@@ -14,7 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Practical session
 
 Download the data: https://drive.google.com/file/d/1eYDUry72RmQTz1t56DpXVUgkd7oEDaoq
-Put this in the 'data' folder
+
+Unzip and put into the 'data' folder
 
 [① Quantification (Including RNA velocity): 1_quantify.md](1_quantify.md)
 

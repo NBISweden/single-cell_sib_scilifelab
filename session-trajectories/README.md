@@ -8,8 +8,9 @@ Single-cell trajectories
 ## Practical session
 
 Download the data:
-<https://drive.google.com/file/d/1eYDUry72RmQTz1t56DpXVUgkd7oEDaoq> Put
-this in the ‘data’ folder
+<https://drive.google.com/file/d/1eYDUry72RmQTz1t56DpXVUgkd7oEDaoq>
+
+Unzip and put into the ‘data’ folder
 
 [① Quantification (Including RNA velocity):
 1\_quantify.md](1_quantify.md)
