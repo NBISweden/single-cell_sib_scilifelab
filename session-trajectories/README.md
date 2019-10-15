@@ -1,6 +1,8 @@
 Single-cell trajectories
 ================
 
+<br/>
+
 ## Theory session
 ***
 
