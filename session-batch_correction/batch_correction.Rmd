@@ -31,15 +31,15 @@ We will go through the steps of
 
 The dataset that we will use is a composite dataset of three independent
 10x runs originating from different labs. It consists of 9288 mammary 
-epithelial cells,sequenced using 10x Genomics technology, which has already
+epithelial cells, sequenced using 10x Genomics technology, which has already
 been pre-filtered to include only cells that are assigned unambiguously
 to one of three major  cell types:
 luminal progenitors, luminal mature and basal.
 
 Several of the methods outlined here are based on the scran and batchelor packages
-developed by Aaron Lun adn colleagues and thus the corresponding R vignette and manual
+developed by Aaron Lun and colleagues and thus the corresponding R vignette and manual
 are excellent sources of additional information ["Single-cell correction with batchelor"](https://bioconductor.org/packages/release/bioc/vignettes/batchelor/inst/doc/correction.html).
-The student can also refer to the Integrating datasets chapther of ["Orchestrating single-cell analysis with Bioconductor"](https://osca.bioconductor.org/integrating-datasets.html).
+The student can also refer to the Integrating datasets chapter of ["Orchestrating single-cell analysis with Bioconductor"](https://osca.bioconductor.org/integrating-datasets.html).
 which is also largely based on the batchelor package.
 
 
@@ -61,6 +61,7 @@ suppressPackageStartupMessages({
   library(e1071)
   library(coop)
   library(Rtsne)
+  library(rsvd)
   library(tidyr)
   library(dplyr)
   source("https://raw.githubusercontent.com/NBISweden/single-cell_sib_scilifelab/master/session-batch_correction/Helper_Functions.R")
@@ -95,7 +96,7 @@ table(colData(bct)$study , colData(bct)$cell.class)
 
 
 
-# Batch effect diagnosis:
+# Batch effect diagnosis
 
 We will now look at some high level characteristics of the three datasets
 that clearly indicate the presence of batch effects:
@@ -126,6 +127,8 @@ without taking any steps for batch correction (apart from a simple library norma
 # We first normalize all cells for library size.
 assays(bct )[["lognorm"]] <- lin_norm_log(as.matrix(  logcounts(bct) ), factor=1e+04)  
 reducedDim(bct, "PCA" )  <- rsvd::rpca(t( assay(bct,"lognorm") ),k=32,retx=TRUE,center=TRUE,scale=FALSE)$x
+
+
 reducedDim(bct, "TSNE" ) <- Rtsne( reducedDim(bct,"PCA"), perplexity = 30, initial_dims=32, pca=FALSE, theta=0.3)$Y #~15-60 seconds run time
 
 cowplot::plot_grid(scater::plotTSNE(bct, colour_by = "study" ),
@@ -137,7 +140,7 @@ cowplot::plot_grid(scater::plotTSNE(bct, colour_by = "study" ),
 
 # Library normalization and PCA methods customized for the presence of batches
 
-We saw above that our data form distinct clusters according for both study origin as well as biological cell type.
+We saw above that our data form distinct clusters according to both study origin as well as biological cell type.
 We now take a first step towards batch correction using approaches for 
 
 * A. library normalization and 
@@ -153,8 +156,8 @@ normalization on the ratio of the average counts between batches.This is done us
 The function multiBatchNorm from the scran package provides identical functionality.
 
 
-The new PCA strategy is performed using the multibatchPCA function from the batchelor package. This is essentially
-performing PCA on the merged matrxi of the three batches but now each batch is "forced" to contribute equally to the
+The new PCA strategy is performed using the multibatchPCA() function from the batchelor package. This is essentially
+performing PCA on the merged matrix of the three batches but now each batch is "forced" to contribute equally to the
 identification of the loading vectors. In addition each batch's contribution to the gene-gene covariance matrix is 
 normalized by the corresponding number of cells.
 
@@ -176,12 +179,12 @@ bct.mBN <- scran::computeSumFactors(bct.mBN , min.mean = 0.1, cluster = clusters
                                 ) 
 
 
-# Library normalization that corrects for batch-specific difference in size factors:
+# Library normalization that corrects for batch-specific differences in size factors:
 mBN <- batchelor::multiBatchNorm(V = bct.mBN[,bct.mBN$study=="vis"],
                                  W = bct.mBN[,bct.mBN$study=="wal"],
                                  S = bct.mBN[,bct.mBN$study=="spk"])
 bct.mBN <- cbind( mBN$V, mBN$W, mBN$S) 
-# Notice that only the logcount slot that is affected. 
+# Notice that only the logcount slot is affected. 
 # The counts (and the custom lognorm assays) of the original bct object 
 # are unaffected.
 
@@ -205,10 +208,10 @@ cowplot::plot_grid(scater::plotTSNE(bct.mBN, colour_by = "study" ),
 
 The most common approaches for correcting batch effects in the case of bulk RNA-seq datasets are based on linear regression.
 Typically a linear model is fitted per-gene where the batch effect is accounted for by a separate term in our model specification.
-One we fit thie model, the batch-specfic effects can be corrected by setting this term to zero.
+Once we fit the model, the batch-specific effects can be corrected for by setting this term to zero.
 This is the basis of the removeBatchEffect() function from the limma package (Ritchie et al. 2015) as well the comBat() function
-from the sva package (Leek et al. 2012).
-The rescaleBatches function from the batchelor package takes a similar approach, with adjustment for improving efficiency in the
+from the sva package (Leek et al).
+The rescaleBatches() function from the batchelor package takes a similar approach, with adjustments for improving efficiency in the
 single-cell regime. Specifically, for each gene, the mean expression in each batch is scaled down until it is equal to the 
 lowest mean across all batches. 
 
@@ -236,11 +239,11 @@ library normalization has not taken into account the presence of batches. Do you
 # Batch effect correction using fast-MNN
 
 Now we will use the matching mutual nearest neighbors technique first proposed by (Haghverdi et al. 2018).
-The function that implments this is fastMNN from the batchelor package.
+The function that implements this is fastMNN() from the batchelor package.
 The input to this function should be the object containing the result of the multiBatchNorm method that
 we used above. 
 If multiBatchPCA has not already been performed then this is done internally. In this case since we have 
-pre-calculated  we will skip recalculation.
+pre-calculated  it we will skip recalculation.
 
 
 ```{r,  fig.width = 12, fig.height = 6}
@@ -266,19 +269,19 @@ Comparing visually the results from the linear regression and MNN batch correcti
 seem to be performing better?
 
 Often it is hard to visually assess the quality of the batch correction. In the next section we
-will  some metrics that can help with the quality assessment of batch correction.
+will  use some metrics that can help with the quality assessment of batch correction.
 
 
 # Assessment of the quality of batch correction
 
 There are several considerations when evaluating the quality of batch correction.
-First is the efficiency of mixing, that is, how intermixed are the cell from different 
+First is the efficiency of mixing, that is, how intermixed are the cells from different 
 batches. 
 
 Here we will evaluate this by asking how good a job a non-linear classifier (radial SVM)
 can do in terms of separating the batches before and after correction. The harder it is
 to separate the batches the better the mixing efficiency.
-The calculation is performed by the function mixing.svm that can be found in the Helper_Functions
+The calculation is performed by the function mixing.svm() that can be found in the Helper_Functions
 script that returns the cross-validation accuracy of the classifier:
 
 ```{r,  fig.width = 9, fig.height = 4}
@@ -302,7 +305,7 @@ to make certain that a batch correction method does not "overmix" the data,
 resulting in the loss of biologically meaningful information in the process.
 
 Ideally we would like the batch correction to preserve as much as possible of
-the within batch heterogeneity reflected in the structure of the date before 
+the within batch heterogeneity reflected in the structure of the data before 
 batch correction.
 
 Here we will use two functions that assess preservation of global and local
@@ -311,6 +314,7 @@ The first function global.dist() evaluates similarity of distance distribution
 between cells within batch before and after batch correction.
 The second function local.dist() evaluates similarity in the local neighborhood
 of cells in terms of nearest neighbors overlap before and after correction.
+Both functions are implemented in the Helper_Functions.R script.
 
 
 ```{r,  fig.width = 6, fig.height = 6}
@@ -360,6 +364,11 @@ sessionInfo()
 
 # References
 
-1. Haghverdi L, Lun ATL, Morgan MD, Marioni JC (2018). Batch effects in single-cell RNA-sequencing data are corrected by matching mutual nearest neighbors. Nat. Biotechnol. 36(5):421
+1. Lun ATL, Bach K and Marioni JC (2016). Pooling across cells to normalize single-cell RNA sequencing data with many zero counts. Genome Biol. 17:75
 
-2. 
+2. Haghverdi L, Lun ATL, Morgan MD, Marioni JC (2018). Batch effects in single-cell RNA-sequencing data are corrected by matching mutual nearest neighbors. Nat. Biotechnol. 36(5):421
+
+3. Ritchie ME, Phipson B, Wu D, Hu Y, Law CW, Shi W, Smyth GK (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research, 43(7), e47.
+
+4. Leek JT, Johnson WE, Parker HS, Fertig EJ, Jaffe AE, Storey JD, Zhang Y, Torres LC (2019). sva: Surrogate Variable Analysis. R package version 3.32.1
+ 
