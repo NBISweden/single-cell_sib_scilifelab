@@ -16,15 +16,15 @@ Download the data:
 
 Unzip and put into the ‘data’ folder
 
-① Quantification (Including RNA velocity):
+**①** Quantification (Including RNA velocity):
 [1_quantify.Rmd](1_quantify.Rmd) ([html](1_quantify.md))
 
-② Preprocessing including RNA velocity):
+**②** Preprocessing including RNA velocity):
 [2_preprocessing.Rmd](2_preprocessing.Rmd) ([html](2_preprocessing.md))
 
-③ Trajectory analysis using slingshot: [3_slingshot.Rmd](3_slingshot.Rmd) ([html](3_slingshot.md))
+**③** Trajectory analysis using slingshot: [3_slingshot.Rmd](3_slingshot.Rmd) ([html](3_slingshot.md))
 
-④ Velocity analysis using velocyto.R: [4_velocity.Rmd](4_velocity.Rmd) ([html](4_velocity.md))
+**④** Velocity analysis using velocyto.R: [4_velocity.Rmd](4_velocity.Rmd) ([html](4_velocity.md))
 
 We make use of several packages which should have already been installed
 using the `install_packages.R` script. Several of these packages are
