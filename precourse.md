@@ -39,7 +39,8 @@ Here are a couple of common issues and their solutions:
   This error can be fixed by installing an up-to-date version of compilers:  
   * go to https://stat.ethz.ch/CRAN/ -> download R for mac, follow the link to ‘tools’ (in the ‘Important’ paragraph), and download and install clang-7.0.0 and gfortran-6.1 (for R 3.6). 
 
-  * modify your ~/.R/Makevars (or create it if it does not exist yet) to include the following:   FLIBS=""  
+  * modify your ~/.R/Makevars (or create it if it does not exist yet) to include the following:  
+  FLIBS=""  
   F77="/usr/local/gfortran/bin/gfortran"  
   FC="/usr/local/gfortran/bin/gfortran"  
   CC=/usr/local/clang7/bin/clang  
