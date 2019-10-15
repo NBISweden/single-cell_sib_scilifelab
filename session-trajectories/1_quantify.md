@@ -74,10 +74,13 @@ straightforward. This is nicely described in the following tutorial:
 
 For this workshop, I ran the kallisto/BUStools quantification pipeline
 using a nextflow workflow (available on request), for which the output
-files can be downloaded at **LINK** Unzip this as the data folder and
-you’re good to go\! The dataset contains adipocyte progenitors and was
-generated using 10X single-cell 3’ v2 chemistry
-(<span class="citeproc-not-found" data-reference-id="merrickIdentificationMesenchymalProgenitor2019">**???**</span>).
+files can be downloaded at
+<https://drive.google.com/open?id=1eYDUry72RmQTz1t56DpXVUgkd7oEDaoq>
+
+Unzip this into the data folder
+(i.e. data/adipose\_differentiation-merick/…) and you’re good to go\!
+The dataset contains adipocyte progenitors and was generated using 10X
+single-cell 3’ v2 chemistry (Merrick et al. 2019).
 
 ## Some (open) issues
 
@@ -132,6 +135,16 @@ Velocity of Single Cells.” *Nature* 560 (7719): 494–98.
 Melsted, Páll, Vasilis Ntranos, and Lior Pachter. n.d. “The Barcode,
 UMI, Set Format and BUStools.” *Bioinformatics*. Accessed October 2,
 2019. <https://doi.org/10.1093/bioinformatics/btz279>.
+
+</div>
+
+<div id="ref-merrickIdentificationMesenchymalProgenitor2019">
+
+Merrick, David, Alexander Sakers, Zhazira Irgebay, Chihiro Okada,
+Catherine Calvert, Michael P. Morley, Ivona Percec, and Patrick Seale.
+2019. “Identification of a Mesenchymal Progenitor Cell Hierarchy in
+Adipose Tissue.” *Science* 364 (6438): eaav2501.
+<https://doi.org/10.1126/science.aav2501>.
 
 </div>
 

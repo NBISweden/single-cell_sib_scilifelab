@@ -36,7 +36,9 @@ To use BUStools for RNA velocity, we need to generate an index which contains bo
 
 ## Dataset for this workshop
 
-For this workshop, I ran the kallisto/BUStools quantification pipeline using a nextflow workflow (available on request), for which the output files can be downloaded at **LINK** Unzip this as the data folder and you're good to go! The dataset contains adipocyte progenitors and was generated using 10X single-cell 3' v2 chemistry [@merrickIdentificationMesenchymalProgenitor2019]. 
+For this workshop, I ran the kallisto/BUStools quantification pipeline using a nextflow workflow (available on request), for which the output files can be downloaded at https://drive.google.com/open?id=1eYDUry72RmQTz1t56DpXVUgkd7oEDaoq
+
+Unzip this into the data folder (i.e. data/adipose_differentiation-merick/...) and you're good to go! The dataset contains adipocyte progenitors and was generated using 10X single-cell 3' v2 chemistry [@merrickIdentificationMesenchymalProgenitor2019]. 
 
 ## Some (open) issues
 
