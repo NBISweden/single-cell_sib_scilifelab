@@ -6,6 +6,8 @@ library(tidyverse)
 library(slingshot)
 library(Seurat)
 library(tradeSeq)
+library(S4Vectors)
+library(SingleCellExperiment)
 ```
 
 Slingshot is one of many trajectory inference (TI) methods (Saelens et
@@ -105,7 +107,7 @@ DimPlot(seu_trajectory, reduction = "lmds",pt.size = 0.5, label = TRUE, repel = 
     ## Please use `as_label()` or `as_name()` instead.
     ## This warning is displayed once per session.
 
-![](.images/unnamed-chunk-4-1.png)<!-- -->
+![](.images/3/unnamed-chunk-4-1.png)<!-- -->
 
 ``` r
 seu_trajectory <- RunUMAP(seu_trajectory, dims = 1:50, umap.method = "uwot")
@@ -115,32 +117,32 @@ seu_trajectory <- RunUMAP(seu_trajectory, dims = 1:50, umap.method = "uwot")
     ## To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
     ## This message will be shown once per session
 
-    ## 17:43:57 UMAP embedding parameters a = 0.9922 b = 1.112
+    ## 14:34:15 UMAP embedding parameters a = 0.9922 b = 1.112
 
-    ## 17:43:57 Read 9907 rows and found 50 numeric columns
+    ## 14:34:15 Read 9907 rows and found 50 numeric columns
 
-    ## 17:43:57 Using Annoy for neighbor search, n_neighbors = 30
+    ## 14:34:15 Using Annoy for neighbor search, n_neighbors = 30
 
-    ## 17:43:57 Building Annoy index with metric = cosine, n_trees = 50
+    ## 14:34:15 Building Annoy index with metric = cosine, n_trees = 50
 
     ## 0%   10   20   30   40   50   60   70   80   90   100%
 
     ## [----|----|----|----|----|----|----|----|----|----|
 
     ## **************************************************|
-    ## 17:43:58 Writing NN index file to temp file /tmp/RtmphPqitq/file532e44f7bfe6
-    ## 17:43:58 Searching Annoy index using 1 thread, search_k = 3000
-    ## 17:44:01 Annoy recall = 100%
-    ## 17:44:02 Commencing smooth kNN distance calibration using 1 thread
-    ## 17:44:03 Initializing from normalized Laplacian + noise
-    ## 17:44:04 Commencing optimization for 500 epochs, with 438618 positive edges
-    ## 17:44:30 Optimization finished
+    ## 14:34:17 Writing NN index file to temp file /tmp/RtmpbliQUJ/file1d673f8477de
+    ## 14:34:17 Searching Annoy index using 1 thread, search_k = 3000
+    ## 14:34:20 Annoy recall = 100%
+    ## 14:34:21 Commencing smooth kNN distance calibration using 1 thread
+    ## 14:34:22 Initializing from normalized Laplacian + noise
+    ## 14:34:23 Commencing optimization for 500 epochs, with 438618 positive edges
+    ## 14:34:49 Optimization finished
 
 ``` r
 DimPlot(seu_trajectory, reduction = "umap",pt.size = 0.5, label = TRUE, repel = TRUE)
 ```
 
-![](.images/unnamed-chunk-6-1.png)<!-- -->
+![](.images/3/unnamed-chunk-6-1.png)<!-- -->
 
 Both dimensionality reductions look alike, although you may appreciate
 the more ‘granular’ look of a UMAP. This may or may not indicate some
@@ -208,7 +210,7 @@ plot(dimred, col = RColorBrewer::brewer.pal(9,"Set1")[clustering], asp = 1, pch 
 lines(lineages, lwd = 3, col = 'black')
 ```
 
-![](.images/unnamed-chunk-9-1.png)<!-- -->
+![](.images/3/unnamed-chunk-9-1.png)<!-- -->
 
 Here we see one central issue with trajectory analysis: where does the
 trajectory begin? Without any extra information, this is nearly an
@@ -297,7 +299,7 @@ plot(dimred, col = RColorBrewer::brewer.pal(9,"Set1")[clustering], asp = 1, pch 
 lines(curves, lwd = 3, col = 'black')
 ```
 
-![](.images/unnamed-chunk-13-1.png)<!-- -->
+![](.images/3/unnamed-chunk-13-1.png)<!-- -->
 
 Unfortunately, Slingshot doesn’t export the functions that generate the
 plotting data, so it’s harde to customize this plot.
@@ -361,7 +363,7 @@ Let’s have a look at the location of these knots.
 plotGeneCount(curves, counts, clusters = clustering, models = sce)
 ```
 
-![](.images/unnamed-chunk-17-1.png)<!-- -->
+![](.images/3/unnamed-chunk-17-1.png)<!-- -->
 
 ### Genes that change with pseudotime
 
@@ -382,7 +384,7 @@ head(pseudotime_association)
 hist(pseudotime_association$pvalue)
 ```
 
-![](.images/unnamed-chunk-18-1.png)<!-- -->
+![](.images/3/unnamed-chunk-18-1.png)<!-- -->
 
 Apparently, almost all of the 200 selected genes are differentially
 expressed along pseudotime. Apart from a (corrected) p-value, we also
@@ -410,14 +412,14 @@ feature_id <- pseudotime_association$feature_id[[1]]
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-21-1.png)<!-- -->
+![](.images/3/unnamed-chunk-21-1.png)<!-- -->
 
 ``` r
 feature_id <- pseudotime_association %>% filter(pvalue < 0.05) %>% top_n(1, -waldStat) %>% pull(feature_id)
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-22-1.png)<!-- -->
+![](.images/3/unnamed-chunk-22-1.png)<!-- -->
 
 The first gene is clearly differentially expressed, the second gene
 clearly isn’t. So why are they both significant?
@@ -434,7 +436,7 @@ although it’s not as easy to interpret compared to a fold-change.
 hist(pseudotime_association$waldStat)
 ```
 
-![](.images/unnamed-chunk-23-1.png)<!-- -->
+![](.images/3/unnamed-chunk-23-1.png)<!-- -->
 
 ### Genes that change between two pseudotime points
 
@@ -455,7 +457,7 @@ feature_id <- pseudotime_start_end_association %>%
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-25-1.png)<!-- -->
+![](.images/3/unnamed-chunk-25-1.png)<!-- -->
 
 We can also look at genes that change at a particular point in
 pseudotime:
@@ -473,7 +475,7 @@ feature_id <- pseudotime_middle_association %>%
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-27-1.png)<!-- -->
+![](.images/3/unnamed-chunk-27-1.png)<!-- -->
 
 ### Genes that are different between lineages
 
@@ -504,7 +506,7 @@ feature_id <- different_end_association %>%
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-29-1.png)<!-- -->
+![](.images/3/unnamed-chunk-29-1.png)<!-- -->
 
 ``` r
 branch_point_association <- earlyDETest(sce)
@@ -520,7 +522,7 @@ feature_id <- branch_point_association %>%
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-31-1.png)<!-- -->
+![](.images/3/unnamed-chunk-31-1.png)<!-- -->
 
 In this case, both tests give the same top genes. Some genes are
 different though, if we specifically look for them:
@@ -544,7 +546,7 @@ feature_id <- left_join(
 plot_differential_expression(feature_id)
 ```
 
-![](.images/unnamed-chunk-32-1.png)<!-- -->
+![](.images/3/unnamed-chunk-32-1.png)<!-- -->
 
 Check out [this
 vignette](https://statomics.github.io/tradeSeq/articles/tradeSeq.html)

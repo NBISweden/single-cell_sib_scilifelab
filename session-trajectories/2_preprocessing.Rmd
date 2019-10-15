@@ -5,7 +5,7 @@ bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.path = '.images/')
+knitr::opts_chunk$set(echo = TRUE, fig.path = '.images/2/')
 ```
 
 ```{r, results='hide', message=FALSE, warning=FALSE}
