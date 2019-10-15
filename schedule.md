@@ -42,9 +42,9 @@
 
 
 ### Thursday 17.10.2019
-- **09:00 - 10:30** Differential abundance (DA) and differential state (DS) analysis of single cell cytometry data: Mark Robinson & Helena Crowell
+- **09:00 - 10:30** Differential abundance (DA) and state (DS) analysis for single-cell cytometry data (Mark Robinson & Helena Crowell)
 - **10:30 - 11:00** Coffee break
-- **11:00 - 12:30** DA and DS cytometry Hands-on (Helena, Mark)
+- **11:00 - 12:30** DA and DS cytometry Hands-on (Helena, Mark): [setup.R](session-cytof-differential/setup.R), [F1000 workflow](https://f1000research.com/articles/6-748) ([Rmd](session-cytof-differential/cytof_workflow.Rmd), [html](session-cytof-differential/cytof_workflow.html))
 - **12:30 - 14:00** Lunch break
 - **14:00 - 15:30** Transcriptome + proteome (Johan Reimegård)
 - **15:30 - 16:00** Coffee break
