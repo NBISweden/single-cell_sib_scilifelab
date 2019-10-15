@@ -35,11 +35,11 @@ We are looking forward to meet you all in Leysin!
 Here are a couple of common issues and their solutions:  
 
 - package fails to compile/install on a mac with an error of:  
-  `clang: error: unsupported option '-fopenmp'`. This error can be fixed by installing
-  an up-to-date version of compilers:  
-  * - go to https://stat.ethz.ch/CRAN/ -> download R for mac, follow the link to ‘tools’ (in the ‘Important’ paragraph), and download and install clang-7.0.0 and gfortran-6.1 (for R 3.6). 
+  `clang: error: unsupported option '-fopenmp'`.  
+  This error can be fixed by installing an up-to-date version of compilers:  
+  * go to https://stat.ethz.ch/CRAN/ -> download R for mac, follow the link to ‘tools’ (in the ‘Important’ paragraph), and download and install clang-7.0.0 and gfortran-6.1 (for R 3.6). 
 
-  * modify your ~/.R/Makevars (or create it if it does not exist yet) to include the following: 
+  * modify your ~/.R/Makevars (or create it if it does not exist yet) to include the following:  
 ```
 FLIBS=""  
 F77="/usr/local/gfortran/bin/gfortran"
