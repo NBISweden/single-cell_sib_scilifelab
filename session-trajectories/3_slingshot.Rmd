@@ -5,7 +5,7 @@ bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.path = '.images/')
+knitr::opts_chunk$set(echo = TRUE, fig.path = '.images/3/')
 ```
 
 ```{r, message=FALSE, results='hide', warning=FALSE}
@@ -13,6 +13,8 @@ library(tidyverse)
 library(slingshot)
 library(Seurat)
 library(tradeSeq)
+library(S4Vectors)
+library(SingleCellExperiment)
 ```
 
 Slingshot is one of many trajectory inference (TI) methods [@saelensComparisonSinglecellTrajectory2019]. As you can see through the [dynverse guidelines app](guidelines.dynverse.org), it's relatively fast and can detect linear, bifurcating and tree trajectories accurately. Note that it won't detect any disconnected or cyclic trajectories. That's why we have to filter out the cells first, so that only the connected clusters are kept.

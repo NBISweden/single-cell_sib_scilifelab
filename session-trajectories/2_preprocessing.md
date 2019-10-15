@@ -56,7 +56,7 @@ qplot(Matrix::colSums(spliced) + 1) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](.images/unnamed-chunk-5-1.png)<!-- -->
+![](.images/2/unnamed-chunk-5-1.png)<!-- -->
 
 We will filter these empty droplets here by finding the inflection point
 within the total UMI count distribution.
@@ -99,7 +99,7 @@ tibble(rank = bc_rank_spliced$rank, total = bc_rank_spliced$total, matrix = "spl
 
     ## Warning: Transformation introduced infinite values in continuous x-axis
 
-![](.images/unnamed-chunk-8-1.png)<!-- -->
+![](.images/2/unnamed-chunk-8-1.png)<!-- -->
 
 (Note that this rank vs total count plot is transposed compared to the
 plot shown typically shown by e.g. CellRanger)
@@ -190,7 +190,7 @@ ratios %>%
 
     ## Warning: Transformation introduced infinite values in continuous x-axis
 
-![](.images/unnamed-chunk-14-1.png)<!-- -->
+![](.images/2/unnamed-chunk-14-1.png)<!-- -->
 
 The proportions spliced vs unspliced can be very variable between genes.
 This makes sense, given the (probable) variability of splicing
@@ -241,7 +241,7 @@ ratios %>%
 
     ## Warning: Transformation introduced infinite values in continuous x-axis
 
-![](.images/unnamed-chunk-17-1.png)<!-- -->
+![](.images/2/unnamed-chunk-17-1.png)<!-- -->
 
 The proportions spliced vs unspliced per cell is typically more centered
 around the “average” proportion. If you see some weird distributions
@@ -311,7 +311,7 @@ DimPlot(seu, reduction = "pca",pt.size = 0.5, label = TRUE, repel = TRUE)
     ## Please use `as_label()` or `as_name()` instead.
     ## This warning is displayed once per session.
 
-![](.images/unnamed-chunk-22-1.png)<!-- -->
+![](.images/2/unnamed-chunk-22-1.png)<!-- -->
 
 ``` r
 set.seed(1)
@@ -323,32 +323,32 @@ seu <- RunUMAP(seu, dims = 1:50, umap.method = "uwot")
     ## To use Python UMAP via reticulate, set umap.method to 'umap-learn' and metric to 'correlation'
     ## This message will be shown once per session
 
-    ## 16:46:15 UMAP embedding parameters a = 0.9922 b = 1.112
+    ## 14:22:01 UMAP embedding parameters a = 0.9922 b = 1.112
 
-    ## 16:46:15 Read 11704 rows and found 50 numeric columns
+    ## 14:22:01 Read 11704 rows and found 50 numeric columns
 
-    ## 16:46:15 Using Annoy for neighbor search, n_neighbors = 30
+    ## 14:22:01 Using Annoy for neighbor search, n_neighbors = 30
 
-    ## 16:46:15 Building Annoy index with metric = cosine, n_trees = 50
+    ## 14:22:01 Building Annoy index with metric = cosine, n_trees = 50
 
     ## 0%   10   20   30   40   50   60   70   80   90   100%
 
     ## [----|----|----|----|----|----|----|----|----|----|
 
     ## **************************************************|
-    ## 16:46:18 Writing NN index file to temp file /tmp/RtmprmEQhI/file3c9718e8f78b
-    ## 16:46:18 Searching Annoy index using 1 thread, search_k = 3000
-    ## 16:46:22 Annoy recall = 100%
-    ## 16:46:23 Commencing smooth kNN distance calibration using 1 thread
-    ## 16:46:24 Initializing from normalized Laplacian + noise
-    ## 16:46:25 Commencing optimization for 200 epochs, with 510802 positive edges
-    ## 16:46:38 Optimization finished
+    ## 14:22:03 Writing NN index file to temp file /tmp/RtmpYVlKLB/file1a9b33927f7f
+    ## 14:22:03 Searching Annoy index using 1 thread, search_k = 3000
+    ## 14:22:08 Annoy recall = 100%
+    ## 14:22:08 Commencing smooth kNN distance calibration using 1 thread
+    ## 14:22:10 Initializing from normalized Laplacian + noise
+    ## 14:22:10 Commencing optimization for 200 epochs, with 510802 positive edges
+    ## 14:22:23 Optimization finished
 
 ``` r
 DimPlot(seu, reduction = "umap",pt.size = 0.5, label = TRUE, repel = TRUE)
 ```
 
-![](.images/unnamed-chunk-24-1.png)<!-- -->
+![](.images/2/unnamed-chunk-24-1.png)<!-- -->
 
 Do you see the trajectory appearing? Most TI methods assume that only
 one trajectory is present in the dataset, with all cells being connected

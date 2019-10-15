@@ -4,14 +4,12 @@ Single-cell trajectories
 <br/>
 
 ## Theory session
-***
 
 [Slides](https://docs.google.com/presentation/d/1t_0yD7DxsMTK3fJPngNm9RN2CTgNJeeoBnxkd7c1mMc)
 
 <br/>
 
 ## Practical session
-***
 
 Download the data:
 <https://drive.google.com/file/d/1eYDUry72RmQTz1t56DpXVUgkd7oEDaoq>
@@ -21,7 +19,7 @@ Unzip and put into the ‘data’ folder
 **①** Quantification (Including RNA velocity):
 [1_quantify.Rmd](1_quantify.Rmd) ([html](1_quantify.md))
 
-**②** Preprocessing including RNA velocity):
+**②** Preprocessing including RNA velocity:
 [2_preprocessing.Rmd](2_preprocessing.Rmd) ([html](2_preprocessing.md))
 
 **③** Trajectory analysis using slingshot: [3_slingshot.Rmd](3_slingshot.Rmd) ([html](3_slingshot.md))
