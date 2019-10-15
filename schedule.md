@@ -18,7 +18,7 @@
 - **20:00** Dinner
 
 ### Tuesday 15.10.2019
-- **09:00 - 10:00** Batch correction (Panagiotis Papasaikas)
+- **09:00 - 10:00** [Batch correction](session-batch_correction/batch_correction_theory.pdf) (Panagiotis Papasaikas)
 - **10:00 - 11:00** [Clustering - methods overview](session-clustering/clustering.pdf) (Charlotte Soneson)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** [Cell fate mapping and trajectories](https://docs.google.com/presentation/d/1t_0yD7DxsMTK3fJPngNm9RN2CTgNJeeoBnxkd7c1mMc) (Wouter Saelens)
