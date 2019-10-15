@@ -27,7 +27,6 @@
 [Batch Correction](session-batch_correction/batch_correction.Rmd) ([html](session-batch_correction/batch_correction.html)) ([Helper_Functions.R](https://github.com/NBISweden/single-cell_sib_scilifelab/blob/master/session-batch_correction/Helper_Functions.R)), 
 [Clustering](session-clustering/clustering.Rmd) ([html](session-clustering/clustering.html)),
 [Trajectories and RNA velocity](session-trajectories/README.md)
-
 - **18:00 - 20:00** Free time / spa
 - **20:00** Special dinner - Cheese fondue
 
@@ -36,7 +35,7 @@
 - **11.00 - 11.30** Coffee break
 - **11.30 - 12.30** Hands-on: [interactive visualization](session-interactive-visualization/iSEE-lab.Rmd) ([html](session-interactive-visualization/iSEE-lab.html)), [differential expression](session-differential-expression/differential_expression.Rmd) ([html](session-differential-expression/differential_expression.html)), [automatic cell type assignment html](session-differential-expression/celltype_assignment.html)
 - **12:30 - 14:00** Lunch break
-- **14.00 - 18:00** Team activity (hiking or salt mines or castle or ?)
+- **14.00 - 18:00** Team activity (hiking)
 - **18:30 - 19:30** Keynote lecture: Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuven, Belgium.
 - **20:00** Dinner
 
