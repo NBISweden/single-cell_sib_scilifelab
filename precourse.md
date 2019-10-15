@@ -30,6 +30,7 @@ We are looking forward to meet you all in Leysin!
 
 <br/>
 
+### <img border="0" src="https://www.svgrepo.com/show/58839/problem.svg" width="40" height="40"> Troubleshooting
 ***
 
 Here are a couple of common issues and their solutions:  
