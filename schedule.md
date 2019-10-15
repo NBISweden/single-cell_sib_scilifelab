@@ -26,7 +26,7 @@
 - **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter): 
 [Batch Correction](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-batch_correction), 
 [Clustering](session-clustering/clustering.Rmd) ([html](session-clustering/clustering.html)),
-[Trajectories and RNA velocity](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-trajectories#practical-session)
+[Trajectories and RNA velocity](session-trajectories/README.md)
 
 - **18:00 - 20:00** Free time / spa
 - **20:00** Special dinner - Cheese fondue
