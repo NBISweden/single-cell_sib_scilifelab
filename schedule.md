@@ -32,9 +32,9 @@
 - **20:00** Special dinner - Cheese fondue
 
 ### Wednesday 16.10.2019
-- **09:00 - 11.00** Differential expression, interactive visualization (Charlotte Soneson)
+- **09:00 - 11.00** [Differential expression](session-differential-expression/differential_expression.pdf), [interactive visualization](session-interactive-visualization/interactive_visualization.pdf) (Charlotte Soneson)
 - **11.00 - 11.30** Coffee break
-- **11.30 - 12.30** Hands-on
+- **11.30 - 12.30** Hands-on: [interactive visualization](session-interactive-visualization/iSEE-lab.Rmd) ([html](session-interactive-visualization/iSEE-lab.html)), [differential expression](session-differential-expression/differential_expression.Rmd) ([html](session-differential-expression/differential_expression.html)), [automatic cell type assignment html](session-differential-expression/celltype_assignment.html)
 - **12:30 - 14:00** Lunch break
 - **14.00 - 18:00** Team activity (hiking or salt mines or castle or ?)
 - **18:30 - 19:30** Keynote lecture: Alejandro Sifrim, Laboratory of Reproductive Genomics, KU Leuven, Belgium.
