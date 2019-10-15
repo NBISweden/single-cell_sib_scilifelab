@@ -19,14 +19,15 @@ bibliography: differential_expression.bib
 
 This lab covers some of the most commonly used methods for finding
 differentially expressed genes ("marker genes") between clusters in single-cell
-RNA-seq. We will use an example data set consisting of 2,700 PBMCs, sequenced
-using 10x Genomics technology.
+RNA-seq. For most of the lab, we will use an example data set consisting of
+2,700 PBMCs, sequenced using 10x Genomics technology and provided via the 
+*[TENxPBMCData](https://bioconductor.org/packages/3.9/TENxPBMCData)* package.
 
-We note that some care should be taken when interpreting the p-values from any
-test applied in this context, since the testing is performed on the _same_ data
-that is used to extract the clusters in the first place. Thus, almost by
-construction, there will be some genes that are differentially expressed between
-the different clusters.
+First, a cautionary note: some care should be taken when interpreting the
+p-values from *any* statistical test applied in this context, since the testing is
+performed on the _same_ data that is used to extract the clusters in the first
+place. Thus, almost by construction, there will be some genes that are
+differentially expressed between the different clusters.
 
 Many parts of this tutorial are taken from, or inspired by, the online book
 ["Orchestrating single-cell analysis with
@@ -52,7 +53,6 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(limma)
   library(edgeR)
-  library(MAST)
 })
 ```
 
@@ -164,7 +164,7 @@ Seurat::DimPlot(so)
 
 The t-test is a natural choice for comparing observed expression levels in two
 groups (e.g., clusters). It has been shown to be competitive also in terms of
-performance on scRNA-seq data [@Soneson2018-hg]. 
+performance on various types of scRNA-seq data [@Soneson2018-hg]. 
 
 The *[scran](https://bioconductor.org/packages/3.9/scran)* package contains a function named `pairwiseTTests`,
 which will, as the name suggests, perform a t-test between each pair of
@@ -190,7 +190,7 @@ names(pwtt)
 ```
 
 ```r
-length(pwtt$statistics)
+length(pwtt$statistics)  ## number of pairs
 ```
 
 ```
@@ -198,7 +198,7 @@ length(pwtt$statistics)
 ```
 
 ```r
-head(pwtt$statistics[[1]])
+head(pwtt$statistics[[1]])  ## results from first pairwise test
 ```
 
 ```
@@ -214,7 +214,7 @@ head(pwtt$statistics[[1]])
 ```
 
 ```r
-head(pwtt$pairs)
+head(pwtt$pairs)  ## clusters compared in each pair
 ```
 
 ```
@@ -229,16 +229,17 @@ head(pwtt$pairs)
 ## 6           1           7
 ```
 
-While the `pairwiseTTests` function (and the similar `pairwiseWilcox` function)
-provides a very convenient and efficient way of performing all pairwise
-comparisons, in practice we often want to summarize or combine the results
-across several of these comparisons. For example, as discussed in the lecture we
-may be interested in finding genes that are upregulated in a specific cluster
-compared to _each_ of the other clusters, or compared to _at least one_ of them.
-The function `combineMarkers` from *[scran](https://bioconductor.org/packages/3.9/scran)* was written for this
-purpose, and allows the user to combine the list of pairwise results in several
-ways. For example, in order to test, for each cluster, whether each gene is
-significantly upregulated with respect to all other clusters, we can do:
+While the `pairwiseTTests` function (and the similar `pairwiseWilcox` function
+for the Wilcoxon test) provides a very convenient and efficient way of
+performing all pairwise comparisons, in practice we often want to summarize or
+combine the results across several of these comparisons. For example, as
+discussed in the lecture we may be interested in finding genes that are
+upregulated in a specific cluster compared to _each_ of the other clusters, or
+compared to _at least one_ of them. The function `combineMarkers` from 
+*[scran](https://bioconductor.org/packages/3.9/scran)* was written for this purpose, and allows the user to combine
+the list of pairwise results in several ways. For example, in order to test, for
+each cluster, whether each gene is significantly upregulated with respect to
+_all_ other clusters, we can do:
 
 
 ```r
@@ -255,7 +256,13 @@ hypothesis that the gene is not DE in all the contrasts involving the cluster of
 interest. Thus, the top-ranked markers for a given cluster can be seen as
 "specific" marker genes for that cluster.
 
-It is often helpful from an interpretation point of view to explore the detected marker genes visually. *[scater](https://bioconductor.org/packages/3.9/scater)* contains many useful functions for creating such static plots, and other packages like *[iSEE](https://bioconductor.org/packages/3.9/iSEE)* can be used for interactive exploration. Here, we illustrate how to show the expression of marker genes across cells in the various clusters, as well as on top of a reduced dimension representation.
+It is often helpful from an interpretation point of view to explore the detected
+marker genes visually. *[scater](https://bioconductor.org/packages/3.9/scater)* contains many useful functions for
+creating such static plots, and other packages like *[iSEE](https://bioconductor.org/packages/3.9/iSEE)* can be
+used for interactive exploration. Here, we illustrate how to show the expression
+of marker genes across cells in the various clusters, as well as on top of a
+reduced dimension representation. We also make a heatmap showing the expression
+levels of the top two marker genes for each cluster.
 
 
 ```r
@@ -304,6 +311,15 @@ cowplot::plot_grid(scater::plotTSNE(sce, colour_by = "CD79A"),
 
 ![](differential_expression_files/figure-html/unnamed-chunk-5-2.png)<!-- -->
 
+```r
+scater::plotHeatmap(sce, features = unique(unlist(lapply(cbm_all, function(w) rownames(w)[1:2]))),
+                    columns = colnames(sce)[order(sce$cluster_louvain_k10)],
+                    colour_columns_by = "cluster_louvain_k10", cluster_cols = FALSE,
+                    show_colnames = FALSE, cluster_rows = FALSE)
+```
+
+![](differential_expression_files/figure-html/unnamed-chunk-5-3.png)<!-- -->
+
 It is worth pointing out that in practice, we do not need to go through the two
 individual steps above (first doing all pairwise tests, and then combining the
 results). The `findMarkers` function from *[scran](https://bioconductor.org/packages/3.9/scran)* will do this for
@@ -321,33 +337,32 @@ cbm_any <- scran::findMarkers(
 ```
 
 Again, the output of the above command is a list of `DataFrame`s, one for each
-cluster. Each `DataFrame` contains the logFC with respect to all other cluster,
+cluster. Each `DataFrame` contains the logFC with respect to each other cluster,
 and a nominal and an adjusted p-value. There is also a column named `Top`, which
 gives the minimum rank for the gene across all pairwise comparisons. For
 example, if `Top` = 1, the gene is the top-ranked one in at least one comparison
 of the cluster of interest to the other clusters.
 
-To illustrate the difference between the two types of tests, let's plot the
-p-values obtained for cluster 1 in the two approaches.
+To illustrate the difference between the two types of tests, we plot the
+p-values obtained when comparing cluster 1 to the other clusters with the two
+approaches.
 
 
 ```r
+## p-values for the pval.type = "all" comparison
 df_all <- as.data.frame(cbm_all[["1"]]) %>% 
   tibble::rownames_to_column("gene") %>% 
   dplyr::select(gene, p.value) %>% 
   setNames(c("gene", "p.value.all"))
+
+## p-values for the pval.type = "any" comparison
 df_any <- as.data.frame(cbm_any[["1"]]) %>% 
   tibble::rownames_to_column("gene") %>%
   dplyr::select(gene, p.value) %>%
   setNames(c("gene", "p.value.any"))
-df <- dplyr::inner_join(df_all, df_any)
-```
 
-```
-## Joining, by = "gene"
-```
-
-```r
+## Merge and plot
+df <- dplyr::inner_join(df_all, df_any, by = "gene")
 ggplot(df, aes(x = p.value.all, y = p.value.any)) + 
   geom_point() + scale_x_log10() + scale_y_log10() + 
   theme_bw()
@@ -359,9 +374,11 @@ ggplot(df, aes(x = p.value.all, y = p.value.any)) +
 
 ![](differential_expression_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
-We will look at one of the genes that are among the top-ranked ones in both
-types of comparisons, and one of the genes that is top-ranked only in the
-`"any"` approach.
+We see that while there are many genes that are strongly significant in both
+types of analyses, there are other genes that are only strongly significant with
+`pval.type = "any"`. We look at one of the genes that are among the top-ranked
+ones in both types of comparisons, and one of the genes that is top-ranked only
+in the `"any"` approach.
 
 
 ```r
@@ -385,7 +402,9 @@ Note the difference between a gene that is upregulated in cluster 1 compared to
 _all_ other clusters, and one that is upregulated to _at least one_ other
 cluster.
 
-In order to illustrate another pitfall, let's artifically split the cells in
+While `pval.type = "all"` will, as just illustrated, allow us to detect marker
+genes that are specific to a given cluster, there are important pitfalls to be
+aware of. In order to illustrate one of these, we artifically split the cells in
 cluster 1 into two clusters (call one of the groups "1b"), and redo the test to
 find genes that are upregulated in cluster 1 compared to _all_ other clusters.
 
@@ -429,23 +448,9 @@ underlying cell type. This could also happen, for example, if clusters 1 and 1b
 were different types of T-cells - no general T-cell markers would be upregulated
 in any of these clusters compared to _all_ the other clusters.
 
-Going back to the genes that are upregulated in cluster 1 compared to at least
-one other cluster, we can visualize the top ones in a heatmap to better
-understand their expression patterns.
-
-
-```r
-## Select genes with Top <= 5
-topgenes_any <- as.data.frame(subset(cbm_any[["1"]], Top <= 5)) %>%
-  dplyr::select(-Top, -p.value, -FDR)
-pheatmap::pheatmap(topgenes_any, breaks = seq(-5, 5, length.out = 101))
-```
-
-![](differential_expression_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
-
 **Note**: From the next release of Bioconductor (3.10, Oct/Nov 2019), the
-`findMarkers` function provides an interface to several different types of tests
-- in addition to the default t-test, it is possible to perform Wilcoxon tests or
+`findMarkers` function provides an interface to several different types of tests. 
+In addition to the default t-test, it is possible to perform Wilcoxon tests or
 binomial tests (testing for differences in the presence/absence pattern of genes
 between clusters) using the same interface, by specifying the `test` argument
 (see https://osca.bioconductor.org/marker-gene-detection.html for an
@@ -453,10 +458,20 @@ illustration).
 
 # Pairwise testing with any method
 
-The `findMarkers` function can, as indicated above, perform t-tests, Wilcoxon tests and binomial tests between each pair of clustesr, and summarize the results in various ways. If we prefer to use another method for statistical testing (e.g., *[edgeR](https://bioconductor.org/packages/3.9/edgeR)*, *[DESeq2](https://bioconductor.org/packages/3.9/DESeq2)*, *[limma](https://bioconductor.org/packages/3.9/limma)*), we can manually do that for each pair of clusters, and use the `combineMarkers` function to combine the results across comparisons. Here we illustrate this approach using *[limma](https://bioconductor.org/packages/3.9/limma)* to perform the pairwise tests.
+The `findMarkers` function can, as indicated above, perform t-tests, Wilcoxon
+tests and binomial tests between each pair of clusters, and summarize the
+results in various ways. If we prefer to use another method for statistical
+testing (e.g., *[edgeR](https://bioconductor.org/packages/3.9/edgeR)*, *[DESeq2](https://bioconductor.org/packages/3.9/DESeq2)*, 
+*[limma](https://bioconductor.org/packages/3.9/limma)*), we can manually do that for each pair of clusters, and use
+the `combineMarkers` function to combine the results across comparisons. Here we
+illustrate this approach using *[limma](https://bioconductor.org/packages/3.9/limma)* to perform the pairwise
+tests. Note that *[limma](https://bioconductor.org/packages/3.9/limma)* is performing a two-sided test, while with
+*[scran](https://bioconductor.org/packages/3.9/scran)* above, we indicated that we were only interested in
+upregulated genes.
 
 
 ```r
+## Set up the design matrix
 design <- model.matrix(~ 0 + cluster_louvain_k10, data = colData(sce))
 colnames(design) <- gsub("_louvain_k10", "", colnames(design))
 colnames(design)
@@ -480,7 +495,7 @@ summary(keep)
 ```
 
 ```r
-## Convert to DGEList, calculate CPMs
+## Convert to DGEList, calculate logCPMs
 dge <- scran::convertTo(sce, type = "edgeR", subset.row = keep)
 y <- new("EList")
 y$E <- edgeR::cpm(dge, log = TRUE, prior.count = 3)
@@ -552,7 +567,15 @@ head(combined[["cluster1"]])
 
 # Differential expression in the presence of batch effects
 
-In the presence of strong batch effects (e.g., when cells come from different studies or are prepared in multiple batches), these should be accounted for in the differential expression analysis. One way of doing this is to use the `block` argument of `findMarkers`, which effectively performs the cluster comparisons in each batch, and subsequently combines the results into a single p-value. Here, we illustrate this procedure using a data set of cells from three different studies, each containing three different breast cancer cell types. 
+In the presence of strong batch effects (e.g., when cells come from different
+studies or are prepared in multiple batches), these should be accounted for in
+the differential expression analysis. One way of doing this is to use the
+`block` argument of `findMarkers`, which effectively performs the cluster
+comparisons in each batch, and subsequently combines the results into a single
+p-value. Here, we illustrate this procedure using a data set of cells from three
+different studies, each containing three different breast cell types. We first
+load the data and add some reduced dimension representations for visualization
+purposes.
 
 
 ```r
@@ -568,33 +591,48 @@ rownames(bct) <- scater::uniquifyFeatureNames(
 ## The "cell.class" column contains the cell type information
 bct <- scater::runPCA(bct, ncomponents = 30)
 bct <- scater::runTSNE(bct, dimred = "PCA")
-plotTSNE(bct, colour_by = "study")
+cowplot::plot_grid(plotTSNE(bct, colour_by = "study"),
+                   plotTSNE(bct, colour_by = "cell.class"))
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
+Next, we find marker genes, first considering all cells together (without
+accounting for the batches) and second after blocking on the batch factor.
+
 
 ```r
-plotTSNE(bct, colour_by = "cell.class")
-```
-
-![](differential_expression_files/figure-html/unnamed-chunk-13-2.png)<!-- -->
-
-```r
-## Find marker genes, first considering all cells together (without accounting for the batches) and second after blocking on the batch factor
+## Consider all cells together (ignore batch information)
 markers_all <- scran::findMarkers(
   bct, clusters = bct$cell.class, lfc = 0.5,
   pval.type = "all", direction = "up"
 )
+## Block on the batch factor
 markers_block <- scran::findMarkers(
   bct, clusters = bct$cell.class, lfc = 0.5,
   block = bct$study, pval.type = "all", direction = "up"
 )
 bct$group <- paste(bct$study, bct$cell.class, sep = ".")
+```
+
+To understand the effect of blocking on the batch factor, we plot a few marker
+genes for the basal subtype that are only found as significant with one of the
+two approaches. Genes that are found only when disregarding the batch
+information often show inconsistent behaviour between the batches, while genes
+that are only found after incorporating the batch information often show
+relatively large general differences between the batches, which leads to a large
+apparent variance if the batch information is not accounted for. We can also
+note a distortion of the estimated log-fold changes if the batch effect is not
+accounted for.
+
+
+```r
+subtype <- "basal"
 
 ## Genes only found as significant without batch correction
-(s_all <- intersect(
-  rownames(markers_all$basal[markers_all$basal$p.value < 0.05, ]),
-  rownames(markers_block$basal[markers_block$basal$p.value > 0.95, ]))
+(s_all <- head(intersect(
+  rownames(markers_all[[subtype]][markers_all[[subtype]]$p.value < 0.05, ]),
+  rownames(markers_block[[subtype]][markers_block[[subtype]]$p.value > 0.95, ])))
 )
 ```
 
@@ -603,7 +641,7 @@ bct$group <- paste(bct$study, bct$cell.class, sep = ".")
 ```
 
 ```r
-markers_all$basal[s_all, ]
+markers_all[[subtype]][s_all, ]
 ```
 
 ```
@@ -625,7 +663,7 @@ markers_all$basal[s_all, ]
 ```
 
 ```r
-markers_block$basal[s_all, ]
+markers_block[[subtype]][s_all, ]
 ```
 
 ```
@@ -653,7 +691,7 @@ scater::plotExpression(bct, features = s_all,
   ggtitle("Only detected when considering all cells together")
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-13-3.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
 ```r
 scater::plotExpression(bct, features = s_all, 
@@ -662,13 +700,13 @@ scater::plotExpression(bct, features = s_all,
   ggtitle("Only detected when considering all cells together")
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-13-4.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-14-2.png)<!-- -->
 
 ```r
 ## Genes only found with batch correction
-(s_block <- intersect(
-  rownames(markers_all$basal[markers_all$basal$p.value > 0.95, ]),
-  rownames(markers_block$basal[markers_block$basal$p.value < 0.05, ]))
+(s_block <- head(intersect(
+  rownames(markers_all[[subtype]][markers_all[[subtype]]$p.value > 0.95, ]),
+  rownames(markers_block[[subtype]][markers_block[[subtype]]$p.value < 0.05, ])))
 )
 ```
 
@@ -677,7 +715,7 @@ scater::plotExpression(bct, features = s_all,
 ```
 
 ```r
-markers_all$basal[s_block, ]
+markers_all[[subtype]][s_block, ]
 ```
 
 ```
@@ -697,7 +735,7 @@ markers_all$basal[s_block, ]
 ```
 
 ```r
-markers_block$basal[s_block, ]
+markers_block[[subtype]][s_block, ]
 ```
 
 ```
@@ -723,7 +761,7 @@ scater::plotExpression(bct, features = s_block,
   ggtitle("Only detected when accounting for batches")
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-13-5.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-14-3.png)<!-- -->
 
 ```r
 scater::plotExpression(bct, features = s_block, 
@@ -732,11 +770,54 @@ scater::plotExpression(bct, features = s_block,
   ggtitle("Only detected when accounting for batches")
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-13-6.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-14-4.png)<!-- -->
+
+Another approach to incorporating batch information in the marker gene detection
+is via the `design` argument of `findMarkers`. With this approach, the batch
+variable as well as the cell type variable are used as predictors in a linear
+model, with the gene expression as the response. This approach makes stronger
+assumptions (e.g. on equality of variances, and that the batch effect is the
+same across clusters) than using the `batch` argument, but can be used also when
+not all cell types are present in all batches.
+
+
+```r
+## Set up the design matrix (remove the intercept for full rank
+## in the final design matrix with the cluster-specific terms).
+design <- model.matrix(~ bct$study)
+head(design)
+```
+
+```
+##   (Intercept) bct$studyvis bct$studywal
+## 1           1            1            0
+## 2           1            1            0
+## 3           1            1            0
+## 4           1            1            0
+## 5           1            1            0
+## 6           1            1            0
+```
+
+```r
+design <- design[, -1, drop = FALSE]
+markers_design <- scran::findMarkers(
+  bct, clusters = bct$cell.class, lfc = 0.5,
+  design = design, pval.type = "all", direction = "up"
+)
+```
 
 # Cluster-wise t-tests with Seurat
 
-The default testing regime of *[Seurat](https://CRAN.R-project.org/package=Seurat)* differs from that of *[scran](https://bioconductor.org/packages/3.9/scran)* in that the former compares the expression levels in one cluster to those of all cells outside of the cluster. The default test is a Wilcoxon test, but other options are available via the `test.use` argument. The `FindMarkers` function can be used to compare one cluster to the rest of the cells, or two specified clusters against each other. The `FindAllMarkers` function automates the comparison of each of the clusters to the cells outside that cluster. Using the Seurat object created in the beginning of the exercise, we find the genes that are most discriminative of each cluster with respect to genes outside the cluster. 
+The default testing regime of *[Seurat](https://CRAN.R-project.org/package=Seurat)* differs from that of 
+*[scran](https://bioconductor.org/packages/3.9/scran)* in that the former compares the expression levels in one
+cluster to those of all cells outside of the cluster. The default test is a
+Wilcoxon test, but other options are available via the `test.use` argument. The
+`FindMarkers` function can be used to compare one cluster to the rest of the
+cells, or two specified clusters against each other. The `FindAllMarkers`
+function automates the comparison of each of the clusters to the cells outside
+that cluster. Using the Seurat object created in the beginning of the exercise,
+we find the genes that are most discriminative of each cluster with respect to
+genes outside the cluster.
 
 
 ```r
@@ -808,26 +889,35 @@ seurat_markers <- Seurat::FindAllMarkers(
 ## 18 2.40e-108     0.817 0.918 0.434 7.85e-104 8       IL32
 ```
 
-Seurat also contains functions to visualize the expression of individual genes across clusters, in reduced dimension representations, and in a heatmap.
+Seurat also contains functions to visualize the expression of individual genes
+across clusters, in reduced dimension representations, and in a heatmap. The
+`DotPlot` function can be used to visualize the average expression as well as
+the fraction of cells expressing a gene in each cluster.
 
 
 ```r
 Seurat::VlnPlot(so, features = c("MS4A1", "CD79A"), pt.size = 0.25)
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 ```r
 Seurat::FeaturePlot(so, features = c("MS4A1", "CD79A"))
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-15-2.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-17-2.png)<!-- -->
 
 ```r
 Seurat::DoHeatmap(so, features = top2$gene) + NoLegend()
 ```
 
-![](differential_expression_files/figure-html/unnamed-chunk-15-3.png)<!-- -->
+![](differential_expression_files/figure-html/unnamed-chunk-17-3.png)<!-- -->
+
+```r
+Seurat::DotPlot(so, features = top2$gene) + RotatedAxis()
+```
+
+![](differential_expression_files/figure-html/unnamed-chunk-17-4.png)<!-- -->
 
 # Session info
 
@@ -853,93 +943,89 @@ sessionInfo()
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] MAST_1.10.0                 edgeR_3.26.8               
-##  [3] limma_3.40.6                igraph_1.2.4.1             
-##  [5] Seurat_3.1.1                pheatmap_1.0.12            
-##  [7] BiocSingular_1.0.0          scran_1.12.1               
-##  [9] scater_1.12.2               ggplot2_3.2.1              
-## [11] TENxPBMCData_1.2.0          HDF5Array_1.12.2           
-## [13] rhdf5_2.28.0                SingleCellExperiment_1.6.0 
-## [15] SummarizedExperiment_1.14.1 DelayedArray_0.10.0        
-## [17] BiocParallel_1.18.1         matrixStats_0.55.0         
-## [19] Biobase_2.44.0              GenomicRanges_1.36.1       
-## [21] GenomeInfoDb_1.20.0         IRanges_2.18.3             
-## [23] S4Vectors_0.22.1            BiocGenerics_0.30.0        
-## [25] BiocStyle_2.12.0           
+##  [1] edgeR_3.26.8                limma_3.40.6               
+##  [3] igraph_1.2.4.1              Seurat_3.1.1               
+##  [5] pheatmap_1.0.12             BiocSingular_1.0.0         
+##  [7] scran_1.12.1                scater_1.12.2              
+##  [9] ggplot2_3.2.1               TENxPBMCData_1.2.0         
+## [11] HDF5Array_1.12.2            rhdf5_2.28.1               
+## [13] SingleCellExperiment_1.6.0  SummarizedExperiment_1.14.1
+## [15] DelayedArray_0.10.0         BiocParallel_1.18.1        
+## [17] matrixStats_0.55.0          Biobase_2.44.0             
+## [19] GenomicRanges_1.36.1        GenomeInfoDb_1.20.0        
+## [21] IRanges_2.18.3              S4Vectors_0.22.1           
+## [23] BiocGenerics_0.30.0         BiocStyle_2.12.0           
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] utf8_1.1.4                    reticulate_1.13              
-##   [3] R.utils_2.9.0                 tidyselect_0.2.5             
-##   [5] lme4_1.1-21                   RSQLite_2.1.2                
-##   [7] AnnotationDbi_1.46.1          htmlwidgets_1.5              
-##   [9] grid_3.6.1                    Rtsne_0.15                   
-##  [11] munsell_0.5.0                 codetools_0.2-16             
-##  [13] ica_1.0-2                     statmod_1.4.32               
-##  [15] future_1.14.0                 withr_2.1.2                  
-##  [17] colorspace_1.4-1              knitr_1.25                   
-##  [19] ROCR_1.0-7                    gbRd_0.4-11                  
-##  [21] listenv_0.7.0                 labeling_0.3                 
-##  [23] Rdpack_0.11-0                 GenomeInfoDbData_1.2.1       
-##  [25] bit64_0.9-7                   vctrs_0.2.0                  
-##  [27] xfun_0.10                     BiocFileCache_1.8.0          
-##  [29] R6_2.4.0                      ggbeeswarm_0.6.0             
-##  [31] rsvd_1.0.2                    locfit_1.5-9.1               
-##  [33] bitops_1.0-6                  assertthat_0.2.1             
-##  [35] promises_1.1.0                SDMTools_1.1-221.1           
-##  [37] scales_1.0.0                  beeswarm_0.2.3               
-##  [39] gtable_0.3.0                  beachmat_2.0.0               
-##  [41] npsurv_0.4-0                  globals_0.12.4               
-##  [43] rlang_0.4.0                   zeallot_0.1.0                
-##  [45] splines_3.6.1                 lazyeval_0.2.2               
-##  [47] BiocManager_1.30.4            yaml_2.2.0                   
-##  [49] reshape2_1.4.3                abind_1.4-5                  
-##  [51] backports_1.1.5               httpuv_1.5.2                 
-##  [53] tools_3.6.1                   gplots_3.0.1.1               
-##  [55] RColorBrewer_1.1-2            dynamicTreeCut_1.63-1        
-##  [57] ggridges_0.5.1                Rcpp_1.0.2                   
-##  [59] plyr_1.8.4                    zlibbioc_1.30.0              
-##  [61] purrr_0.3.2                   RCurl_1.95-4.12              
-##  [63] pbapply_1.4-2                 viridis_0.5.1                
-##  [65] cowplot_1.0.0                 zoo_1.8-6                    
-##  [67] ggrepel_0.8.1                 cluster_2.1.0                
-##  [69] magrittr_1.5                  data.table_1.12.4            
-##  [71] lmtest_0.9-37                 RANN_2.6.1                   
-##  [73] fitdistrplus_1.0-14           lsei_1.2-0                   
-##  [75] mime_0.7                      evaluate_0.14                
-##  [77] xtable_1.8-4                  gridExtra_2.3                
-##  [79] compiler_3.6.1                tibble_2.1.3                 
-##  [81] KernSmooth_2.23-15            crayon_1.3.4                 
-##  [83] minqa_1.2.4                   R.oo_1.22.0                  
-##  [85] htmltools_0.4.0               later_1.0.0                  
-##  [87] tidyr_1.0.0                   RcppParallel_4.4.4           
-##  [89] DBI_1.0.0                     ExperimentHub_1.10.0         
-##  [91] dbplyr_1.4.2                  MASS_7.3-51.4                
-##  [93] rappdirs_0.3.1                boot_1.3-23                  
-##  [95] Matrix_1.2-17                 cli_1.1.0                    
-##  [97] R.methodsS3_1.7.1             gdata_2.18.0                 
-##  [99] metap_1.1                     pkgconfig_2.0.3              
-## [101] plotly_4.9.0                  vipor_0.4.5                  
-## [103] dqrng_0.2.1                   blme_1.0-4                   
-## [105] XVector_0.24.0                bibtex_0.4.2                 
-## [107] stringr_1.4.0                 digest_0.6.21                
-## [109] sctransform_0.2.0             RcppAnnoy_0.0.13             
-## [111] tsne_0.1-3                    rmarkdown_1.16               
-## [113] leiden_0.3.1                  uwot_0.1.4                   
-## [115] DelayedMatrixStats_1.6.1      curl_4.2                     
-## [117] shiny_1.3.2                   gtools_3.8.1                 
-## [119] nloptr_1.2.1                  lifecycle_0.1.0              
-## [121] nlme_3.1-141                  jsonlite_1.6                 
-## [123] Rhdf5lib_1.6.1                BiocNeighbors_1.2.0          
-## [125] fansi_0.4.0                   viridisLite_0.3.0            
-## [127] pillar_1.4.2                  lattice_0.20-38              
-## [129] httr_1.4.1                    survival_2.44-1.1            
-## [131] interactiveDisplayBase_1.22.0 glue_1.3.1                   
-## [133] png_0.1-7                     bit_1.1-14                   
-## [135] stringi_1.4.3                 blob_1.2.0                   
-## [137] AnnotationHub_2.16.1          caTools_1.17.1.2             
-## [139] memoise_1.1.0                 dplyr_0.8.3                  
-## [141] irlba_2.3.3                   future.apply_1.3.0           
-## [143] ape_5.3
+##   [1] backports_1.1.5               AnnotationHub_2.16.1         
+##   [3] BiocFileCache_1.8.0           plyr_1.8.4                   
+##   [5] lazyeval_0.2.2                splines_3.6.1                
+##   [7] listenv_0.7.0                 digest_0.6.21                
+##   [9] htmltools_0.4.0               viridis_0.5.1                
+##  [11] fansi_0.4.0                   gdata_2.18.0                 
+##  [13] magrittr_1.5                  memoise_1.1.0                
+##  [15] cluster_2.1.0                 ROCR_1.0-7                   
+##  [17] globals_0.12.4                RcppParallel_4.4.4           
+##  [19] R.utils_2.9.0                 colorspace_1.4-1             
+##  [21] blob_1.2.0                    rappdirs_0.3.1               
+##  [23] ggrepel_0.8.1                 xfun_0.10                    
+##  [25] dplyr_0.8.3                   jsonlite_1.6                 
+##  [27] crayon_1.3.4                  RCurl_1.95-4.12              
+##  [29] zeallot_0.1.0                 zoo_1.8-6                    
+##  [31] survival_2.44-1.1             ape_5.3                      
+##  [33] glue_1.3.1                    gtable_0.3.0                 
+##  [35] zlibbioc_1.30.0               XVector_0.24.0               
+##  [37] leiden_0.3.1                  Rhdf5lib_1.6.2               
+##  [39] future.apply_1.3.0            scales_1.0.0                 
+##  [41] DBI_1.0.0                     bibtex_0.4.2                 
+##  [43] Rcpp_1.0.2                    metap_1.1                    
+##  [45] viridisLite_0.3.0             xtable_1.8-4                 
+##  [47] reticulate_1.13               dqrng_0.2.1                  
+##  [49] bit_1.1-14                    rsvd_1.0.2                   
+##  [51] SDMTools_1.1-221.1            tsne_0.1-3                   
+##  [53] htmlwidgets_1.5.1             httr_1.4.1                   
+##  [55] gplots_3.0.1.1                RColorBrewer_1.1-2           
+##  [57] ica_1.0-2                     pkgconfig_2.0.3              
+##  [59] R.methodsS3_1.7.1             uwot_0.1.4                   
+##  [61] dbplyr_1.4.2                  utf8_1.1.4                   
+##  [63] locfit_1.5-9.1                dynamicTreeCut_1.63-1        
+##  [65] labeling_0.3                  reshape2_1.4.3               
+##  [67] tidyselect_0.2.5              rlang_0.4.0                  
+##  [69] later_1.0.0                   AnnotationDbi_1.46.1         
+##  [71] munsell_0.5.0                 tools_3.6.1                  
+##  [73] cli_1.1.0                     RSQLite_2.1.2                
+##  [75] ExperimentHub_1.10.0          ggridges_0.5.1               
+##  [77] evaluate_0.14                 stringr_1.4.0                
+##  [79] fastmap_1.0.1                 yaml_2.2.0                   
+##  [81] npsurv_0.4-0                  knitr_1.25                   
+##  [83] bit64_0.9-7                   fitdistrplus_1.0-14          
+##  [85] caTools_1.17.1.2              purrr_0.3.2                  
+##  [87] RANN_2.6.1                    pbapply_1.4-2                
+##  [89] future_1.14.0                 nlme_3.1-141                 
+##  [91] mime_0.7                      R.oo_1.22.0                  
+##  [93] compiler_3.6.1                png_0.1-7                    
+##  [95] plotly_4.9.0                  beeswarm_0.2.3               
+##  [97] curl_4.2                      interactiveDisplayBase_1.22.0
+##  [99] lsei_1.2-0                    tibble_2.1.3                 
+## [101] statmod_1.4.32                stringi_1.4.3                
+## [103] lattice_0.20-38               Matrix_1.2-17                
+## [105] vctrs_0.2.0                   lifecycle_0.1.0              
+## [107] pillar_1.4.2                  BiocManager_1.30.7           
+## [109] Rdpack_0.11-0                 lmtest_0.9-37                
+## [111] RcppAnnoy_0.0.13              BiocNeighbors_1.2.0          
+## [113] data.table_1.12.4             cowplot_1.0.0                
+## [115] bitops_1.0-6                  irlba_2.3.3                  
+## [117] gbRd_0.4-11                   httpuv_1.5.2                 
+## [119] R6_2.4.0                      promises_1.1.0               
+## [121] KernSmooth_2.23-15            gridExtra_2.3                
+## [123] vipor_0.4.5                   codetools_0.2-16             
+## [125] MASS_7.3-51.4                 gtools_3.8.1                 
+## [127] assertthat_0.2.1              withr_2.1.2                  
+## [129] sctransform_0.2.0             GenomeInfoDbData_1.2.1       
+## [131] beachmat_2.0.0                grid_3.6.1                   
+## [133] tidyr_1.0.0                   rmarkdown_1.16               
+## [135] DelayedMatrixStats_1.6.1      Rtsne_0.15                   
+## [137] shiny_1.4.0                   ggbeeswarm_0.6.0
 ```
 
 # References
