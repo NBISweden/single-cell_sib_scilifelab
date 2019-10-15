@@ -39,22 +39,18 @@ Here are a couple of common issues and their solutions:
   This error can be fixed by installing an up-to-date version of compilers:  
   * go to https://stat.ethz.ch/CRAN/ -> download R for mac, follow the link to ‘tools’ (in the ‘Important’ paragraph), and download and install clang-7.0.0 and gfortran-6.1 (for R 3.6). 
 
-  * modify your ~/.R/Makevars (or create it if it does not exist yet) to include the following:  
-```
-FLIBS=""  
-F77="/usr/local/gfortran/bin/gfortran"
-FC="/usr/local/gfortran/bin/gfortran"
+  * modify your ~/.R/Makevars (or create it if it does not exist yet) to include the following:   FLIBS=""  
+  F77="/usr/local/gfortran/bin/gfortran"  
+  FC="/usr/local/gfortran/bin/gfortran"  
+  CC=/usr/local/clang7/bin/clang  
+  CXX=/usr/local/clang7/bin/clang++  
+  CXX11=/usr/local/clang7/bin/clang++  
+  CXX14=/usr/local/clang7/bin/clang++  
+  CXX17=/usr/local/clang7/bin/clang++  
+  CXX1X=/usr/local/clang7/bin/clang++  
+  LDFLAGS=-L/usr/local/clang7/lib
 
-CC=/usr/local/clang7/bin/clang
-CXX=/usr/local/clang7/bin/clang++
-CXX11=/usr/local/clang7/bin/clang++
-CXX14=/usr/local/clang7/bin/clang++
-CXX17=/usr/local/clang7/bin/clang++
-CXX1X=/usr/local/clang7/bin/clang++
-LDFLAGS=-L/usr/local/clang7/lib
-```
-
-   * then try the installation again.
+  * then try the installation again.
 
 - the package `HDF5Array` fails to compile/install with a `file not found` error (files from `Rhdf5lib`). This is caused by recent changes in `Rhdf5lib` (1.6.2). `HDF5Array` (1.12.3) has been fixed, but is not yet available from bioconductor.org, but it can be downloaded/installed directly from github:   
 ```
