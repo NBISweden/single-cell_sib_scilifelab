@@ -21,7 +21,7 @@
 - **09:00 - 10:00** [Batch correction](session-batch_correction/batch_correction_theory.pdf) (Panagiotis Papasaikas)
 - **10:00 - 11:00** [Clustering - methods overview](session-clustering/clustering.pdf) (Charlotte Soneson)
 - **11:00 - 11:30** Coffee break
-- **11:30 - 12:30** [Cell fate mapping and trajectories](https://docs.google.com/presentation/d/1t_0yD7DxsMTK3fJPngNm9RN2CTgNJeeoBnxkd7c1mMc) (Wouter Saelens)
+- **11:30 - 12:30** [Cell fate mapping and trajectories](session-trajectories/Trajectories\ Leysin\ 2019.pdf) (Wouter Saelens)
 - **12:30 - 14:00** Lunch break
 - **14:00 - 18:00** Hands-on + Coffee break (Panagiotis, Charlotte, Wouter): 
 [Batch Correction](session-batch_correction/batch_correction.Rmd) ([html](session-batch_correction/batch_correction.html)) ([Helper_Functions.R](https://github.com/NBISweden/single-cell_sib_scilifelab/blob/master/session-batch_correction/Helper_Functions.R)), 
