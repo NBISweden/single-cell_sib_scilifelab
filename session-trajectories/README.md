@@ -17,7 +17,7 @@ Download the data:
 Unzip and put into the ‘data’ folder
 
 **①** Quantification (Including RNA velocity):
-[1_quantify.Rmd](1_quantify.Rmd) ([html](1_quantify.md))
+[1_quantify.Rmd](1_quantify.Rmd) ([html](1_quantify.md)), tutorial I followed: https://bustools.github.io/BUS_notebooks_R/velocity.html
 
 **②** Preprocessing including RNA velocity:
 [2_preprocessing.Rmd](2_preprocessing.Rmd) ([html](2_preprocessing.md))
