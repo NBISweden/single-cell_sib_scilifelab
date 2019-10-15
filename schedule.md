@@ -8,21 +8,26 @@
 
 ### Monday 14.10.2019
 - **09:00 - 10:00** Introductory lecture (Vincent Gardeux)
-- **10:00 - 11:00** Quantification, QC & Normalization (Davide Risso)
+- **10:00 - 11:00** [Quantification, QC & Normalization](session-qc/qc_lecture.pdf) (Davide Risso)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** [Dimensionality reduction](session-dimensionality-reduction/lecture_dimensionality_reduction.pdf) (Paulo Czarnewski)
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on + Coffee break (Davide, Paulo): [Seurat_DR](session-dimensionality-reduction/seurat/seurat_02_dim_reduction_compiled.md), [Scater_DR](session-dimensionality-reduction/scater/scater_02_dim_reduction_compiled.md)
+- **14:00 - 18:00** Hands-on + Coffee break (Davide, Paulo): [Scater_QC](session-qc/bioc_qc_3.9.Rmd) ([html](session-qc/bioc_qc_3.9.html)) ([Bioc 3.10](session-qc/bioc_qc.Rmd)), [Scater_DR](session-dimensionality-reduction/scater_02_dim_reduction_compiled.Rmd) ([html](session-dimensionality-reduction/scater_02_dim_reduction_compiled.nb.html))
+- Seurat analysis pipeline: [Seurat_qc](session-dimensionality-reduction/seurat_01_qc_compiled.Rmd), [Seurat_DR](session-dimensionality-reduction/seurat_02_dim_reduction_compiled.Rmd)
 - **18:00 - 20:00** Free time / spa
 - **20:00** Dinner
 
 ### Tuesday 15.10.2019
 - **09:00 - 10:00** Batch correction (Panagiotis Papasaikas)
-- **10:00 - 11:00** Clustering - methods overview (Charlotte Soneson)
+- **10:00 - 11:00** [Clustering - methods overview](session-clustering/clustering.pdf) (Charlotte Soneson)
 - **11:00 - 11:30** Coffee break
-- **11:30 - 12:30** Cell fate mapping and trajectories (Wouter Saelens)
+- **11:30 - 12:30** [Cell fate mapping and trajectories](https://docs.google.com/presentation/d/1t_0yD7DxsMTK3fJPngNm9RN2CTgNJeeoBnxkd7c1mMc) (Wouter Saelens)
 - **12:30 - 14:00** Lunch break
-- **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter)
+- **14:00 - 18:00** Hands-on including a coffee break (Panagiotis, Charlotte, Wouter): 
+[Batch Correction](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-batch_correction), 
+[Clustering](session-clustering/clustering.Rmd) ([html](session-clustering/clustering.html)),
+[Trajectories and RNA velocity](https://github.com/NBISweden/single-cell_sib_scilifelab/tree/master/session-trajectories#practical-session)
+
 - **18:00 - 20:00** Free time / spa
 - **20:00** Special dinner - Cheese fondue
 

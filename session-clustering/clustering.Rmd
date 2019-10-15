@@ -359,39 +359,6 @@ either SingleCellExperiment or Seurat objects.
 clustree::clustree(sce, prefix = "RNA_snn_res.")
 ```
 
-<!--
-## With griph
-
-A third R implementation of graph-based clustering is available in the
-[_griph_](https://github.com/ppapasaikas/griph) package (which internally also
-uses community detection algorithms from `r CRANpkg("igraph")`). The basic
-outline of the griph algorithm is as follows:
-
-* Sample a small but representative set of cells for initial calculations
-* Select informative (highly variable) genes
-* Calculate similarities among cells, by combining four metrics: Canberra
-distance, Hellinger distance, Pearson correlation and Spearman correlation
-* Estimate a sparse graph structure using the graphical lasso. In this step,
-restrictions can be applied to adjust for batch effects, by effectively limiting
-cells from the same batch from being directly connected
-* Reweight edges to limit the impact of spurious structure caused by noise
-* Identify communities using the Louvain algorithm
-* Use the results from the representative set of cells to create a graph
-reconstruction and community detection for the full set of cells
-
-The input to griph is a matrix of _raw_ gene-level counts. Normalization and
-gene selection is performed internally.
-
-```{r, eval = FALSE}
-library(griph)
-clust_griph <- griph::griph_cluster(
-  as.matrix(counts(sce)), K = 20, plot_ = TRUE, use.par = FALSE
-)
-sce$cluster_griph <- factor(clust_griph$MEMB)
-scater::plotReducedDim(sce, "TSNE", colour_by = "cluster_griph")
-```
--->
-
 # K-means clustering
 
 K-means is a generic clustering algorithm that has been used in many application
@@ -534,7 +501,8 @@ head(colData(scesub)[, grep("sc3_", colnames(colData(scesub)))])
 
 `r Biocpkg("SC3")` contains several functions for exploring and visualizing the
 clustering results. For example, we can plot the consensus matrix and add
-annotations for the rows and columns:
+annotations for the rows and columns. The 'outlier score' is an indication of
+how different a cell is from all other cells in the same cluster.
 
 ```{r, fig.width = 7}
 SC3::sc3_plot_consensus(
@@ -561,12 +529,19 @@ SC3::sc3_plot_expression(
 ```
 
 Finally, `r Biocpkg("SC3")` also returns "differentially expressed genes" as
-well as "marker genes". This information is stored in the `rowData` slot of the
-SingleCellExperiment object, and can be visualized as well. Check the help pages
-for the respective functions to see how the genes to show are selected.
+well as "marker genes". Differentially expressed genes are obtained via the
+Kruskal-Wallis test, comparing all the clusters. Marker genes, on the other
+hand, are obtained by building a binary classifier from the expression levels of
+each gene, attempting to discriminate one cluster from the other cells. The area
+under the ROC curve is used to quantify the accuracy of the prediction. In
+addition, the Wilcoxon test is used to assign a p-value to each gene. This
+information is stored in the `rowData` slot of the SingleCellExperiment object,
+and can be visualized as well. Check the help pages for the respective functions
+to see how the genes to show are selected.
 
 ```{r, fig.width = 8}
-head(rowData(scesub)[, grep("sc3_", colnames(rowData(scesub)))])
+head(rowData(scesub)[rowData(scesub)$sc3_gene_filter, 
+                     grep("sc3_", colnames(rowData(scesub)))])
 
 SC3::sc3_plot_de_genes(scesub, k = 10)
 SC3::sc3_plot_markers(scesub, k = 10)

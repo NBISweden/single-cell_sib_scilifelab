@@ -885,7 +885,8 @@ head(colData(scesub)[, grep("sc3_", colnames(colData(scesub)))])
 
 *[SC3](https://bioconductor.org/packages/3.9/SC3)* contains several functions for exploring and visualizing the
 clustering results. For example, we can plot the consensus matrix and add
-annotations for the rows and columns:
+annotations for the rows and columns. The 'outlier score' is an indication of
+how different a cell is from all other cells in the same cluster.
 
 
 ```r
@@ -923,65 +924,64 @@ SC3::sc3_plot_expression(
 ![](clustering_files/figure-html/unnamed-chunk-30-2.png)<!-- -->
 
 Finally, *[SC3](https://bioconductor.org/packages/3.9/SC3)* also returns "differentially expressed genes" as
-well as "marker genes". This information is stored in the `rowData` slot of the
-SingleCellExperiment object, and can be visualized as well. Check the help pages
-for the respective functions to see how the genes to show are selected.
+well as "marker genes". Differentially expressed genes are obtained via the
+Kruskal-Wallis test, comparing all the clusters. Marker genes, on the other
+hand, are obtained by building a binary classifier from the expression levels of
+each gene, attempting to discriminate one cluster from the other cells. The area
+under the ROC curve is used to quantify the accuracy of the prediction. In
+addition, the Wilcoxon test is used to assign a p-value to each gene. This
+information is stored in the `rowData` slot of the SingleCellExperiment object,
+and can be visualized as well. Check the help pages for the respective functions
+to see how the genes to show are selected.
 
 
 ```r
-head(rowData(scesub)[, grep("sc3_", colnames(rowData(scesub)))])
+head(rowData(scesub)[rowData(scesub)$sc3_gene_filter, 
+                     grep("sc3_", colnames(rowData(scesub)))])
 ```
 
 ```
 ## DataFrame with 6 rows and 13 columns
-##              sc3_gene_filter sc3_10_markers_clusts sc3_10_markers_padj
-##                    <logical>             <numeric>           <numeric>
-## MIR1302-10             FALSE                    NA                  NA
-## FAM138A                FALSE                    NA                  NA
-## OR4F5                  FALSE                    NA                  NA
-## RP11-34P13.7           FALSE                    NA                  NA
-## RP11-34P13.8           FALSE                    NA                  NA
-## AL627309.1             FALSE                    NA                  NA
-##              sc3_10_markers_auroc sc3_11_markers_clusts
-##                         <numeric>             <numeric>
-## MIR1302-10                     NA                    NA
-## FAM138A                        NA                    NA
-## OR4F5                          NA                    NA
-## RP11-34P13.7                   NA                    NA
-## RP11-34P13.8                   NA                    NA
-## AL627309.1                     NA                    NA
-##              sc3_11_markers_padj sc3_11_markers_auroc
-##                        <numeric>            <numeric>
-## MIR1302-10                    NA                   NA
-## FAM138A                       NA                   NA
-## OR4F5                         NA                   NA
-## RP11-34P13.7                  NA                   NA
-## RP11-34P13.8                  NA                   NA
-## AL627309.1                    NA                   NA
-##              sc3_12_markers_clusts sc3_12_markers_padj
-##                          <numeric>           <numeric>
-## MIR1302-10                      NA                  NA
-## FAM138A                         NA                  NA
-## OR4F5                           NA                  NA
-## RP11-34P13.7                    NA                  NA
-## RP11-34P13.8                    NA                  NA
-## AL627309.1                      NA                  NA
-##              sc3_12_markers_auroc sc3_10_de_padj sc3_11_de_padj
-##                         <numeric>      <numeric>      <numeric>
-## MIR1302-10                     NA             NA             NA
-## FAM138A                        NA             NA             NA
-## OR4F5                          NA             NA             NA
-## RP11-34P13.7                   NA             NA             NA
-## RP11-34P13.8                   NA             NA             NA
-## AL627309.1                     NA             NA             NA
-##              sc3_12_de_padj
-##                   <numeric>
-## MIR1302-10               NA
-## FAM138A                  NA
-## OR4F5                    NA
-## RP11-34P13.7             NA
-## RP11-34P13.8             NA
-## AL627309.1               NA
+##          sc3_gene_filter sc3_10_markers_clusts sc3_10_markers_padj
+##                <logical>             <numeric>           <numeric>
+## ISG15               TRUE                     5                   1
+## SDF4                TRUE                     4                   1
+## AURKAIP1            TRUE                     1                   1
+## MRPL20              TRUE                     4                   1
+## SSU72               TRUE                     2                   1
+## C1orf86             TRUE                     7                   1
+##          sc3_10_markers_auroc sc3_11_markers_clusts  sc3_11_markers_padj
+##                     <numeric>             <numeric>            <numeric>
+## ISG15       0.894295302013423                     1 0.000829654398414359
+## SDF4        0.610513739545998                     4                    1
+## AURKAIP1    0.582954010359441                     4                    1
+## MRPL20      0.594982078853047                     7                    1
+## SSU72       0.557774787654529                    11                    1
+## C1orf86     0.682791095890411                     4                    1
+##          sc3_11_markers_auroc sc3_12_markers_clusts sc3_12_markers_padj
+##                     <numeric>             <numeric>           <numeric>
+## ISG15       0.779626432271229                     1  0.0324366944851965
+## SDF4        0.882943143812709                     5                   1
+## AURKAIP1    0.712374581939799                     5                   1
+## MRPL20      0.594982078853047                     8                   1
+## SSU72       0.611041207927021                     4                   1
+## C1orf86     0.836120401337793                     5                   1
+##          sc3_12_markers_auroc       sc3_10_de_padj       sc3_11_de_padj
+##                     <numeric>            <numeric>            <numeric>
+## ISG15       0.766154452324665 2.01879757349275e-06 1.37433818520784e-05
+## SDF4        0.882943143812709                    1                    1
+## AURKAIP1    0.712374581939799                    1                    1
+## MRPL20      0.594982078853047                    1                    1
+## SSU72       0.657516891891892                    1                    1
+## C1orf86     0.836120401337793                    1                    1
+##               sc3_12_de_padj
+##                    <numeric>
+## ISG15    0.00034251832278301
+## SDF4                       1
+## AURKAIP1                   1
+## MRPL20                     1
+## SSU72                      1
+## C1orf86                    1
 ```
 
 ```r
@@ -1028,7 +1028,7 @@ sessionInfo()
 ##  [9] SC3_1.12.0                  BiocSingular_1.0.0         
 ## [11] scran_1.12.1                scater_1.12.2              
 ## [13] ggplot2_3.2.1               TENxPBMCData_1.2.0         
-## [15] HDF5Array_1.12.2            rhdf5_2.28.0               
+## [15] HDF5Array_1.12.2            rhdf5_2.28.1               
 ## [17] SingleCellExperiment_1.6.0  SummarizedExperiment_1.14.1
 ## [19] DelayedArray_0.10.0         BiocParallel_1.18.1        
 ## [21] matrixStats_0.55.0          Biobase_2.44.0             
@@ -1038,7 +1038,7 @@ sessionInfo()
 ## 
 ## loaded via a namespace (and not attached):
 ##   [1] reticulate_1.13               R.utils_2.9.0                
-##   [3] tidyselect_0.2.5              htmlwidgets_1.5              
+##   [3] tidyselect_0.2.5              htmlwidgets_1.5.1            
 ##   [5] RSQLite_2.1.2                 AnnotationDbi_1.46.1         
 ##   [7] grid_3.6.1                    Rtsne_0.15                   
 ##   [9] munsell_0.5.0                 codetools_0.2-16             
@@ -1063,7 +1063,7 @@ sessionInfo()
 ##  [47] rlang_0.4.0                   zeallot_0.1.0                
 ##  [49] splines_3.6.1                 lazyeval_0.2.2               
 ##  [51] checkmate_1.9.4               reshape2_1.4.3               
-##  [53] BiocManager_1.30.4            yaml_2.2.0                   
+##  [53] BiocManager_1.30.7            yaml_2.2.0                   
 ##  [55] backports_1.1.5               httpuv_1.5.2                 
 ##  [57] tools_3.6.1                   gplots_3.0.1.1               
 ##  [59] RColorBrewer_1.1-2            ggridges_0.5.1               
@@ -1099,22 +1099,23 @@ sessionInfo()
 ## [119] RcppAnnoy_0.0.13              leiden_0.3.1                 
 ## [121] rmarkdown_1.16                uwot_0.1.4                   
 ## [123] edgeR_3.26.8                  DelayedMatrixStats_1.6.1     
-## [125] curl_4.2                      shiny_1.3.2                  
+## [125] curl_4.2                      shiny_1.4.0                  
 ## [127] gtools_3.8.1                  jsonlite_1.6                 
 ## [129] lifecycle_0.1.0               nlme_3.1-141                 
-## [131] Rhdf5lib_1.6.1                BiocNeighbors_1.2.0          
+## [131] Rhdf5lib_1.6.2                BiocNeighbors_1.2.0          
 ## [133] viridisLite_0.3.0             limma_3.40.6                 
 ## [135] pillar_1.4.2                  lattice_0.20-38              
-## [137] httr_1.4.1                    DEoptimR_1.0-8               
-## [139] survival_2.44-1.1             interactiveDisplayBase_1.22.0
-## [141] glue_1.3.1                    png_0.1-7                    
-## [143] iterators_1.0.12              bit_1.1-14                   
-## [145] ggforce_0.3.1                 class_7.3-15                 
-## [147] stringi_1.4.3                 blob_1.2.0                   
-## [149] AnnotationHub_2.16.1          caTools_1.17.1.2             
-## [151] memoise_1.1.0                 dplyr_0.8.3                  
-## [153] irlba_2.3.3                   e1071_1.7-2                  
-## [155] future.apply_1.3.0            ape_5.3
+## [137] fastmap_1.0.1                 httr_1.4.1                   
+## [139] DEoptimR_1.0-8                survival_2.44-1.1            
+## [141] interactiveDisplayBase_1.22.0 glue_1.3.1                   
+## [143] png_0.1-7                     iterators_1.0.12             
+## [145] bit_1.1-14                    ggforce_0.3.1                
+## [147] class_7.3-15                  stringi_1.4.3                
+## [149] blob_1.2.0                    AnnotationHub_2.16.1         
+## [151] caTools_1.17.1.2              memoise_1.1.0                
+## [153] dplyr_0.8.3                   irlba_2.3.3                  
+## [155] e1071_1.7-2                   future.apply_1.3.0           
+## [157] ape_5.3
 ```
 
 # References

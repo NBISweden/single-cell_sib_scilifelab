@@ -296,6 +296,7 @@ boxplot(sce$DoubletScore ~ mbkm$Clusters)
 Finally, let's save the QC-filtered, normalized data for further analysis. Because our data are in HDF5 format, we use a specialized function.
 
 ```{r,message='hide',warning='hide', results='hold'}
+dir.create("data/se",recursive = TRUE)
 saveHDF5SummarizedExperiment(sce, dir="data/se", replace = TRUE)
 ```
 
