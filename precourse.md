@@ -57,7 +57,7 @@ Here are a couple of common issues and their solutions:
 - the package `HDF5Array` fails to compile/install with a `file not found` error (files from `Rhdf5lib`). This is caused by recent changes in `Rhdf5lib` (1.6.2). `HDF5Array` (1.12.3) has been fixed, but is not yet available from bioconductor.org, but it can be downloaded/installed directly from github:   
 ```
 git clone --branch RELEASE_3_9 https://git.bioconductor.org/packages/HDF5Array
-R INSTALL HDF5Array
+R CMD INSTALL HDF5Array
 ```
 
 ## #[Back to main](README.md)
