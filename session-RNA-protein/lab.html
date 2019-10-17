@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="NBIS | 17-Oct-2019" />
+
+
+<title>protein RNA-Seq</title>
+
+<script src="lab_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="lab_files/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="lab_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="lab_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="lab_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="lab_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="lab_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="lab_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="lab_files/navigation-1.1/tabsets.js"></script>
+<link href="lab_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="lab_files/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="lab_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="lab_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link id="font-awesome-1-attachment" rel="attachment" href="lab_files/font-awesome-5.1.0/fonts/fontawesome-webfont.ttf"/>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="assets/lab.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">protein RNA-Seq</h1>
+<h3 class="subtitle">Protein RNA-Seq Labs</h3>
+<h4 class="author"><b>NBIS</b> | 17-Oct-2019</h4>
+
+</div>
+
+
+<!-- rmd lab header -->
+<!-- custom fonts -->
+<p><link href="https://fonts.googleapis.com/css?family=Roboto|Source+Sans+Pro:300,400,600|Ubuntu+Mono&amp;subset=latin-ext" rel="stylesheet"></p>
+<p><img src="assets/logo.svg" alt="logo" class="trlogo"></p>
+<p><br></p>
+<!-- ------------ Only edit title, subtitle & author above this ------------ -->
+<hr />
+<div id="single-cell-rna-and-protein-analysis" class="section level2">
+<h2><span class="header-section-number">0.1</span> Single cell RNA and protein analysis</h2>
+<p>Single cell RNA-seq is a powerful approach to study the continually changing cellular transcriptome. The possibility of measuring thousands of RNA in each cell make it a strong tool differntiate cells. But most of the functions that are carried out in the cells are being made by proteins and not RNA. They are also more stable and and abundant in the cells and represent a different way of analysiing the data. Thus protein are more accurate molecules to represent the function of the cell. Therefore ways of measuring the protein levels in the cells is a great complementary resource to determine both differences between the cell and also to identify ongoing processes in the cells.</p>
+<p>In this exercise we will look at two different ways of incorporating protein data with scRNA-seq data to facilitate the analysis of functions in the cell. The first one is based on SITE-seq data and means to incorporate surface protein data to evaluate the classification of cells carried out by scRNA seq analysis. We will also use the protein data itself to identify the different clusters. For more information regarding site seq see the presentation and links to papers there. The second one involves SPARC data and focuses on protein QC analysis and how SPARC data can be used to facilitate the identification of transcription factor targets.</p>
+<div class="abstract">
+<p><strong>Main exercise</strong></p>
+<ul>
+<li>01 SITE seq</li>
+<li>02 SPARC</li>
+</ul>
+</div>
+</div>
+<div id="site-seq-exercise" class="section level1">
+<h1><span class="header-section-number">1</span> SITE-seq exercise</h1>
+<p>This exercise is bluntly stolen from the <a href="https://satijalab.org/seurat/v3.1/multimodal_vignette.html">Seurat home page</a>. ## Data description The data used in this exercise is from the paper: <strong>Stoeckius M, <em>et al</em>. “Simultaneous epitope and transcriptome measurement in single cells.” <a href="https://www.ncbi.nlm.nih.gov/pubmed/28759029">Nat Methods (2017)</a></strong>.</p>
+<div id="using-seurat-with-multi-modal-data" class="section level2">
+<h2><span class="header-section-number">1.1</span> Using Seurat with multi-modal data</h2>
+<div id="load-in-the-data" class="section level3">
+<h3><span class="header-section-number">1.1.1</span> Load in the data</h3>
+<p>This vignette demonstrates new features that allow users to analyze and explore multi-modal data with Seurat. While this represents an initial release, we are excited to release significant new functionality for multi-modal datasets in the future.</p>
+<p>Here, we analyze a dataset of 8,617 cord blood mononuclear cells (CBMCs), produced with CITE-seq, where we simultaneously measure the single cell transcriptomes alongside the expression of 11 surface proteins, whose levels are quantified with DNA-barcoded antibodies. First, we load in two count matrices : one for the RNA measurements, and one for the antibody-derived tags (ADT). You can download the ADT file <a href="ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100866/suppl/GSE100866_CBMC_8K_13AB_10X-ADT_umi.csv.gz">here</a> and the RNA file <a href="ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100866/suppl/GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz">here</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Seurat)
+<span class="kw">library</span>(ggplot2)</code></pre></div>
+<p>At this point you need to put the data that you downloaded.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">CBMC_rna_file =<span class="st"> &quot;data/GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz&quot;</span>
+CBMC_SITEseq_file =<span class="st"> &quot;data/GSE100866_CBMC_8K_13AB_10X-ADT_umi.csv.gz&quot;</span> </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load in the RNA UMI matrix</span>
+
+<span class="co"># Note that this dataset also contains ~5% of mouse cells, which we can use as negative controls</span>
+<span class="co"># for the protein measurements. For this reason, the gene expression matrix has HUMAN_ or MOUSE_</span>
+<span class="co"># appended to the beginning of each gene.</span>
+cbmc.rna &lt;-<span class="st"> </span><span class="kw">as.sparse</span>(<span class="kw">read.csv</span>(<span class="dt">file =</span> CBMC_rna_file, <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>, 
+    <span class="dt">header =</span> <span class="ot">TRUE</span>, <span class="dt">row.names =</span> <span class="dv">1</span>))
+
+<span class="co"># To make life a bit easier going forward, we&#39;re going to discard all but the top 100 most</span>
+<span class="co"># highly expressed mouse genes, and remove the &#39;HUMAN_&#39; from the CITE-seq prefix</span>
+cbmc.rna &lt;-<span class="st"> </span><span class="kw">CollapseSpeciesExpressionMatrix</span>(cbmc.rna)
+
+<span class="co"># Load in the ADT UMI matrix</span>
+cbmc.adt &lt;-<span class="st"> </span><span class="kw">as.sparse</span>(<span class="kw">read.csv</span>(<span class="dt">file =</span> CBMC_SITEseq_file, <span class="dt">sep =</span> <span class="st">&quot;,&quot;</span>, 
+    <span class="dt">header =</span> <span class="ot">TRUE</span>, <span class="dt">row.names =</span> <span class="dv">1</span>))
+
+<span class="co"># When adding multimodal data to Seurat, it&#39;s okay to have duplicate feature names. Each set of</span>
+<span class="co"># modal data (eg. RNA, ADT, etc.) is stored in its own Assay object.  One of these Assay objects</span>
+<span class="co"># is called the &#39;default assay&#39;, meaning it&#39;s used for all analyses and visualization.  To pull</span>
+<span class="co"># data from an assay that isn&#39;t the default, you can specify a key that&#39;s linked to an assay for</span>
+<span class="co"># feature pulling.  To see all keys for all objects, use the Key function.  Lastly, we observed</span>
+<span class="co"># poor enrichments for CCR5, CCR7, and CD10 - and therefore remove them from the matrix</span>
+<span class="co"># (optional)</span>
+cbmc.adt &lt;-<span class="st"> </span>cbmc.adt[<span class="kw">setdiff</span>(<span class="kw">rownames</span>(<span class="dt">x =</span> cbmc.adt), <span class="kw">c</span>(<span class="st">&quot;CCR5&quot;</span>, <span class="st">&quot;CCR7&quot;</span>, <span class="st">&quot;CD10&quot;</span>)), ]</code></pre></div>
+</div>
+<div id="setup-a-seurat-object-and-cluster-cells-based-on-rna-expression" class="section level3">
+<h3><span class="header-section-number">1.1.2</span> Setup a Seurat object, and cluster cells based on RNA expression</h3>
+<p>This you have done before during the course but if you want you can go to <a href="http://satijalab.org/seurat/pbmc3k_tutorial.html">Seurats PBMC clustering guided tutorial</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cbmc &lt;-<span class="st"> </span><span class="kw">CreateSeuratObject</span>(<span class="dt">counts =</span> cbmc.rna)
+
+<span class="co"># standard log-normalization</span>
+cbmc &lt;-<span class="st"> </span><span class="kw">NormalizeData</span>(cbmc)
+
+<span class="co"># choose ~1k variable features</span>
+cbmc &lt;-<span class="st"> </span><span class="kw">FindVariableFeatures</span>(cbmc)
+
+<span class="co"># standard scaling (no regression)</span>
+cbmc &lt;-<span class="st"> </span><span class="kw">ScaleData</span>(cbmc)
+
+<span class="co"># Run PCA, select 13 PCs for tSNE visualization and graph-based clustering</span>
+cbmc &lt;-<span class="st"> </span><span class="kw">RunPCA</span>(cbmc, <span class="dt">verbose =</span> <span class="ot">FALSE</span>)
+<span class="kw">ElbowPlot</span>(cbmc, <span class="dt">ndims =</span> <span class="dv">50</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/get%20clusters%20from%20RNA-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cbmc &lt;-<span class="st"> </span><span class="kw">FindNeighbors</span>(cbmc, <span class="dt">dims =</span> <span class="dv">1</span>:<span class="dv">25</span>)
+cbmc &lt;-<span class="st"> </span><span class="kw">FindClusters</span>(cbmc, <span class="dt">resolution =</span> <span class="fl">0.8</span>)
+cbmc &lt;-<span class="st"> </span><span class="kw">RunTSNE</span>(cbmc, <span class="dt">dims =</span> <span class="dv">1</span>:<span class="dv">25</span>, <span class="dt">method =</span> <span class="st">&quot;FIt-SNE&quot;</span>)
+
+<span class="co"># Find the markers that define each cluster, and use these to annotate the clusters, we use</span>
+<span class="co"># max.cells.per.ident to speed up the process</span>
+cbmc.rna.markers &lt;-<span class="st"> </span><span class="kw">FindAllMarkers</span>(cbmc, <span class="dt">max.cells.per.ident =</span> <span class="dv">100</span>, <span class="dt">min.diff.pct =</span> <span class="fl">0.3</span>, <span class="dt">only.pos =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+## 
+## Number of nodes: 8617
+## Number of edges: 347548
+## 
+## Running Louvain algorithm...
+## Maximum modularity in 10 random starts: 0.8592
+## Number of communities: 19
+## Elapsed time: 1 seconds</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note, for simplicity we are merging two CD14+ Monocyte clusters (that differ in expression of</span>
+<span class="co"># HLA-DR genes) and NK clusters (that differ in cell cycle stage)</span>
+new.cluster.ids &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Memory CD4 T&quot;</span>, <span class="st">&quot;CD14+ Mono&quot;</span>, <span class="st">&quot;Naive CD4 T&quot;</span>, <span class="st">&quot;NK&quot;</span>, <span class="st">&quot;CD14+ Mono&quot;</span>, <span class="st">&quot;Mouse&quot;</span>, <span class="st">&quot;B&quot;</span>, 
+    <span class="st">&quot;CD8 T&quot;</span>, <span class="st">&quot;CD16+ Mono&quot;</span>, <span class="st">&quot;T/Mono doublets&quot;</span>, <span class="st">&quot;NK&quot;</span>, <span class="st">&quot;CD34+&quot;</span>, <span class="st">&quot;Multiplets&quot;</span>, <span class="st">&quot;Mouse&quot;</span>, <span class="st">&quot;Eryth&quot;</span>, <span class="st">&quot;Mk&quot;</span>, 
+    <span class="st">&quot;Mouse&quot;</span>, <span class="st">&quot;DC&quot;</span>, <span class="st">&quot;pDCs&quot;</span>)
+<span class="kw">names</span>(new.cluster.ids) &lt;-<span class="st"> </span><span class="kw">levels</span>(cbmc)
+cbmc &lt;-<span class="st"> </span><span class="kw">RenameIdents</span>(cbmc, new.cluster.ids)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">DimPlot</span>(cbmc, <span class="dt">label =</span> <span class="ot">TRUE</span>) +<span class="st"> </span><span class="kw">NoLegend</span>()</code></pre></div>
+<p><img src="lab_files/figure-html/get%20clusters%20from%20RNA%204-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="add-the-protein-expression-levels-to-the-seurat-object" class="section level3">
+<h3><span class="header-section-number">1.1.3</span> Add the protein expression levels to the Seurat object</h3>
+<p>Seurat v3.0 allows you to store information from multiple assays in the same object, as long as the data is multi-modal (collected on the same set of cells). You can use the <em>SetAssayData</em> and <em>GetAssayData</em> accessor functions to add and fetch data from additional assays.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># We will define an ADT assay, and store raw counts for it</span>
+
+<span class="co"># If you are interested in how these data are internally stored, you can check out the Assay</span>
+<span class="co"># class, which is defined in objects.R; note that all single-cell expression data, including RNA</span>
+<span class="co"># data, are still stored in Assay objects, and can also be accessed using GetAssayData</span>
+cbmc[[<span class="st">&quot;ADT&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">CreateAssayObject</span>(<span class="dt">counts =</span> cbmc.adt)
+
+<span class="co"># Now we can repeat the preprocessing (normalization and scaling) steps that we typically run</span>
+<span class="co"># with RNA, but modifying the &#39;assay&#39; argument.  For CITE-seq data, we do not recommend typical</span>
+<span class="co"># LogNormalization. Instead, we use a centered log-ratio (CLR) normalization, computed</span>
+<span class="co"># independently for each feature.  This is a slightly improved procedure from the original</span>
+<span class="co"># publication, and we will release more advanced versions of CITE-seq normalizations soon.</span>
+cbmc &lt;-<span class="st"> </span><span class="kw">NormalizeData</span>(cbmc, <span class="dt">assay =</span> <span class="st">&quot;ADT&quot;</span>, <span class="dt">normalization.method =</span> <span class="st">&quot;CLR&quot;</span>)
+cbmc &lt;-<span class="st"> </span><span class="kw">ScaleData</span>(cbmc, <span class="dt">assay =</span> <span class="st">&quot;ADT&quot;</span>)</code></pre></div>
+</div>
+<div id="visualize-protein-levels-on-rna-clusters" class="section level3">
+<h3><span class="header-section-number">1.1.4</span> Visualize protein levels on RNA clusters</h3>
+<p>You can use the names of any ADT markers, (i.e. ???adt_CD4???), in FetchData, FeaturePlot, RidgePlot, FeatureScatter, DoHeatmap, or any other <a href="http://satijalab.org/seurat/visualization_vignette.html">visualization features</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># in this plot, protein (ADT) levels are on top, and RNA levels are on the bottom</span>
+F =<span class="st"> </span><span class="kw">FeaturePlot</span>(cbmc, <span class="dt">features =</span> <span class="kw">c</span>(<span class="st">&quot;adt_CD3&quot;</span>, <span class="st">&quot;adt_CD11c&quot;</span>, <span class="st">&quot;adt_CD8&quot;</span>, <span class="st">&quot;adt_CD16&quot;</span>, <span class="st">&quot;CD3E&quot;</span>, <span class="st">&quot;ITGAX&quot;</span>, <span class="st">&quot;CD8A&quot;</span>, 
+    <span class="st">&quot;FCGR3A&quot;</span>), <span class="dt">min.cutoff =</span> <span class="st">&quot;q05&quot;</span>, <span class="dt">max.cutoff =</span> <span class="st">&quot;q95&quot;</span>, <span class="dt">ncol =</span> <span class="dv">4</span>, <span class="dt">combine=</span><span class="ot">FALSE</span>)
+
+for(i in <span class="dv">1</span>:<span class="kw">length</span>(F)) {
+  F[[i]] &lt;-<span class="st"> </span>F[[i]] +<span class="st"> </span><span class="kw">NoLegend</span>()
+}
+cowplot::<span class="kw">plot_grid</span>(<span class="dt">plotlist =</span> F, <span class="dt">ncol =</span>  <span class="dv">4</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Visualize%20protein%20expression%20levels%201-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">RidgePlot</span>(cbmc, <span class="dt">features =</span> <span class="kw">c</span>(<span class="st">&quot;adt_CD3&quot;</span>, <span class="st">&quot;adt_CD11c&quot;</span>, <span class="st">&quot;adt_CD8&quot;</span>, <span class="st">&quot;adt_CD16&quot;</span>), <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Visualize%20protein%20expression%20levels%202-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Draw ADT scatter plots (like biaxial plots for FACS). Note that you can even &#39;gate&#39; cells if</span>
+<span class="co"># desired by using HoverLocator and FeatureLocator</span>
+<span class="kw">FeatureScatter</span>(cbmc, <span class="dt">feature1 =</span> <span class="st">&quot;adt_CD19&quot;</span>, <span class="dt">feature2 =</span> <span class="st">&quot;adt_CD3&quot;</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Visualize%20protein%20expression%20levels%203-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># view relationship between protein and RNA</span>
+<span class="kw">FeatureScatter</span>(cbmc, <span class="dt">feature1 =</span> <span class="st">&quot;adt_CD3&quot;</span>, <span class="dt">feature2 =</span> <span class="st">&quot;CD3E&quot;</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Visualize%20protein%20expression%20levels%204-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Let&#39;s plot CD4 vs CD8 levels in T cells</span>
+tcells &lt;-<span class="st"> </span><span class="kw">subset</span>(cbmc, <span class="dt">idents =</span> <span class="kw">c</span>(<span class="st">&quot;Naive CD4 T&quot;</span>, <span class="st">&quot;Memory CD4 T&quot;</span>, <span class="st">&quot;CD8 T&quot;</span>))
+<span class="kw">FeatureScatter</span>(tcells, <span class="dt">feature1 =</span> <span class="st">&quot;adt_CD4&quot;</span>, <span class="dt">feature2 =</span> <span class="st">&quot;adt_CD8&quot;</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Visualize%20protein%20expression%20levels%205-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Let&#39;s look at the raw (non-normalized) ADT counts. You can see the values are quite high,</span>
+<span class="co"># particularly in comparison to RNA values. This is due to the significantly higher protein copy</span>
+<span class="co"># number in cells, which significantly reduces &#39;drop-out&#39; in ADT data</span>
+<span class="kw">FeatureScatter</span>(tcells, <span class="dt">feature1 =</span> <span class="st">&quot;adt_CD4&quot;</span>, <span class="dt">feature2 =</span> <span class="st">&quot;adt_CD8&quot;</span>, <span class="dt">slot =</span> <span class="st">&quot;counts&quot;</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Visualize%20protein%20expression%20level%206-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /> If you look a bit more closely, you???ll see that our CD8 T cell cluster is enriched for CD8 T cells, but still contains many CD4+ CD8- T cells. This is because Naive CD4 and CD8 T cells are quite similar transcriptomically, and the RNA dropout levels for CD4 and CD8 are quite high. This demonstrates the challenge of defining subtle immune cell differences from scRNA-seq data alone.</p>
+</div>
+<div id="identify-differentially-expressed-proteins-between-clusters" class="section level3">
+<h3><span class="header-section-number">1.1.5</span> Identify differentially expressed proteins between clusters</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Downsample the clusters to a maximum of 300 cells each (makes the heatmap easier to see for</span>
+<span class="co"># small clusters)</span>
+cbmc.small &lt;-<span class="st"> </span><span class="kw">subset</span>(cbmc, <span class="dt">downsample =</span> <span class="dv">300</span>)
+
+<span class="co"># Find protein markers for all clusters, and draw a heatmap</span>
+adt.markers &lt;-<span class="st"> </span><span class="kw">FindAllMarkers</span>(cbmc.small, <span class="dt">assay =</span> <span class="st">&quot;ADT&quot;</span>, <span class="dt">only.pos =</span> <span class="ot">TRUE</span>)
+<span class="kw">DoHeatmap</span>(cbmc.small, <span class="dt">features =</span> <span class="kw">unique</span>(adt.markers$gene), <span class="dt">assay =</span> <span class="st">&quot;ADT&quot;</span>, <span class="dt">angle =</span> <span class="dv">90</span>) +<span class="st"> </span><span class="kw">NoLegend</span>()</code></pre></div>
+<p><img src="lab_files/figure-html/Identify%20differentailly%202-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<p>You can see that our unknown cells co-express both myeloid and lymphoid markers (true at the RNA level as well). They are likely cell clumps (multiplets) that should be discarded. We’ll remove the mouse cells now as well</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cbmc &lt;-<span class="st"> </span><span class="kw">subset</span>(cbmc, <span class="dt">idents =</span> <span class="kw">c</span>(<span class="st">&quot;Multiplets&quot;</span>, <span class="st">&quot;Mouse&quot;</span>), <span class="dt">invert =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+<div id="cluster-directly-on-protein-levels" class="section level3">
+<h3><span class="header-section-number">1.1.6</span> Cluster directly on protein levels</h3>
+<p>You can also run dimensional reduction and graph-based clustering directly on CITE-seq data</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Because we&#39;re going to be working with the ADT data extensively, we&#39;re going to switch the</span>
+<span class="co"># default assay to the &#39;CITE&#39; assay.  This will cause all functions to use ADT data by default,</span>
+<span class="co"># rather than requiring us to specify it each time</span>
+<span class="kw">DefaultAssay</span>(cbmc) &lt;-<span class="st"> &quot;ADT&quot;</span>
+cbmc &lt;-<span class="st"> </span><span class="kw">RunPCA</span>(cbmc, <span class="dt">features =</span> <span class="kw">rownames</span>(cbmc), <span class="dt">reduction.name =</span> <span class="st">&quot;pca_adt&quot;</span>, <span class="dt">reduction.key =</span> <span class="st">&quot;pca_adt_&quot;</span>, 
+    <span class="dt">verbose =</span> <span class="ot">FALSE</span>)
+<span class="kw">DimPlot</span>(cbmc, <span class="dt">reduction =</span> <span class="st">&quot;pca_adt&quot;</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Cluster%20directly%20on%20protein%20levels-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Since we only have 10 markers, instead of doing PCA, we&#39;ll just use a standard euclidean</span>
+<span class="co"># distance matrix here.  Also, this provides a good opportunity to demonstrate how to do</span>
+<span class="co"># visualization and clustering using a custom distance matrix in Seurat</span>
+adt.data &lt;-<span class="st"> </span><span class="kw">GetAssayData</span>(cbmc, <span class="dt">slot =</span> <span class="st">&quot;data&quot;</span>)
+adt.dist &lt;-<span class="st"> </span><span class="kw">dist</span>(<span class="kw">t</span>(adt.data))
+
+<span class="co"># Before we recluster the data on ADT levels, we&#39;ll stash the RNA cluster IDs for later</span>
+cbmc[[<span class="st">&quot;rnaClusterID&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">Idents</span>(cbmc)
+
+<span class="co"># Now, we rerun tSNE using our distance matrix defined only on ADT (protein) levels.</span>
+cbmc[[<span class="st">&quot;tsne_adt&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">RunTSNE</span>(adt.dist, <span class="dt">assay =</span> <span class="st">&quot;ADT&quot;</span>, <span class="dt">reduction.key =</span> <span class="st">&quot;adtTSNE_&quot;</span>)
+cbmc[[<span class="st">&quot;adt_snn&quot;</span>]] &lt;-<span class="st"> </span><span class="kw">FindNeighbors</span>(adt.dist)$snn
+cbmc &lt;-<span class="st"> </span><span class="kw">FindClusters</span>(cbmc, <span class="dt">resolution =</span> <span class="fl">0.2</span>, <span class="dt">graph.name =</span> <span class="st">&quot;adt_snn&quot;</span>)
+
+<span class="co"># We can compare the RNA and protein clustering, and use this to annotate the protein clustering</span>
+<span class="co"># (we could also of course use FindMarkers)</span>
+clustering.table &lt;-<span class="st"> </span><span class="kw">table</span>(<span class="kw">Idents</span>(cbmc), cbmc$rnaClusterID)
+clustering.table</code></pre></div>
+<pre><code>## Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck
+## 
+## Number of nodes: 7895
+## Number of edges: 258146
+## 
+## Running Louvain algorithm...
+## Maximum modularity in 10 random starts: 0.9491
+## Number of communities: 11
+## Elapsed time: 0 seconds
+##     
+##      Memory CD4 T CD14+ Mono Naive CD4 T   NK    B CD8 T CD16+ Mono
+##   0          1754          0        1217   29    0    27          0
+##   1             0       2189           0    4    0     0         30
+##   2             3          0           2  890    3     1          0
+##   3             0          4           0    2  319     0          2
+##   4            24          0          18    4    1   243          0
+##   5             1         27           4  157    2     2         10
+##   6             4          5           0    1    0     0          0
+##   7             4         59           4    0    0     0          9
+##   8             0          9           0    2    0     0        179
+##   9             0          0           1    0    0     0          0
+##   10            1          0           2    0   25     0          0
+##     
+##      T/Mono doublets CD34+ Eryth   Mk   DC pDCs
+##   0                5     2     4   24    1    2
+##   1                1     1     5   25   55    0
+##   2                0     1     3    7    2    1
+##   3                0     2     2    3    0    0
+##   4                0     0     1    2    0    0
+##   5               56     0     9   16    6    2
+##   6                1   113    81   16    5    0
+##   7              117     0     0    2    0    1
+##   8                0     0     0    1    0    0
+##   9                0     0     0    0    1   43
+##   10               2     0     0    0    0    0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">new.cluster.ids &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;CD4 T&quot;</span>, <span class="st">&quot;CD14+ Mono&quot;</span>, <span class="st">&quot;NK&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;CD8 T&quot;</span>, <span class="st">&quot;NK&quot;</span>, <span class="st">&quot;CD34+&quot;</span>, <span class="st">&quot;T/Mono doublets&quot;</span>, 
+    <span class="st">&quot;CD16+ Mono&quot;</span>, <span class="st">&quot;pDCs&quot;</span>, <span class="st">&quot;B&quot;</span>)
+<span class="kw">names</span>(new.cluster.ids) &lt;-<span class="st"> </span><span class="kw">levels</span>(cbmc)
+cbmc &lt;-<span class="st"> </span><span class="kw">RenameIdents</span>(cbmc, new.cluster.ids)
+
+tsne_rnaClusters &lt;-<span class="st"> </span><span class="kw">DimPlot</span>(cbmc, <span class="dt">reduction =</span> <span class="st">&quot;tsne_adt&quot;</span>, <span class="dt">group.by =</span> <span class="st">&quot;rnaClusterID&quot;</span>) +<span class="st"> </span><span class="kw">NoLegend</span>()
+tsne_rnaClusters &lt;-<span class="st"> </span>tsne_rnaClusters +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Clustering based on scRNA-seq&quot;</span>) +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">hjust =</span> <span class="fl">0.5</span>))
+tsne_rnaClusters &lt;-<span class="st"> </span><span class="kw">LabelClusters</span>(<span class="dt">plot =</span> tsne_rnaClusters, <span class="dt">id =</span> <span class="st">&quot;rnaClusterID&quot;</span>, <span class="dt">size =</span> <span class="dv">4</span>)
+
+tsne_adtClusters &lt;-<span class="st"> </span><span class="kw">DimPlot</span>(cbmc, <span class="dt">reduction =</span> <span class="st">&quot;tsne_adt&quot;</span>, <span class="dt">pt.size =</span> <span class="fl">0.5</span>) +<span class="st"> </span><span class="kw">NoLegend</span>()
+tsne_adtClusters &lt;-<span class="st"> </span>tsne_adtClusters +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Clustering based on ADT signal&quot;</span>) +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">hjust =</span> <span class="fl">0.5</span>))
+tsne_adtClusters &lt;-<span class="st"> </span><span class="kw">LabelClusters</span>(<span class="dt">plot =</span> tsne_adtClusters, <span class="dt">id =</span> <span class="st">&quot;ident&quot;</span>, <span class="dt">size =</span> <span class="dv">4</span>)
+
+<span class="co"># Note: for this comparison, both the RNA and protein clustering are visualized on a tSNE</span>
+<span class="co"># generated using the ADT distance matrix.</span>
+<span class="kw">CombinePlots</span>(<span class="dt">plots =</span> <span class="kw">list</span>(tsne_rnaClusters, tsne_adtClusters), <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Cluster%20directly%20on%20protein%20levels%203-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<p>The ADT-based clustering yields similar results, but with a few differences</p>
+<ul>
+<li>Clustering is improved for CD4/CD8 T cell populations, based on the robust ADT data for CD4, CD8, CD14, and CD45RA</li>
+<li>However, some clusters for which the ADT data does not contain good distinguishing protein markers (i.e. Mk/Ery/DC) lose separation</li>
+</ul>
+<p>You can verify this using FindMarkers at the RNA level, as well</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tcells &lt;-<span class="st"> </span><span class="kw">subset</span>(cbmc, <span class="dt">idents =</span> <span class="kw">c</span>(<span class="st">&quot;CD4 T&quot;</span>, <span class="st">&quot;CD8 T&quot;</span>))
+<span class="kw">FeatureScatter</span>(tcells, <span class="dt">feature1 =</span> <span class="st">&quot;CD4&quot;</span>, <span class="dt">feature2 =</span> <span class="st">&quot;CD8&quot;</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Cluster%20directly%20on%20protein%20levels%204-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">RidgePlot</span>(cbmc, <span class="dt">features =</span> <span class="kw">c</span>(<span class="st">&quot;adt_CD11c&quot;</span>, <span class="st">&quot;adt_CD8&quot;</span>, <span class="st">&quot;adt_CD16&quot;</span>, <span class="st">&quot;adt_CD4&quot;</span>, <span class="st">&quot;adt_CD19&quot;</span>, <span class="st">&quot;adt_CD14&quot;</span>), 
+    <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Cluster%20directly%20on%20protein%20levels%205-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+</div>
+</div>
+<div id="using-sparc-with-multi-modal-data" class="section level1">
+<h1><span class="header-section-number">2</span> Using SPARC with multi-modal data</h1>
+<div id="load-in-the-data-1" class="section level2">
+<h2><span class="header-section-number">2.1</span> Load in the data</h2>
+<p>This lab demonstrates new features that allow users to analyze and explore multi-modal data from SPARC.</p>
+<p>In this exercise we will analyse 256 single cells were RNA-seq data and protein data for 90 intracellular proteins have been generated per cell. The cells are primed embryonic stem cells from human and have been taken at 0, 24 and 48 hours after being stable stem cells. More information about the protocol and the data can be found in the article.</p>
+<p>At this point you need to put the data that you downloaded in a folder and point to it.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SPARC_protein_RNA_file =<span class="st"> &quot;data/SPARC_RNA_protein.tsv.gz&quot;</span> 
+SPARC_RNA_RPKM_file =<span class="st"> &quot;data/SPARC.RNA.lrpkm.tsv.gz&quot;</span>
+POUF5I_chipSeq_file =<span class="st"> &quot;data/POUF5I_chipSeq_file.tsv&quot;</span>
+
+
+cbPalette &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#FF0000&quot;</span>,<span class="st">&quot;#0000FF&quot;</span>, <span class="st">&quot;#0072B2&quot;</span>, <span class="st">&quot;#F0E442&quot;</span> , <span class="st">&quot;#CC79A7&quot;</span>, <span class="st">&quot;#999999&quot;</span>, <span class="st">&quot;#E69F00&quot;</span>, <span class="st">&quot;#56B4E9&quot;</span>)
+
+timePalette &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#009E73&quot;</span>,<span class="st">&quot;#D55E00&quot;</span>, <span class="st">&quot;#0072B2&quot;</span>,<span class="st">&quot;#000000&quot;</span>, <span class="st">&quot;#F0E442&quot;</span> , <span class="st">&quot;#CC79A7&quot;</span>, <span class="st">&quot;#E69F00&quot;</span>, <span class="st">&quot;#56B4E9&quot;</span>)
+moleculePalette &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;#FF0000&quot;</span>,<span class="st">&quot;#0000FF&quot;</span>)
+cellCyclePallete &lt;-<span class="kw">c</span>(<span class="st">&quot;#999999&quot;</span> , <span class="st">&quot;#CC79A7&quot;</span>, <span class="st">&quot;#E69F00&quot;</span>)
+
+proteinExamples =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;SOX2&quot;</span>, <span class="st">&quot;POU5F1&quot;</span>,<span class="st">&quot;EPCAM&quot;</span>, <span class="st">&quot;TP53&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load in the  RNA and protein  normalised data set</span>
+SPARC.data&lt;-<span class="st"> </span><span class="kw">read.table</span>(SPARC_protein_RNA_file, <span class="dt">header =</span> T, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+
+<span class="kw">summary</span>(SPARC.data)
+<span class="co"># Check what the file contains.</span>
+
+
+sampleInfoColums =<span class="st"> </span><span class="kw">colnames</span>(SPARC.data)[<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">11</span>,<span class="dv">12</span>,<span class="dv">13</span>:<span class="dv">23</span>)]
+
+sampleInfo =<span class="st"> </span>SPARC.data %&gt;%<span class="st"> </span><span class="kw">select</span>(sampleInfoColums) %&gt;%<span class="st"> </span>dplyr::<span class="kw">distinct</span>(sample, <span class="dt">.keep_all=</span> <span class="ot">TRUE</span>) </code></pre></div>
+<pre><code>##      geneID                   sample        type        time     
+##  ABL1   :  244   Comb_0h_FACS_G12:   91   FACS:  546   0h :7644  
+##  ADAM9  :  244   Comb_0h_FACS_H12:   91   sc  :21658   24h:6734  
+##  ALCAM  :  244   Comb_0h_sc_A10  :   91                48h:7826  
+##  ANXA1  :  244   Comb_0h_sc_A11  :   91                          
+##  APP    :  244   Comb_0h_sc_A12  :   91                          
+##  AURKA  :  244   Comb_0h_sc_A2   :   91                          
+##  (Other):20740   (Other)         :21658                          
+##        Cq          proteinsPerGene  CqSumPerGene       CqSumPerSample  
+##  Min.   : 0.0000   Min.   :  1.0   Min.   :   0.0195   Min.   : 22.30  
+##  1st Qu.: 0.0000   1st Qu.: 29.0   1st Qu.:  19.5534   1st Qu.: 41.43  
+##  Median : 0.0000   Median : 92.0   Median :  48.1026   Median : 49.24  
+##  Mean   : 0.6277   Mean   :135.7   Mean   : 183.8454   Mean   : 57.13  
+##  3rd Qu.: 0.6221   3rd Qu.:266.0   3rd Qu.: 208.1483   3rd Qu.: 57.18  
+##  Max.   :14.6423   Max.   :328.0   Max.   :2321.8301   Max.   :407.72  
+##                                                                        
+##  proteinsPerSample      RPKM         RPKM_mean      RNAsPerSample 
+##  Min.   :18.00     Min.   :0.000   Min.   :0.7065   Min.   :3315  
+##  1st Qu.:36.00     1st Qu.:0.000   1st Qu.:1.5393   1st Qu.:5306  
+##  Median :40.00     Median :0.437   Median :2.4608   Median :5963  
+##  Mean   :41.84     Mean   :1.506   Mean   :2.5157   Mean   :5939  
+##  3rd Qu.:46.00     3rd Qu.:2.952   3rd Qu.:3.1987   3rd Qu.:6613  
+##  Max.   :85.00     Max.   :6.596   Max.   :5.5706   Max.   :8206  
+##                                                     NA&#39;s   :546   
+##  CCcyclone      cyclone_G1      cyclone_G2M       cyclone_S     
+##  G1  :  273   Min.   :0.0000   Min.   :0.0000   Min.   :0.0000  
+##  G2M : 9555   1st Qu.:0.0000   1st Qu.:0.0390   1st Qu.:0.0280  
+##  S   :11830   Median :0.0030   Median :0.3040   Median :0.4000  
+##  NA&#39;s:  546   Mean   :0.0503   Mean   :0.4392   Mean   :0.4339  
+##               3rd Qu.:0.0410   3rd Qu.:0.9000   3rd Qu.:0.8580  
+##               Max.   :0.6960   Max.   :1.0000   Max.   :1.0000  
+##               NA&#39;s   :546      NA&#39;s   :546      NA&#39;s   :546     
+##  CCseurat        seurat_S         seurat_G2M      RNA_seurat_tSNE_1 
+##  G1  : 1729   Min.   :-0.3772   Min.   :-0.2813   Min.   :-17.2206  
+##  G2M :10192   1st Qu.:-0.0298   1st Qu.:-0.0257   1st Qu.: -8.3883  
+##  S   : 9737   Median : 0.1113   Median : 0.1334   Median :  2.8253  
+##  NA&#39;s:  546   Mean   : 0.1014   Mean   : 0.1738   Mean   : -0.0394  
+##               3rd Qu.: 0.2425   3rd Qu.: 0.3316   3rd Qu.:  6.7580  
+##               Max.   : 0.5795   Max.   : 0.9882   Max.   : 12.4551  
+##               NA&#39;s   :546       NA&#39;s   :546       NA&#39;s   :546       
+##    RNA_tSNE_2         RNA_tSNE_3       RNA_seurat_pseudoTime
+##  Min.   :-23.9167   Min.   :-10.3168   Min.   : 0.000       
+##  1st Qu.:-13.1557   1st Qu.: -5.0088   1st Qu.: 6.847       
+##  Median :  5.2974   Median :  0.7028   Median :20.984       
+##  Mean   : -0.0689   Mean   : -0.0566   Mean   :23.033       
+##  3rd Qu.:  9.6313   3rd Qu.:  4.2409   3rd Qu.:39.357       
+##  Max.   : 17.0882   Max.   : 10.4958   Max.   :48.000       
+##  NA&#39;s   :546        NA&#39;s   :546        NA&#39;s   :546</code></pre>
+</div>
+<div id="initial-filtering-and-qc" class="section level2">
+<h2><span class="header-section-number">2.2</span> Initial filtering and QC</h2>
+<p>We have generated data for 100 cells and it should be a correlation between the expression of 100 cells and the expression of 100 single cells.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># remove all genes that does not have good representation in the FACS sorted 100 cells </span>
+
+<span class="co">#Keep only FACS data</span>
+SPARC.data.FACS =<span class="st"> </span>SPARC.data[SPARC.data$type ==<span class="st"> &quot;FACS&quot;</span>, ] %&gt;%<span class="st"> </span><span class="kw">select</span>(geneID, time,Cq)
+
+
+<span class="co"># Create similair data using sc data by calculating mean multiply qith 100 and divide by number of samples</span>
+SPARC.data.sc =<span class="st"> </span>SPARC.data[SPARC.data$type !=<span class="st"> &quot;FACS&quot;</span>, ]
+SPARC.data.sc.summarize =<span class="st"> </span>SPARC.data.sc %&gt;%<span class="st"> </span>dplyr::<span class="kw">group_by</span>(geneID, time,type) %&gt;%
+<span class="st">  </span>dplyr::<span class="kw">summarize</span>(<span class="dt">Cq_sc =</span> <span class="kw">sum</span>(Cq)*<span class="dv">100</span> /<span class="kw">n</span>() )
+
+
+<span class="co"># Merge the two too see how many that correlate well. </span>
+test =<span class="st"> </span><span class="kw">merge</span>(SPARC.data.FACS,<span class="kw">as.data.frame</span>(SPARC.data.sc.summarize) ,<span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;geneID&quot;</span>, <span class="st">&quot;time&quot;</span>))
+<span class="kw">ggplot</span>(<span class="dt">data =</span> test, <span class="dt">mapping =</span> <span class="kw">aes</span>(Cq_sc,Cq))+<span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="lab_files/figure-html/Initial%20analysis%20on%20protein%20data-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /> As shown by the plot there is a correlation between the single cells and the FACS data if the FACS expression level is high but not if the FACS expression level is low.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Keep all proteins where there is at least one FACS sample with Cq &gt; 3</span>
+
+geneID_QC_FACS =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(SPARC.data.FACS$geneID[SPARC.data.FACS$Cq &gt;<span class="st"> </span><span class="dv">3</span> ]))  
+
+
+<span class="co"># remove all genes where the logged RPKM is less than 1</span>
+geneID_QC_RPKM =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(SPARC.data$geneID[SPARC.data$RPKM_mean &gt;<span class="st"> </span><span class="dv">1</span> ]))  
+
+
+<span class="co"># Keep only the genes that is found in both sets</span>
+geneID_QC =<span class="st"> </span><span class="kw">intersect</span>(geneID_QC_FACS,geneID_QC_RPKM)
+
+
+
+<span class="co">#Create QC data set</span>
+SPARC.data.QC =<span class="st"> </span>SPARC.data[SPARC.data$geneID %in%<span class="st"> </span>geneID_QC, ]</code></pre></div>
+<p>Now we have a data set with genes</p>
+</div>
+<div id="correlation-between-the-rna-and-the-protein-expression-levels-in-the-cell." class="section level2">
+<h2><span class="header-section-number">2.3</span> Correlation between the RNA and the protein expression levels in the cell.</h2>
+<p>As a first glimpse of the data and how it changes over time is to view how the different proteins changes over time.</p>
+<div id="produce-violin-plot-for-both-data" class="section level3">
+<h3><span class="header-section-number">2.3.1</span> Produce violin plot for both data</h3>
+<p>Here we can compare if the data that we get for protein and RNA and separate them over time. The dots in the violin plots are the FACS results.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Plot function used in the sample
+plotExpressionViolinPlot  &lt;-<span class="st"> </span>function(expressionInfoGene,geneID ,moleculePalette, <span class="dt">legend =</span> <span class="ot">FALSE</span>){ 
+  plot =<span class="st"> </span><span class="kw">ggplot</span>(expressionInfoGene[expressionInfoGene$type ==<span class="st"> &quot;sc&quot;</span>,], 
+                <span class="kw">aes</span> (<span class="dt">x =</span> time, <span class="dt">y =</span> expression, <span class="dt">fill =</span> molecule)
+  )+<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_violin</span>(<span class="dt">size =</span> <span class="fl">0.5</span>)+
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>moleculePalette)+
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">data =</span>expressionInfoGene[expressionInfoGene$type ==<span class="st"> &quot;FACS&quot;</span>,],
+               <span class="kw">aes</span> (<span class="dt">x =</span> time, <span class="dt">y =</span> expression, <span class="dt">fill =</span> molecule),<span class="dt">size =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">facet_grid</span>(<span class="dt">rows =</span> <span class="st">&quot;molecule&quot;</span>)
+  
+  
+  if(!legend){
+    plot =<span class="st"> </span>plot +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position=</span><span class="st">&quot;none&quot;</span>)
+  }
+  plot =<span class="st"> </span>plot +<span class="st"> </span><span class="kw">ggtitle</span>(geneID)+<span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>), <span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">7</span>))+
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">7</span>, <span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>, <span class="dt">vjust =</span> .<span class="dv">5</span>),
+          <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">7</span>, <span class="dt">angle =</span> <span class="dv">0</span>),  
+          <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>),
+          <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>),
+          <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">10</span>))
+  
+  <span class="kw">return</span>(plot)
+}
+
+
+## Select only the relevant columns used in this analysis
+expressionInfo =<span class="st"> </span>SPARC.data.QC %&gt;%<span class="st"> </span><span class="kw">select</span>(geneID, sample, RPKM, Cq, time, type)
+
+## Put RNA levels and protein levels in the same column
+expressionInfoGathered =<span class="st"> </span>expressionInfo %&gt;%<span class="st"> </span><span class="kw">gather</span>(RPKM, Cq , <span class="dt">key =</span> molecule, <span class="dt">value =</span> expression)
+
+
+violinPlots =<span class="st"> </span><span class="kw">list</span>()
+for(i in <span class="dv">1</span>:<span class="kw">length</span>(geneID_QC)){
+  <span class="co"># Extract information pergene</span>
+  expressionInfoGene =<span class="st"> </span>expressionInfoGathered[expressionInfoGathered$geneID ==<span class="st"> </span>geneID_QC[i],]
+  
+  <span class="co"># Create violin plot for data</span>
+  plot =<span class="st"> </span><span class="kw">plotExpressionViolinPlot</span>(expressionInfoGene,geneID_QC[i] , moleculePalette)
+  
+  <span class="co"># add the plots in the list</span>
+  violinPlots[i] =<span class="st"> </span><span class="kw">list</span>(plot)
+  
+}
+
+<span class="co"># Plot example proteins to screen</span>
+violinPlotExample  =<span class="st"> </span>violinPlots[<span class="kw">which</span>(geneID_QC %in%<span class="st"> </span>proteinExamples)]
+<span class="kw">grid.arrange</span>(<span class="dt">grobs =</span> violinPlotExample, <span class="dt">ncol=</span><span class="dv">2</span>)
+
+
+<span class="co"># Plot all to file</span>
+<span class="co">#filename = paste( &quot;figures/violinPlots_multiple.pdf&quot;,sep = &quot;/&quot;)</span>
+<span class="co">#ggsave(filename, marrangeGrob(grobs = violinPlots, nrow=3, ncol=3) ,width = 4.51, height = 7.29)</span></code></pre></div>
+<p><img src="lab_files/figure-html/violin%20plot-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="produce-scatter-plot-for-both-data" class="section level3">
+<h3><span class="header-section-number">2.3.2</span> Produce scatter plot for both data</h3>
+<p>Here we can look at each single cell and see how they correlate.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># extract relevant column from the data</span>
+expressionInfo =<span class="st"> </span>SPARC.data %&gt;%<span class="st"> </span><span class="kw">select</span>(geneID, sample, RPKM, Cq, time, type)
+
+<span class="co">#only look at single cell samples</span>
+expressionInfo.sc =<span class="st"> </span>expressionInfo[expressionInfo$type ==<span class="st"> &quot;sc&quot;</span>, ]
+
+
+
+scatterPlots =<span class="st"> </span><span class="kw">list</span>()
+
+for(i in <span class="dv">1</span>:<span class="kw">length</span>(geneID_QC)){
+  expressionInfo.sc.gene =<span class="st"> </span>expressionInfo.sc[expressionInfo.sc$geneID ==<span class="st"> </span>geneID_QC[i],]
+  
+  scatterPlot =<span class="st"> </span><span class="kw">ggplot</span>(expressionInfo.sc.gene,
+                       <span class="kw">aes</span>(RPKM,Cq, <span class="dt">color =</span> time)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)+
+<span class="st">    </span><span class="kw">ggtitle</span>(geneID_QC[i])+<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>timePalette)+<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">7</span>, <span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>, <span class="dt">vjust =</span> .<span class="dv">5</span>),
+          <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">7</span>, <span class="dt">angle =</span> <span class="dv">0</span>),  
+          <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>),
+          <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>),
+          <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">10</span>))
+  
+  scatterPlots[[geneID_QC[i]]] =<span class="st"> </span>scatterPlot
+}
+
+
+<span class="co"># Plot example proteins to screen</span>
+scatterPlotExample  =<span class="st"> </span>scatterPlots[<span class="kw">which</span>(geneID_QC %in%<span class="st"> </span>proteinExamples)]
+<span class="kw">grid.arrange</span>(<span class="dt">grobs =</span> scatterPlotExample, <span class="dt">ncol=</span><span class="dv">2</span>)
+
+
+<span class="co"># Plot all to file</span>
+<span class="co">#filename = paste( &quot;figures/scatterPlot_multiple.pdf&quot;,sep = &quot;/&quot;)</span>
+<span class="co">#ggsave(filename, marrangeGrob(grobs = violinPlots, nrow=3, ncol=3) ,width = 4.51, height = 7.29)</span></code></pre></div>
+<p><img src="lab_files/figure-html/scatter_plot%20for%20SPARC%20data-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<p>As you can see there is little correlation between the RNA levels and the protein levels.</p>
+<p>But still there are some separation between the different times. Maybe a better way to see if there is any correlation is to plot them over time.</p>
+</div>
+<div id="plot-the-expression-over-time." class="section level3">
+<h3><span class="header-section-number">2.3.3</span> Plot the expression over time.</h3>
+<p>In the data file we have determined the pseudo time of each cell. We now want to see if there is better correlation if we compare the data over time.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># extract relevant column from the data</span>
+expressionInfo =<span class="st"> </span>SPARC.data %&gt;%<span class="st"> </span><span class="kw">select</span>(geneID, sample, RPKM, Cq,RNA_seurat_pseudoTime , type)
+
+<span class="co">#only look at single cell samples</span>
+expressionInfo.sc =<span class="st"> </span>expressionInfo[expressionInfo$type ==<span class="st"> &quot;sc&quot;</span>, ]
+
+expressionInfo.sc.gathered =<span class="st"> </span>expressionInfo.sc %&gt;%<span class="st"> </span><span class="kw">gather</span>(RPKM, Cq , <span class="dt">key =</span> molecule, <span class="dt">value =</span> expression)
+
+
+
+scatterPlots =<span class="st"> </span><span class="kw">list</span>()
+
+for(i in <span class="dv">1</span>:<span class="kw">length</span>(geneID_QC)){
+  expressionInfo.sc.gathered.gene =<span class="st"> </span>expressionInfo.sc.gathered[expressionInfo.sc$geneID ==<span class="st"> </span>geneID_QC[i],]
+  
+  scatterPlot =<span class="st"> </span><span class="kw">ggplot</span>(expressionInfo.sc.gathered.gene,
+                       <span class="kw">aes</span>(RNA_seurat_pseudoTime,expression, <span class="dt">color =</span> molecule)) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="fl">0.5</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)+
+<span class="st">    </span><span class="kw">geom_smooth</span>()+<span class="st">  </span>
+<span class="st">    </span><span class="kw">ggtitle</span>(geneID_QC[i])+<span class="st"> </span>
+<span class="st">    </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>moleculePalette)+<span class="st"> </span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">7</span>, <span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>, <span class="dt">vjust =</span> .<span class="dv">5</span>),
+          <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">7</span>, <span class="dt">angle =</span> <span class="dv">0</span>),  
+          <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>),
+          <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>),
+          <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">10</span>))
+  
+  scatterPlots[[geneID_QC[i]]] =<span class="st"> </span>scatterPlot
+}
+
+
+<span class="co"># Plot example proteins to screen</span>
+scatterPlotExample  =<span class="st"> </span>scatterPlots[<span class="kw">which</span>(geneID_QC %in%<span class="st"> </span>proteinExamples)]
+<span class="kw">grid.arrange</span>(<span class="dt">grobs =</span> scatterPlotExample, <span class="dt">ncol=</span><span class="dv">2</span>)
+
+
+<span class="co">#Plot all to file</span>
+<span class="co">#filename = paste( &quot;figures/scatterPlot_pseudoTime_multiple.pdf&quot;,sep = &quot;/&quot;)</span>
+<span class="co">#ggsave(filename, marrangeGrob(grobs = violinPlots, nrow=3, ncol=3) ,width = 4.51, height = 7.29)</span></code></pre></div>
+<p><img src="lab_files/figure-html/scatterplot%20over%20time%20for%20SPARC%20data-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<p>As you can see the expression, independent for RNA and protein, change in the same way. One exception is TP53 that is known to have a post transcriptional regulation during the development and is also seen in the data.</p>
+</div>
+</div>
+<div id="create-a-pseudotime-using-the-protein" class="section level2">
+<h2><span class="header-section-number">2.4</span> Create a pseudotime using the protein</h2>
+<p>In this analysis we will analyse if protein data also represent the differentiation of cells over time.</p>
+<p>To do that we will reduce the dimensions of the proteins space using tSNE and PCA and then use the reduced spaces with a linear pseudo-time program SCORPIUS to determine a pseudo time for each cell.</p>
+<div id="data-structure-handling" class="section level3">
+<h3><span class="header-section-number">2.4.1</span> Data structure handling</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## keep only single cells and only protein expression information
+
+SPARC.data.sc.protein =<span class="st"> </span>SPARC.data.QC  %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(type ==<span class="st">&quot;sc&quot;</span>) %&gt;%<span class="st"> </span><span class="co">#only single cell</span>
+<span class="st">  </span><span class="kw">select</span>(geneID, sample,  Cq) %&gt;%<span class="st"> </span><span class="co"># select columns that are important</span>
+<span class="st">  </span><span class="kw">spread</span>(<span class="dt">key =</span> sample, <span class="dt">value =</span> Cq) <span class="co"># spread the data to a matrix</span>
+<span class="co">#add rownames </span>
+<span class="kw">rownames</span>(SPARC.data.sc.protein) =<span class="st"> </span>SPARC.data.sc.protein$geneID
+
+<span class="co"># remove geneID column and transpose data</span>
+SPARC.data.sc.protein.matrix =<span class="st"> </span><span class="kw">t</span>(SPARC.data.sc.protein %&gt;%<span class="st"> </span><span class="kw">select</span>(-geneID))
+
+
+
+<span class="co"># Normalise protein data so that each cell has the same protein level. </span>
+
+SPARC.data.sc.protein.matrix.normalise =<span class="st"> </span>SPARC.data.sc.protein.matrix/<span class="kw">rowSums</span>(SPARC.data.sc.protein.matrix)</code></pre></div>
+</div>
+<div id="dimensionality-reductions-using-pca" class="section level3">
+<h3><span class="header-section-number">2.4.2</span> Dimensionality reductions using PCA</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">res.pca &lt;-<span class="st"> </span><span class="kw">prcomp</span>(SPARC.data.sc.protein.matrix.normalise, <span class="dt">scale =</span> <span class="ot">TRUE</span>)
+##fviz_eig(res.pca)
+
+
+PCAresults =<span class="st"> </span><span class="kw">as.data.frame</span>(res.pca$x)[<span class="dv">1</span>:<span class="dv">3</span>]
+<span class="kw">colnames</span>(PCAresults) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;PCA_protein1&quot;</span>,<span class="st">&quot;PCA_protein2&quot;</span>,<span class="st">&quot;PCA_protein3&quot;</span> )
+
+PCAresults$sample =<span class="st"> </span><span class="kw">rownames</span>(PCAresults)
+
+sampleInfo =<span class="st"> </span><span class="kw">inner_join</span>(sampleInfo,PCAresults )
+
+
+<span class="kw">ggplot</span>(sampleInfo, <span class="kw">aes</span>(<span class="dt">x =</span> PCA_protein1, <span class="dt">y =</span> PCA_protein2, <span class="dt">color =</span> time))+<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>()+
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>timePalette)</code></pre></div>
+<p><img src="lab_files/figure-html/Dimensionality%20reductions%20using%20PCA-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /> ### Pseudo time analysis on PCA vectors using SCORPIUS</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(SCORPIUS)
+
+PCASpace =<span class="st"> </span>sampleInfo %&gt;%<span class="st"> </span><span class="kw">select</span>(PCA_protein1,PCA_protein2,PCA_protein3)
+
+trajPCA &lt;-<span class="st"> </span><span class="kw">infer_trajectory</span>(PCASpace)
+
+<span class="kw">draw_trajectory_plot</span>(PCASpace, <span class="dt">progression_group =</span> sampleInfo$time, <span class="dt">path =</span> trajPCA$path )+<span class="st"> </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> timePalette)
+
+
+<span class="co"># add predicted pseudo time to sampleInfo. </span>
+sampleInfo[<span class="st">&quot;pseudoTimeProteinPCA&quot;</span>] =<span class="st"> </span>trajPCA$time*<span class="dv">48</span></code></pre></div>
+<p><img src="lab_files/figure-html/pseudo%20time%20analysis%20on%20PCA%20using%20SCORPIUS-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="dimensionality-reductions-using-tsne" class="section level3">
+<h3><span class="header-section-number">2.4.3</span> Dimensionality reductions using tSNE</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rtsne)
+
+
+
+<span class="kw">set.seed</span>(<span class="dv">1201</span>)
+tSNE_protein =<span class="kw">Rtsne</span>(SPARC.data.sc.protein.matrix.normalise,<span class="dt">dims=</span><span class="dv">3</span>,<span class="dt">theta =</span> <span class="fl">0.0</span> , <span class="dt">initial_dims =</span> <span class="dv">150</span> ,<span class="dt">perplexity=</span><span class="dv">30</span>, <span class="dt">PCA =</span> <span class="ot">FALSE</span>)
+
+tsneProjection =<span class="st"> </span><span class="kw">as.data.frame</span>(tSNE_protein$Y)
+<span class="kw">colnames</span>(tsneProjection) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;tSNE_protein1&quot;</span>,<span class="st">&quot;tSNE_protein2&quot;</span>,<span class="st">&quot;tSNE_protein3&quot;</span> )
+
+tsneProjection$sample =<span class="st"> </span><span class="kw">rownames</span>(SPARC.data.sc.protein.matrix)
+
+
+sampleInfo =<span class="st"> </span><span class="kw">inner_join</span>(sampleInfo, tsneProjection)
+<span class="co">#sampleInfo2 = inner_join(sampleInfo1,PCAProjection2)</span>
+
+
+<span class="kw">ggplot</span>(sampleInfo, <span class="kw">aes</span>(<span class="dt">x =</span> tSNE_protein1, <span class="dt">y =</span> tSNE_protein2, <span class="dt">color =</span> time))+<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>()+
+<span class="st">  </span><span class="kw">scale_colour_manual</span>(<span class="dt">values=</span>timePalette)</code></pre></div>
+<p><img src="lab_files/figure-html/Dimensionality%20reductions%20using%20tSNE-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="pseudo-time-analysis-on-tsne-vectors-using-scorpius" class="section level3">
+<h3><span class="header-section-number">2.4.4</span> Pseudo time analysis on tSNE vectors using SCORPIUS</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(SCORPIUS)
+
+tsneSpace =<span class="st"> </span>sampleInfo %&gt;%<span class="st"> </span><span class="kw">select</span>(tSNE_protein1,tSNE_protein2,tSNE_protein3)
+
+trajtSNE &lt;-<span class="st"> </span><span class="kw">infer_trajectory</span>(tsneSpace)
+<span class="kw">draw_trajectory_plot</span>(tsneSpace, <span class="dt">progression_group =</span> sampleInfo$time, 
+                     <span class="dt">path =</span> trajtSNE$path )+<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> timePalette)
+
+sampleInfo[ <span class="st">&quot;pseudoTimeProtein_tSNE&quot;</span>] =<span class="st"> </span>trajtSNE$time*<span class="dv">48</span></code></pre></div>
+<p><img src="lab_files/figure-html/pseudo%20time%20analysis%20on%20tSNE%20using%20SCORPIUS-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="pseudo-time-comparison-between-rna-and-protein-and-methods" class="section level3">
+<h3><span class="header-section-number">2.4.5</span> Pseudo time comparison between RNA and protein and methods</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(knitr)
+<span class="kw">ggplot</span>(sampleInfo, <span class="kw">aes</span>(<span class="dt">x =</span> pseudoTimeProteinPCA, <span class="dt">y =</span> pseudoTimeProtein_tSNE, <span class="dt">color =</span> RNA_seurat_pseudoTime))+<span class="st"> </span><span class="kw">geom_point</span>() 
+
+PseudoTime =<span class="st"> </span>sampleInfo %&gt;%<span class="st"> </span><span class="kw">select</span> (pseudoTimeProteinPCA,pseudoTimeProtein_tSNE, RNA_seurat_pseudoTime)</code></pre></div>
+<p><img src="lab_files/figure-html/Comparing%20pseudo%20time%20results-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Pearson correlation score between the three different samples</span>
+<span class="kw">kable</span>(<span class="kw">cor</span>(PseudoTime, <span class="dt">method =</span> <span class="st">&quot;pearson&quot;</span>))</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">pseudoTimeProteinPCA</th>
+<th align="right">pseudoTimeProtein_tSNE</th>
+<th align="right">RNA_seurat_pseudoTime</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pseudoTimeProteinPCA</td>
+<td align="right">1.0000000</td>
+<td align="right">0.9111081</td>
+<td align="right">0.8220609</td>
+</tr>
+<tr class="even">
+<td>pseudoTimeProtein_tSNE</td>
+<td align="right">0.9111081</td>
+<td align="right">1.0000000</td>
+<td align="right">0.8606640</td>
+</tr>
+<tr class="odd">
+<td>RNA_seurat_pseudoTime</td>
+<td align="right">0.8220609</td>
+<td align="right">0.8606640</td>
+<td align="right">1.0000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="tf-target-prediction." class="section level2">
+<h2><span class="header-section-number">2.5</span> TF target prediction.</h2>
+<p>Since it is the protein and not the RNA that is molecule that acts as the trans regulatory molecule it is interesting to see if there is a correlation of a TF in a cell and the target of the TF. In this example we will be looking at POUF5I that is a TF that is known to be important in early stem cell development.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SPARC.data.QC =<span class="st"> </span>SPARC.data.QC  %&gt;%<span class="st"> </span><span class="kw">filter</span>(type ==<span class="st"> &quot;sc&quot;</span>)
+
+
+<span class="co"># Load in the  RNA and protein  normalised data set</span>
+SPARC.rna.data&lt;-<span class="st"> </span><span class="kw">read.table</span>(SPARC_RNA_RPKM_file, <span class="dt">header =</span> T, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+
+<span class="kw">dim</span>(SPARC.rna.data)
+<span class="co">#only keep samples that are left after proteinQC </span>
+
+samplesInCommon =<span class="st"> </span><span class="kw">intersect</span>(SPARC.data.QC$sample, <span class="kw">colnames</span>(SPARC.rna.data) )
+<span class="kw">length</span>(samplesInCommon)
+
+
+
+SPARC.rna.data =<span class="st"> </span>SPARC.rna.data %&gt;%<span class="st"> </span><span class="kw">select</span>(samplesInCommon)
+SPARC.data.QC =<span class="st"> </span>SPARC.data.QC[SPARC.data.QC$sample %in%<span class="st"> </span>samplesInCommon, ]
+
+<span class="co">#In this case only interested in POUF51</span>
+SPARC.data.QC.POUF5I =<span class="st"> </span>SPARC.data.QC %&gt;%<span class="st"> </span><span class="kw">filter</span>(geneID ==<span class="st"> &quot;POU5F1&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(sample, Cq, RPKM, time)
+
+
+<span class="co">#make sure the the two matrices have the same order.</span>
+SPARC.rna.data =<span class="st"> </span>SPARC.rna.data[ , <span class="kw">as.character</span>(SPARC.data.QC.POUF5I$sample)]</code></pre></div>
+<pre><code>## [1] 12980   334
+## [1] 238</code></pre>
+<div id="plot-correlation-of-known-targets." class="section level3">
+<h3><span class="header-section-number">2.5.1</span> Plot correlation of known targets.</h3>
+<p>First we see if there is any signal at all in the data that suggest that there should be any correlation between POU5F1 and its target. Two known direct targets of POU5F1 are OTX2 that is down-regulated in the presence of POU5F1 and TDGF1 that is up-regulated in the presence of POU5F1.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SPARC.rna.data.targets =<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">t</span>(SPARC.rna.data[<span class="kw">c</span>(<span class="st">&quot;OTX2&quot;</span>,<span class="st">&quot;TDGF1&quot;</span>), ]))
+SPARC.rna.data.targets$sample =<span class="st"> </span><span class="kw">rownames</span>(SPARC.rna.data.targets)
+
+SPARC.data.QC.POUF5I =<span class="kw">inner_join</span>(SPARC.data.QC.POUF5I, SPARC.rna.data.targets)
+
+
+SPARC.data.QC.POUF5I<span class="fl">.2</span> =<span class="st"> </span>SPARC.data.QC.POUF5I %&gt;%<span class="st"> </span><span class="kw">gather</span>(OTX2, TDGF1,<span class="dt">key =</span> target, <span class="dt">value =</span> targetEexpressionLevel )
+SPARC.data.QC.POUF5I<span class="fl">.2</span> =<span class="st"> </span>SPARC.data.QC.POUF5I<span class="fl">.2</span> %&gt;%<span class="st"> </span><span class="kw">gather</span>(Cq, RPKM,<span class="dt">key =</span> TF, <span class="dt">value =</span> TFexpressionLevel )
+
+
+<span class="kw">ggplot</span>(SPARC.data.QC.POUF5I<span class="fl">.2</span>, <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">y =</span> targetEexpressionLevel, <span class="dt">x =</span> TFexpressionLevel) ) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> time))+
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> timePalette)+
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)+
+<span class="st">  </span><span class="kw">facet_grid</span>(<span class="dt">rows =</span> <span class="kw">vars</span>(target), <span class="dt">cols =</span><span class="kw">vars</span>(TF), <span class="dt">scales =</span><span class="st">&quot;free&quot;</span> , <span class="dt">labeller =</span> label_parsed)+
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,<span class="dt">axis.title.x =</span> <span class="kw">element_blank</span>(), <span class="dt">axis.title.y =</span> <span class="kw">element_blank</span>())+<span class="st"> </span><span class="kw">theme_classic</span>()</code></pre></div>
+<p><img src="lab_files/figure-html/plot%20known%20TF%20target%20correlation-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="plot-correlation-of-known-targets-in-steady-state-cells." class="section level3">
+<h3><span class="header-section-number">2.5.2</span> Plot correlation of known targets in steady state cells.</h3>
+<p>By just using the 0h samples we can ask if this approach can be used in experiment where there is no change of TF over time, which is the case for POU5F1 in our setup. Showing a real advantage over bulk analysis where there is no change in steady state samples but we now can measure the stochastic changes between the cells.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">SPARC.data.QC.POUF5I<span class="fl">.2</span>.0h =<span class="st"> </span>SPARC.data.QC.POUF5I<span class="fl">.2</span> %&gt;%<span class="st">  </span><span class="kw">filter</span>(time ==<span class="st"> &quot;0h&quot;</span>)
+
+<span class="kw">ggplot</span>(SPARC.data.QC.POUF5I<span class="fl">.2</span>.0h, <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">y =</span> targetEexpressionLevel, <span class="dt">x =</span> TFexpressionLevel) ) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> time))+
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> timePalette)+
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)+
+<span class="st">  </span><span class="kw">facet_grid</span>(<span class="dt">rows =</span> <span class="kw">vars</span>(target), <span class="dt">cols =</span><span class="kw">vars</span>(TF), <span class="dt">scales =</span><span class="st">&quot;free&quot;</span> , <span class="dt">labeller =</span> label_parsed)+
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,<span class="dt">axis.title.x =</span> <span class="kw">element_blank</span>(), <span class="dt">axis.title.y =</span> <span class="kw">element_blank</span>())+<span class="st"> </span><span class="kw">theme_classic</span>()</code></pre></div>
+<p><img src="lab_files/figure-html/plot%20known%20targets%20in%20steady%20state%20cells-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="get-correlation-of-all-genes-against-tf" class="section level3">
+<h3><span class="header-section-number">2.5.3</span> Get correlation of all genes against TF</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">TF_TARGET_correlation =<span class="st"> </span><span class="kw">data.frame</span>(
+  <span class="dt">protein =</span> <span class="kw">cor</span>(<span class="kw">t</span>(SPARC.rna.data), SPARC.data.QC.POUF5I$Cq) ,
+  <span class="dt">rna =</span> <span class="kw">cor</span>(<span class="kw">t</span>(SPARC.rna.data), SPARC.data.QC.POUF5I$RPKM))
+
+TF_TARGET_correlation$geneID =<span class="st"> </span><span class="kw">rownames</span>(TF_TARGET_correlation)
+
+TF_TARGET_correlation =<span class="st"> </span>TF_TARGET_correlation %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(protein,rna,<span class="dt">key =</span> TF, <span class="dt">value =</span> correlation)
+
+<span class="co"># Annotate known targets </span>
+knownTargetsLarge =<span class="st"> </span><span class="kw">c</span>( <span class="st">&quot;SOX2&quot;</span>,<span class="st">&quot;NANOG&quot;</span>,<span class="st">&quot;FOXO1&quot;</span>,<span class="st">&quot;LEFTY2&quot;</span>,<span class="st">&quot;HAND1&quot;</span>,
+                        <span class="st">&quot;DPPA4&quot;</span>,<span class="st">&quot;TDGF1&quot;</span>,<span class="st">&quot;THY1&quot;</span>)
+
+TF_TARGET_correlation$target =<span class="st"> &quot;no&quot;</span>
+TF_TARGET_correlation$target[
+  TF_TARGET_correlation$geneID %in%<span class="st"> </span>knownTargetsLarge] =<span class="st"> &quot;yes&quot;</span>
+
+
+TF_TARGET_correlation$molecule =<span class="st"> &quot;RNA&quot;</span>
+TF_TARGET_correlation$molecule[
+  <span class="kw">grep</span>(<span class="dt">pattern =</span> <span class="st">&quot;protein&quot;</span>, <span class="dt">x =</span>TF_TARGET_correlation$TF) ] =<span class="st"> &quot;protein&quot;</span> 
+
+<span class="kw">ggplot</span>(<span class="dt">data =</span> TF_TARGET_correlation, <span class="kw">aes</span>(correlation, <span class="dt">color =</span> target) )+
+<span class="st">  </span><span class="kw">geom_density</span>()+
+<span class="st">  </span><span class="kw">facet_grid</span>(<span class="dt">cols =</span> <span class="kw">vars</span>(molecule) )
+  
+
+potentialTargets =<span class="st"> </span>TF_TARGET_correlation %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(TF ==<span class="st">&quot;protein&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(correlation &gt;<span class="fl">0.25</span> |<span class="st"> </span>correlation &lt;<span class="st"> </span>(-<span class="fl">0.25</span>))
+
+
+
+
+
+<span class="kw">write.table</span>(<span class="dt">x =</span> potentialTargets$geneID, <span class="dt">file =</span> <span class="st">&quot;data/POU5F1targets.tsv&quot;</span> ,
+            <span class="dt">quote =</span> <span class="ot">FALSE</span>,<span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="lab_files/figure-html/Get%20correlation%20%20for%20all%20genes%20against%20TF-1.svg" width="672" style="display: block; margin: auto auto auto 0;" /></p>
+</div>
+<div id="do-gene-set-analysis-on-targets-annotated-databases." class="section level3">
+<h3><span class="header-section-number">2.5.4</span> Do gene set analysis on targets annotated databases.</h3>
+<p>To see if there is any consensus on the data we found we will submit the data to <a href="https://amp.pharm.mssm.edu/Enrichr/">enrichr</a>.</p>
+<p>Once in enrichr upload the <em>POU5F1targets.tsv</em> file and submit the job. Hopefully within seconds you will get a lot of results. When examining <em>TRRUST Transcription Factors 2019</em> POU5F1 is the most probable TF to generate this list.</p>
+</div>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1><span class="header-section-number">3</span> Conclusion</h1>
+<p>Protein data gives another layer of information that sometimes is gives better information than RNA seq data. By integrating the data we can subdivide clusters that is not possible with only RNA and we can facilitate in the identification of TF targets using single cell RNA seq data and TF protein levels.</p>
+<hr />
+<!-- --------------------- Do not edit this and below ---------------------- -->
+</div>
+<div id="session-info" class="section level1">
+<h1><span class="header-section-number">4</span> Session info</h1>
+<pre><code>## R version 3.5.1 (2018-07-02)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: macOS High Sierra 10.13.6
+## 
+## Matrix products: default
+## BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] C
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] Rtsne_0.15       SCORPIUS_1.0.4.1 Seurat_3.0.1     gridExtra_2.3   
+##  [5] dplyr_0.8.1      tidyr_0.8.3      stringr_1.4.0    ggplot2_3.1.1   
+##  [9] captioner_2.2.3  bookdown_0.11    knitr_1.23      
+## 
+## loaded via a namespace (and not attached):
+##  [1] tsne_0.1-3          nlme_3.1-140        bitops_1.0-6       
+##  [4] dynutils_1.0.3      RColorBrewer_1.1-2  httr_1.4.0         
+##  [7] sctransform_0.2.0   tools_3.5.1         R6_2.4.0           
+## [10] irlba_2.3.3         KernSmooth_2.23-15  lazyeval_0.2.2     
+## [13] colorspace_1.4-1    npsurv_0.4-0        withr_2.1.2        
+## [16] tidyselect_0.2.5    proxyC_0.1.3        compiler_3.5.1     
+## [19] TSP_1.1-7           plotly_4.9.0        labeling_0.3       
+## [22] caTools_1.17.1.2    scales_1.0.0        lmtest_0.9-37      
+## [25] ggridges_0.5.1      pbapply_1.4-0       digest_0.6.19      
+## [28] rmarkdown_1.13      R.utils_2.8.0       pkgconfig_2.0.2    
+## [31] htmltools_0.3.6     bibtex_0.4.2        highr_0.8          
+## [34] htmlwidgets_1.3     rlang_0.3.4         rstudioapi_0.10    
+## [37] zoo_1.8-6           jsonlite_1.6        mclust_5.4.3       
+## [40] ica_1.0-2           gtools_3.8.1        R.oo_1.22.0        
+## [43] magrittr_1.5        Matrix_1.2-17       dyndimred_1.0.1    
+## [46] Rcpp_1.0.1          munsell_0.5.0       ape_5.3            
+## [49] reticulate_1.12     R.methodsS3_1.7.1   stringi_1.4.3      
+## [52] yaml_2.2.0          gbRd_0.4-11         MASS_7.3-51.4      
+## [55] gplots_3.0.1.1      plyr_1.8.4          grid_3.5.1         
+## [58] parallel_3.5.1      gdata_2.18.0        listenv_0.7.0      
+## [61] ggrepel_0.8.1       crayon_1.3.4        lattice_0.20-38    
+## [64] cowplot_0.9.4       splines_3.5.1       SDMTools_1.1-221.1 
+## [67] pillar_1.4.1        ranger_0.11.2       igraph_1.2.4.1     
+## [70] reshape2_1.4.3      future.apply_1.2.0  codetools_0.2-16   
+## [73] glue_1.3.1          evaluate_0.14       lsei_1.2-0         
+## [76] metap_1.1           remotes_2.0.4       RcppParallel_4.4.3 
+## [79] data.table_1.12.2   foreach_1.4.4       png_0.1-7          
+## [82] Rdpack_0.11-0       gtable_0.3.0        RANN_2.6.1         
+## [85] purrr_0.3.2         future_1.13.0       assertthat_0.2.1   
+## [88] xfun_0.7            princurve_2.1.4     rsvd_1.0.1         
+## [91] survival_2.44-1.1   viridisLite_0.3.0   pheatmap_1.0.12    
+## [94] tibble_2.1.2        iterators_1.0.10    cluster_2.0.9      
+## [97] globals_0.12.4      fitdistrplus_1.0-14 ROCR_1.0-7</code></pre>
+<p style="text-align: left; font-size: small;">
+Built on: <i class="fa fa-calendar" aria-hidden="true"></i> 17-Oct-2019 at <i class="fa fa-clock-o" aria-hidden="true"></i> 07:13:38.
+</p>
+<hr/>
+<div>
+<p><span style="float:left; vertical-align:middle"> <b>2019</b> <a href="https://nbis.se/">NBIS</a> | <a href="https://www.scilifelab.se/">SciLifeLab</a> </span> <span style="float:right; vertical-align:middle"> <span class="footericon" style="padding-right:4px; padding-left:4px"> <a href="https://nbis.se/"><i class="fas fa-globe-americas"></i></a> </span> <span class="footericon" style="padding-right:4px; padding-left:4px"> <a href="https://twitter.com/NBISwe"><i class="fab fa-twitter"></i></a> </span> <span class="footericon" style="padding-left:4px"> <a href="https://www.linkedin.com/company/nbisweden/"><i class="fab fa-linkedin"></i></a> </span> </span></p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Session info
+
+```{r,echo=FALSE}
+sessionInfo()
+```
+
+<p style="text-align: left; font-size: small;">
+Built on: <i class="fa fa-calendar" aria-hidden="true"></i> `r format(Sys.time(),format='%d-%b-%Y')` at <i class="fa fa-clock-o" aria-hidden="true"></i> `r format(Sys.time(),format='%X')`.
+</p>
+
+<hr/>
+
+<div>
+<span style="float:left; vertical-align:middle">
+<b>`r format(Sys.Date(),format="%Y")`</b> [NBIS](https://nbis.se/) | [SciLifeLab](https://www.scilifelab.se/)
+</span>
+<span style="float:right; vertical-align:middle">
+<span class="footericon" style="padding-right:4px; padding-left:4px">
+<a href="https://nbis.se/"><i class="fas fa-globe-americas"></i></a>
+</span>
+<span class="footericon" style="padding-right:4px; padding-left:4px">
+<a href="https://twitter.com/NBISwe"><i class="fab fa-twitter"></i></a>
+</span>
+<span class="footericon" style="padding-left:4px">
+<a href="https://www.linkedin.com/company/nbisweden/"><i class="fab fa-linkedin"></i></a>
+</span>
+</span>
+</div>
