@@ -1,0 +1,976 @@
+---
+title: "protein RNA-Seq"
+subtitle: "Protein RNA-Seq Labs"
+author: "`r paste0('<b>NBIS</b> | ',format(Sys.time(), '%d-%b-%Y'))`"
+output:
+  bookdown::html_document2:
+          toc: true
+          toc_float: true
+          toc_depth: 4
+          number_sections: true
+          theme: flatly
+          highlight: tango
+          df_print: paged
+          code_folding: "none"
+          self_contained: false
+          keep_md: false
+          encoding: 'UTF-8'
+          css: "assets/lab.css"
+
+---
+
+```{r,child="assets/header-lab.Rmd"}
+```
+
+<!-- ------------ Only edit title, subtitle & author above this ------------ -->
+
+```{r,include=FALSE}
+## LIBRARIES AND VARIABLES
+## load libraries
+library(ggplot2) # plotting
+library(stringr) # text processing
+library(tidyr) # data wrangling
+library(dplyr) # data handling
+library(gridExtra) # Visualisation
+
+
+#colours
+col_sll_green <- "#95C11E"
+col_sll_blue <- "#0093BD"
+col_sll_orange <- "#EF7C00"
+col_sll_green_light <- "#f4f8e8"
+col_sll_blue_light <- "#e5f4f8"
+col_sll_orange_light <- "#fdf1e5"
+
+col_condition=c("#fb8072","#8dd3c7")
+col_rep <- c("#80b1d3","#fdb462","#bebada")
+
+## check r version in module load
+id_project <- "g2019015"
+id_reservation_1 <- paste0(id_project,"_4")
+id_reservation_2 <- paste0(id_project,"_5")
+path_data <- "/sw/courses/ngsintro/rnaseq"
+path_project <- paste0("/proj/",id_project,"/nobackup")
+path_project_rnaseq <- paste0(path_project,"/[user]/rnaseq")
+```
+
+---
+
+
+##Single cell RNA and protein analysis
+
+Single cell RNA-seq is a powerful approach to study the continually changing cellular transcriptome. The possibility of measuring thousands of RNA in each cell make it a strong tool differntiate cells. But most of the functions that are carried out in the cells are being made by proteins and not RNA. They are also more stable and and abundant in the cells and represent a different way of analysiing the data. Thus protein are more accurate molecules to represent the function of the cell. Therefore ways of measuring the protein levels in the cells is a great complementary resource to determine both differences between the cell and also to identify ongoing processes in the cells. 
+
+
+
+
+In this exercise we will look at two different ways of incorporating protein data with scRNA-seq data to facilitate the analysis of functions in the cell. The first one is based on SITE-seq data and means to incorporate surface protein data to evaluate the classification of cells carried out by scRNA seq analysis. We will also use the protein data itself to identify the different clusters. For more information regarding site seq see the presentation and links to papers there. The second one involves SPARC data and focuses on protein QC analysis and how SPARC data can be used to facilitate the identification of transcription factor targets. 
+
+<div class="abstract">
+**Main exercise**
+
+- 01 SITE seq
+- 02 SPARC
+</div>
+
+
+	
+
+
+# SITE-seq exercise
+
+This exercise is bluntly stolen from the [Seurat home page](https://satijalab.org/seurat/v3.1/multimodal_vignette.html). 
+## Data description
+The data used in this exercise is from the paper: **Stoeckius M, *et al*. "Simultaneous epitope and transcriptome measurement in single cells." [Nat Methods (2017)](https://www.ncbi.nlm.nih.gov/pubmed/28759029)**. 
+
+## Using Seurat with multi-modal data
+
+### Load in the data
+This vignette demonstrates new features that allow users to analyze and explore multi-modal data with Seurat. While this represents an initial release, we are excited to release significant new functionality for multi-modal datasets in the future.
+
+Here, we analyze a dataset of 8,617 cord blood mononuclear cells (CBMCs), produced with CITE-seq, where we simultaneously measure the single cell transcriptomes alongside the expression of 11 surface proteins, whose levels are quantified with DNA-barcoded antibodies. First, we load in two count matrices : one for the RNA measurements, and one for the antibody-derived tags (ADT). You can download the ADT file [here](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100866/suppl/GSE100866_CBMC_8K_13AB_10X-ADT_umi.csv.gz) and the RNA file [here](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100866/suppl/GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz)
+
+
+
+
+```{r load library }
+library(Seurat)
+library(ggplot2)
+```
+
+At this point you need to put the data that you downloaded.
+
+```{r CITEseq data location}
+CBMC_rna_file = "data/GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz"
+CBMC_SITEseq_file = "data/GSE100866_CBMC_8K_13AB_10X-ADT_umi.csv.gz" 
+```
+
+
+
+```{r load library 2 }
+# Load in the RNA UMI matrix
+
+# Note that this dataset also contains ~5% of mouse cells, which we can use as negative controls
+# for the protein measurements. For this reason, the gene expression matrix has HUMAN_ or MOUSE_
+# appended to the beginning of each gene.
+cbmc.rna <- as.sparse(read.csv(file = CBMC_rna_file, sep = ",", 
+    header = TRUE, row.names = 1))
+
+# To make life a bit easier going forward, we're going to discard all but the top 100 most
+# highly expressed mouse genes, and remove the 'HUMAN_' from the CITE-seq prefix
+cbmc.rna <- CollapseSpeciesExpressionMatrix(cbmc.rna)
+
+# Load in the ADT UMI matrix
+cbmc.adt <- as.sparse(read.csv(file = CBMC_SITEseq_file, sep = ",", 
+    header = TRUE, row.names = 1))
+
+# When adding multimodal data to Seurat, it's okay to have duplicate feature names. Each set of
+# modal data (eg. RNA, ADT, etc.) is stored in its own Assay object.  One of these Assay objects
+# is called the 'default assay', meaning it's used for all analyses and visualization.  To pull
+# data from an assay that isn't the default, you can specify a key that's linked to an assay for
+# feature pulling.  To see all keys for all objects, use the Key function.  Lastly, we observed
+# poor enrichments for CCR5, CCR7, and CD10 - and therefore remove them from the matrix
+# (optional)
+cbmc.adt <- cbmc.adt[setdiff(rownames(x = cbmc.adt), c("CCR5", "CCR7", "CD10")), ]
+
+```
+
+
+### Setup a Seurat object, and cluster cells based on RNA expression
+
+This you have done before during the course but if you want you can go to [Seurats PBMC clustering guided tutorial](http://satijalab.org/seurat/pbmc3k_tutorial.html)
+
+```{r get clusters from RNA }
+cbmc <- CreateSeuratObject(counts = cbmc.rna)
+
+# standard log-normalization
+cbmc <- NormalizeData(cbmc)
+
+# choose ~1k variable features
+cbmc <- FindVariableFeatures(cbmc)
+
+# standard scaling (no regression)
+cbmc <- ScaleData(cbmc)
+
+# Run PCA, select 13 PCs for tSNE visualization and graph-based clustering
+cbmc <- RunPCA(cbmc, verbose = FALSE)
+ElbowPlot(cbmc, ndims = 50)
+```
+
+```{r get clusters from RNA 2}
+
+cbmc <- FindNeighbors(cbmc, dims = 1:25)
+cbmc <- FindClusters(cbmc, resolution = 0.8)
+cbmc <- RunTSNE(cbmc, dims = 1:25, method = "FIt-SNE")
+
+# Find the markers that define each cluster, and use these to annotate the clusters, we use
+# max.cells.per.ident to speed up the process
+cbmc.rna.markers <- FindAllMarkers(cbmc, max.cells.per.ident = 100, min.diff.pct = 0.3, only.pos = TRUE)
+```
+
+
+```{r get clusters from RNA 3}
+# Note, for simplicity we are merging two CD14+ Monocyte clusters (that differ in expression of
+# HLA-DR genes) and NK clusters (that differ in cell cycle stage)
+new.cluster.ids <- c("Memory CD4 T", "CD14+ Mono", "Naive CD4 T", "NK", "CD14+ Mono", "Mouse", "B", 
+    "CD8 T", "CD16+ Mono", "T/Mono doublets", "NK", "CD34+", "Multiplets", "Mouse", "Eryth", "Mk", 
+    "Mouse", "DC", "pDCs")
+names(new.cluster.ids) <- levels(cbmc)
+cbmc <- RenameIdents(cbmc, new.cluster.ids)
+```
+
+
+
+```{r get clusters from RNA 4}
+
+DimPlot(cbmc, label = TRUE) + NoLegend()
+
+```
+
+### Add the protein expression levels to the Seurat object
+
+Seurat v3.0 allows you to store information from multiple assays in the same object, as long as the data is multi-modal (collected on the same set of cells). You can use the *SetAssayData* and *GetAssayData* accessor functions to add and fetch data from additional assays.
+
+
+```{r add protein expression levels 1}
+# We will define an ADT assay, and store raw counts for it
+
+# If you are interested in how these data are internally stored, you can check out the Assay
+# class, which is defined in objects.R; note that all single-cell expression data, including RNA
+# data, are still stored in Assay objects, and can also be accessed using GetAssayData
+cbmc[["ADT"]] <- CreateAssayObject(counts = cbmc.adt)
+
+# Now we can repeat the preprocessing (normalization and scaling) steps that we typically run
+# with RNA, but modifying the 'assay' argument.  For CITE-seq data, we do not recommend typical
+# LogNormalization. Instead, we use a centered log-ratio (CLR) normalization, computed
+# independently for each feature.  This is a slightly improved procedure from the original
+# publication, and we will release more advanced versions of CITE-seq normalizations soon.
+cbmc <- NormalizeData(cbmc, assay = "ADT", normalization.method = "CLR")
+cbmc <- ScaleData(cbmc, assay = "ADT")
+```
+
+
+### Visualize protein levels on RNA clusters
+You can use the names of any ADT markers, (i.e. ???adt_CD4???), in FetchData, FeaturePlot, RidgePlot, FeatureScatter, DoHeatmap, or any other [visualization features](http://satijalab.org/seurat/visualization_vignette.html)
+
+```{r Visualize protein expression levels 1}
+# in this plot, protein (ADT) levels are on top, and RNA levels are on the bottom
+F = FeaturePlot(cbmc, features = c("adt_CD3", "adt_CD11c", "adt_CD8", "adt_CD16", "CD3E", "ITGAX", "CD8A", 
+    "FCGR3A"), min.cutoff = "q05", max.cutoff = "q95", ncol = 4, combine=FALSE)
+
+for(i in 1:length(F)) {
+  F[[i]] <- F[[i]] + NoLegend()
+}
+cowplot::plot_grid(plotlist = F, ncol =  4)
+
+```
+
+```{r Visualize protein expression levels 2}
+RidgePlot(cbmc, features = c("adt_CD3", "adt_CD11c", "adt_CD8", "adt_CD16"), ncol = 2)
+
+```
+
+```{r Visualize protein expression levels 3}
+# Draw ADT scatter plots (like biaxial plots for FACS). Note that you can even 'gate' cells if
+# desired by using HoverLocator and FeatureLocator
+FeatureScatter(cbmc, feature1 = "adt_CD19", feature2 = "adt_CD3")
+```
+
+
+```{r Visualize protein expression levels 4}
+# view relationship between protein and RNA
+FeatureScatter(cbmc, feature1 = "adt_CD3", feature2 = "CD3E")
+```
+
+
+
+```{r Visualize protein expression levels 5}
+# Let's plot CD4 vs CD8 levels in T cells
+tcells <- subset(cbmc, idents = c("Naive CD4 T", "Memory CD4 T", "CD8 T"))
+FeatureScatter(tcells, feature1 = "adt_CD4", feature2 = "adt_CD8")
+```
+
+
+```{r Visualize protein expression level 6}
+# # Let's look at the raw (non-normalized) ADT counts. You can see the values are quite high,
+# particularly in comparison to RNA values. This is due to the significantly higher protein copy
+# number in cells, which significantly reduces 'drop-out' in ADT data
+FeatureScatter(tcells, feature1 = "adt_CD4", feature2 = "adt_CD8", slot = "counts")
+```
+If you look a bit more closely, you will see that our CD8 T cell cluster is enriched for CD8 T cells, but still contains many CD4+ CD8- T cells. This is because Naive CD4 and CD8 T cells are quite similar transcriptomically, and the RNA dropout levels for CD4 and CD8 are quite high. This demonstrates the challenge of defining subtle immune cell differences from scRNA-seq data alone.
+
+
+
+### Identify differentially expressed proteins between clusters
+
+```{r Identify differentailly 2 }
+
+# Downsample the clusters to a maximum of 300 cells each (makes the heatmap easier to see for
+# small clusters)
+cbmc.small <- subset(cbmc, downsample = 300)
+
+# Find protein markers for all clusters, and draw a heatmap
+adt.markers <- FindAllMarkers(cbmc.small, assay = "ADT", only.pos = TRUE)
+DoHeatmap(cbmc.small, features = unique(adt.markers$gene), assay = "ADT", angle = 90) + NoLegend()
+
+```
+
+
+
+ You can see that our unknown cells co-express both myeloid and lymphoid markers (true at the 
+ RNA level as well). They are likely cell clumps (multiplets) that should be discarded. We'll
+ remove the mouse cells now as well
+
+```{r Identify differentailly }
+cbmc <- subset(cbmc, idents = c("Multiplets", "Mouse"), invert = TRUE)
+
+
+```
+
+
+
+### Cluster directly on protein levels
+
+You can also run dimensional reduction and graph-based clustering directly on CITE-seq data
+
+
+```{r Cluster directly on protein levels}
+# Because we're going to be working with the ADT data extensively, we're going to switch the
+# default assay to the 'CITE' assay.  This will cause all functions to use ADT data by default,
+# rather than requiring us to specify it each time
+DefaultAssay(cbmc) <- "ADT"
+cbmc <- RunPCA(cbmc, features = rownames(cbmc), reduction.name = "pca_adt", reduction.key = "pca_adt_", 
+    verbose = FALSE)
+DimPlot(cbmc, reduction = "pca_adt")
+
+```
+
+
+```{r Cluster directly on protein levels 2 }
+
+# Since we only have 10 markers, instead of doing PCA, we'll just use a standard euclidean
+# distance matrix here.  Also, this provides a good opportunity to demonstrate how to do
+# visualization and clustering using a custom distance matrix in Seurat
+adt.data <- GetAssayData(cbmc, slot = "data")
+adt.dist <- dist(t(adt.data))
+
+# Before we recluster the data on ADT levels, we'll stash the RNA cluster IDs for later
+cbmc[["rnaClusterID"]] <- Idents(cbmc)
+
+# Now, we rerun tSNE using our distance matrix defined only on ADT (protein) levels.
+cbmc[["tsne_adt"]] <- RunTSNE(adt.dist, assay = "ADT", reduction.key = "adtTSNE_")
+cbmc[["adt_snn"]] <- FindNeighbors(adt.dist)$snn
+cbmc <- FindClusters(cbmc, resolution = 0.2, graph.name = "adt_snn")
+
+# We can compare the RNA and protein clustering, and use this to annotate the protein clustering
+# (we could also of course use FindMarkers)
+clustering.table <- table(Idents(cbmc), cbmc$rnaClusterID)
+clustering.table
+
+```
+
+
+```{r Cluster directly on protein levels 3 }
+
+new.cluster.ids <- c("CD4 T", "CD14+ Mono", "NK", "B", "CD8 T", "NK", "CD34+", "T/Mono doublets", 
+    "CD16+ Mono", "pDCs", "B")
+names(new.cluster.ids) <- levels(cbmc)
+cbmc <- RenameIdents(cbmc, new.cluster.ids)
+
+tsne_rnaClusters <- DimPlot(cbmc, reduction = "tsne_adt", group.by = "rnaClusterID") + NoLegend()
+tsne_rnaClusters <- tsne_rnaClusters + ggtitle("Clustering based on scRNA-seq") + theme(plot.title = element_text(hjust = 0.5))
+tsne_rnaClusters <- LabelClusters(plot = tsne_rnaClusters, id = "rnaClusterID", size = 4)
+
+tsne_adtClusters <- DimPlot(cbmc, reduction = "tsne_adt", pt.size = 0.5) + NoLegend()
+tsne_adtClusters <- tsne_adtClusters + ggtitle("Clustering based on ADT signal") + theme(plot.title = element_text(hjust = 0.5))
+tsne_adtClusters <- LabelClusters(plot = tsne_adtClusters, id = "ident", size = 4)
+
+# Note: for this comparison, both the RNA and protein clustering are visualized on a tSNE
+# generated using the ADT distance matrix.
+CombinePlots(plots = list(tsne_rnaClusters, tsne_adtClusters), ncol = 2)
+
+```
+
+The ADT-based clustering yields similar results, but with a few differences
+
+- Clustering is improved for CD4/CD8 T cell populations, based on the robust ADT data for CD4, CD8, CD14, and CD45RA
+- However, some clusters for which the ADT data does not contain good distinguishing protein markers (i.e. Mk/Ery/DC) lose separation
+
+
+You can verify this using FindMarkers at the RNA level, as well
+```{r Cluster directly on protein levels 4 }
+
+tcells <- subset(cbmc, idents = c("CD4 T", "CD8 T"))
+FeatureScatter(tcells, feature1 = "CD4", feature2 = "CD8")
+
+```
+
+```{r Cluster directly on protein levels 5 }
+
+RidgePlot(cbmc, features = c("adt_CD11c", "adt_CD8", "adt_CD16", "adt_CD4", "adt_CD19", "adt_CD14"), 
+    ncol = 2)
+```
+
+
+
+
+# Using SPARC with multi-modal data
+
+## Load in the data
+This lab demonstrates new features that allow users to analyze and explore multi-modal data from SPARC. 
+
+In this exercise we will analyse 256 single cells were RNA-seq data and protein data for 90 intracellular proteins have been generated per cell. The cells are primed embryonic stem cells from human and have been taken at 0, 24 and 48 hours after being stable stem cells. More information about the protocol and the data can be found in the article. 
+
+
+At this point you need to put the data that you downloaded in  a folder and point to it.
+
+```{r SPARC data location}
+
+SPARC_protein_RNA_file = "data/SPARC_RNA_protein.tsv.gz" 
+SPARC_RNA_RPKM_file = "data/SPARC.RNA.lrpkm.tsv.gz"
+POUF5I_chipSeq_file = "data/POUF5I_chipSeq_file.tsv"
+
+
+cbPalette <- c("#FF0000","#0000FF", "#0072B2", "#F0E442" , "#CC79A7", "#999999", "#E69F00", "#56B4E9")
+
+timePalette <- c("#009E73","#D55E00", "#0072B2","#000000", "#F0E442" , "#CC79A7", "#E69F00", "#56B4E9")
+moleculePalette <- c("#FF0000","#0000FF")
+cellCyclePallete <-c("#999999" , "#CC79A7", "#E69F00")
+
+proteinExamples = c("SOX2", "POU5F1","EPCAM", "TP53")
+
+
+
+```
+
+```{r load SPARC library  }
+
+# Load in the  RNA and protein  normalised data set
+SPARC.data<- read.table(SPARC_protein_RNA_file, header = T, sep = "\t")
+
+summary(SPARC.data)
+# Check what the file contains.
+
+
+sampleInfoColums = colnames(SPARC.data)[c(2,3,4,8,9,11,12,13:23)]
+
+sampleInfo = SPARC.data %>% select(sampleInfoColums) %>% dplyr::distinct(sample, .keep_all= TRUE) 
+
+
+```
+
+## Initial filtering and QC
+
+We have generated data for 100 cells and it should be a correlation between the expression of 100 cells and the expression of 100 single cells. 
+
+```{r Initial analysis on protein data}
+
+# remove all genes that does not have good representation in the FACS sorted 100 cells 
+
+#Keep only FACS data
+SPARC.data.FACS = SPARC.data[SPARC.data$type == "FACS", ] %>% select(geneID, time,Cq)
+
+
+# Create similair data using sc data by calculating mean multiply qith 100 and divide by number of samples
+SPARC.data.sc = SPARC.data[SPARC.data$type != "FACS", ]
+SPARC.data.sc.summarize = SPARC.data.sc %>% dplyr::group_by(geneID, time,type) %>%
+  dplyr::summarize(Cq_sc = sum(Cq)*100 /n() )
+
+
+# Merge the two too see how many that correlate well. 
+test = merge(SPARC.data.FACS,as.data.frame(SPARC.data.sc.summarize) ,by = c("geneID", "time"))
+ggplot(data = test, mapping = aes(Cq_sc,Cq))+ geom_point()
+
+
+
+
+```
+As shown by the plot there is a correlation between the single cells and the FACS data if the FACS expression level is high but not if the FACS expression level is low. 
+
+
+```{r remove based on protein  and RNA expression in the FACS cells}
+# Keep all proteins where there is at least one FACS sample with Cq > 3
+
+geneID_QC_FACS = as.character(unique(SPARC.data.FACS$geneID[SPARC.data.FACS$Cq > 3 ]))  
+
+
+# remove all genes where the logged RPKM is less than 1
+geneID_QC_RPKM = as.character(unique(SPARC.data$geneID[SPARC.data$RPKM_mean > 1 ]))  
+
+
+# Keep only the genes that is found in both sets
+geneID_QC = intersect(geneID_QC_FACS,geneID_QC_RPKM)
+
+
+
+#Create QC data set
+SPARC.data.QC = SPARC.data[SPARC.data$geneID %in% geneID_QC, ]
+
+```
+
+Now we have a data set with genes 
+
+## Correlation between the RNA and the protein expression levels in the cell. 
+
+As a first glimpse of the data and how it changes over time is to view how the different proteins changes over time.
+
+### Produce violin plot for both data
+
+Here we can compare if the data that we get for protein and RNA and separate them over time. The dots in the violin plots are the FACS results. 
+```{r violin plot}
+
+
+## Plot function used in the sample
+plotExpressionViolinPlot  <- function(expressionInfoGene,geneID ,moleculePalette, legend = FALSE){ 
+  plot = ggplot(expressionInfoGene[expressionInfoGene$type == "sc",], 
+                aes (x = time, y = expression, fill = molecule)
+  )+ 
+    geom_violin(size = 0.5)+
+    scale_fill_manual(values=moleculePalette)+
+    geom_point(data =expressionInfoGene[expressionInfoGene$type == "FACS",],
+               aes (x = time, y = expression, fill = molecule),size = 0.5) + 
+    facet_grid(rows = "molecule")
+  
+  
+  if(!legend){
+    plot = plot + theme(legend.position="none")
+  }
+  plot = plot + ggtitle(geneID)+theme(axis.text.x = element_text(angle = 90, hjust = 1), text = element_text(size=7))+
+    theme(axis.text.x = element_text(size = 7, angle = 90, hjust = 1, vjust = .5),
+          axis.text.y = element_text(size = 7, angle = 0),  
+          axis.title.x = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          plot.title = element_text(size=10))
+  
+  return(plot)
+}
+
+
+## Select only the relevant columns used in this analysis
+expressionInfo = SPARC.data.QC %>% select(geneID, sample, RPKM, Cq, time, type)
+
+## Put RNA levels and protein levels in the same column
+expressionInfoGathered = expressionInfo %>% gather(RPKM, Cq , key = molecule, value = expression)
+
+
+violinPlots = list()
+for(i in 1:length(geneID_QC)){
+  # Extract information pergene
+  expressionInfoGene = expressionInfoGathered[expressionInfoGathered$geneID == geneID_QC[i],]
+  
+  # Create violin plot for data
+  plot = plotExpressionViolinPlot(expressionInfoGene,geneID_QC[i] , moleculePalette)
+  
+  # add the plots in the list
+  violinPlots[i] = list(plot)
+  
+}
+
+# Plot example proteins to screen
+violinPlotExample  = violinPlots[which(geneID_QC %in% proteinExamples)]
+grid.arrange(grobs = violinPlotExample, ncol=2)
+
+
+# Plot all to file
+#filename = paste( "figures/violinPlots_multiple.pdf",sep = "/")
+#ggsave(filename, marrangeGrob(grobs = violinPlots, nrow=3, ncol=3) ,width = 4.51, height = 7.29)
+
+
+```
+
+
+
+
+
+### Produce scatter plot for both data
+
+Here we can look at each single cell and see how they correlate. 
+```{r scatter_plot for SPARC data }
+
+
+
+# extract relevant column from the data
+expressionInfo = SPARC.data %>% select(geneID, sample, RPKM, Cq, time, type)
+
+#only look at single cell samples
+expressionInfo.sc = expressionInfo[expressionInfo$type == "sc", ]
+
+
+
+scatterPlots = list()
+
+for(i in 1:length(geneID_QC)){
+  expressionInfo.sc.gene = expressionInfo.sc[expressionInfo.sc$geneID == geneID_QC[i],]
+  
+  scatterPlot = ggplot(expressionInfo.sc.gene,
+                       aes(RPKM,Cq, color = time)) + 
+    geom_point(size = 0.5) + 
+    theme(legend.position = "none")+
+    ggtitle(geneID_QC[i])+ 
+    scale_colour_manual(values=timePalette)+ 
+    theme(axis.text.x = element_text(size = 7, angle = 90, hjust = 1, vjust = .5),
+          axis.text.y = element_text(size = 7, angle = 0),  
+          axis.title.x = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          plot.title = element_text(size=10))
+  
+  scatterPlots[[geneID_QC[i]]] = scatterPlot
+}
+
+
+# Plot example proteins to screen
+scatterPlotExample  = scatterPlots[which(geneID_QC %in% proteinExamples)]
+grid.arrange(grobs = scatterPlotExample, ncol=2)
+
+
+# Plot all to file
+#filename = paste( "figures/scatterPlot_multiple.pdf",sep = "/")
+#ggsave(filename, marrangeGrob(grobs = violinPlots, nrow=3, ncol=3) ,width = 4.51, height = 7.29)
+
+
+
+
+```
+
+As you can see there is little correlation between the RNA levels and the protein levels. 
+
+But still there are some separation between the different times. Maybe a better way to see if there is any correlation is to plot them over time. 
+
+
+### Plot the expression over time. 
+
+In the data file we have  determined the pseudo time of each cell. We now want to see if there is better correlation if we compare the data over time. 
+
+
+
+```{r scatterplot over time for SPARC data }
+
+
+
+# extract relevant column from the data
+expressionInfo = SPARC.data %>% select(geneID, sample, RPKM, Cq,RNA_seurat_pseudoTime , type)
+
+#only look at single cell samples
+expressionInfo.sc = expressionInfo[expressionInfo$type == "sc", ]
+
+expressionInfo.sc.gathered = expressionInfo.sc %>% gather(RPKM, Cq , key = molecule, value = expression)
+
+
+
+scatterPlots = list()
+
+for(i in 1:length(geneID_QC)){
+  expressionInfo.sc.gathered.gene = expressionInfo.sc.gathered[expressionInfo.sc$geneID == geneID_QC[i],]
+  
+  scatterPlot = ggplot(expressionInfo.sc.gathered.gene,
+                       aes(RNA_seurat_pseudoTime,expression, color = molecule)) + 
+    geom_point(size = 0.5) + 
+    theme(legend.position = "none")+
+    geom_smooth()+  
+    ggtitle(geneID_QC[i])+ 
+    scale_colour_manual(values=moleculePalette)+ 
+    theme(axis.text.x = element_text(size = 7, angle = 90, hjust = 1, vjust = .5),
+          axis.text.y = element_text(size = 7, angle = 0),  
+          axis.title.x = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          plot.title = element_text(size=10))
+  
+  scatterPlots[[geneID_QC[i]]] = scatterPlot
+}
+
+
+# Plot example proteins to screen
+scatterPlotExample  = scatterPlots[which(geneID_QC %in% proteinExamples)]
+grid.arrange(grobs = scatterPlotExample, ncol=2)
+
+
+#Plot all to file
+#filename = paste( "figures/scatterPlot_pseudoTime_multiple.pdf",sep = "/")
+#ggsave(filename, marrangeGrob(grobs = violinPlots, nrow=3, ncol=3) ,width = 4.51, height = 7.29)
+
+
+
+
+```
+
+As you can see the expression, independent for RNA and protein, change in the same way. One exception is TP53 that is known to have a post transcriptional regulation during the development and is also seen in the data. 
+
+
+## Create a pseudotime using the protein 
+
+In this analysis we will analyse if protein data also represent the differentiation of cells over time. 
+
+To do that we will reduce the dimensions of the proteins space using tSNE and PCA and then use the reduced spaces with a linear pseudo-time program  SCORPIUS to determine a pseudo time for each cell.
+
+
+
+### Data structure handling
+
+
+```{r structure data correctly }
+
+
+## keep only single cells and only protein expression information
+
+SPARC.data.sc.protein = SPARC.data.QC  %>%
+  filter(type =="sc") %>% #only single cell
+  select(geneID, sample,  Cq) %>% # select columns that are important
+  spread(key = sample, value = Cq) # spread the data to a matrix
+#add rownames 
+rownames(SPARC.data.sc.protein) = SPARC.data.sc.protein$geneID
+
+# remove geneID column and transpose data
+SPARC.data.sc.protein.matrix = t(SPARC.data.sc.protein %>% select(-geneID))
+
+
+
+# Normalise protein data so that each cell has the same protein level. 
+
+SPARC.data.sc.protein.matrix.normalise = SPARC.data.sc.protein.matrix/rowSums(SPARC.data.sc.protein.matrix)
+```  
+
+### Dimensionality reductions using PCA 
+
+
+```{r Dimensionality reductions using PCA }
+
+res.pca <- prcomp(SPARC.data.sc.protein.matrix.normalise, scale = TRUE)
+##fviz_eig(res.pca)
+
+
+PCAresults = as.data.frame(res.pca$x)[1:3]
+colnames(PCAresults) = c("PCA_protein1","PCA_protein2","PCA_protein3" )
+
+PCAresults$sample = rownames(PCAresults)
+
+sampleInfo = inner_join(sampleInfo,PCAresults )
+
+
+ggplot(sampleInfo, aes(x = PCA_protein1, y = PCA_protein2, color = time))+ 
+  geom_point()+
+  scale_colour_manual(values=timePalette)
+
+
+
+
+```
+### Pseudo time analysis on PCA vectors using SCORPIUS
+
+```{r pseudo time analysis on PCA using SCORPIUS }
+
+library(SCORPIUS)
+
+PCASpace = sampleInfo %>% select(PCA_protein1,PCA_protein2,PCA_protein3)
+
+trajPCA <- infer_trajectory(PCASpace)
+
+draw_trajectory_plot(PCASpace, progression_group = sampleInfo$time, path = trajPCA$path )+ scale_color_manual(values = timePalette)
+
+
+# add predicted pseudo time to sampleInfo. 
+sampleInfo["pseudoTimeProteinPCA"] = trajPCA$time*48
+
+
+
+```
+
+
+### Dimensionality reductions using tSNE
+
+
+```{r Dimensionality reductions using tSNE}
+
+
+
+library(Rtsne)
+
+
+
+set.seed(1201)
+tSNE_protein =Rtsne(SPARC.data.sc.protein.matrix.normalise,dims=3,theta = 0.0 , initial_dims = 150 ,perplexity=30, PCA = FALSE)
+
+tsneProjection = as.data.frame(tSNE_protein$Y)
+colnames(tsneProjection) = c("tSNE_protein1","tSNE_protein2","tSNE_protein3" )
+
+tsneProjection$sample = rownames(SPARC.data.sc.protein.matrix)
+
+
+sampleInfo = inner_join(sampleInfo, tsneProjection)
+#sampleInfo2 = inner_join(sampleInfo1,PCAProjection2)
+
+
+ggplot(sampleInfo, aes(x = tSNE_protein1, y = tSNE_protein2, color = time))+ 
+  geom_point()+
+  scale_colour_manual(values=timePalette)
+  
+
+
+
+
+```
+
+
+
+### Pseudo time analysis on tSNE vectors using SCORPIUS
+
+```{r pseudo time analysis on tSNE using SCORPIUS }
+
+library(SCORPIUS)
+
+tsneSpace = sampleInfo %>% select(tSNE_protein1,tSNE_protein2,tSNE_protein3)
+
+trajtSNE <- infer_trajectory(tsneSpace)
+draw_trajectory_plot(tsneSpace, progression_group = sampleInfo$time, 
+                     path = trajtSNE$path )+ 
+  scale_color_manual(values = timePalette)
+
+sampleInfo[ "pseudoTimeProtein_tSNE"] = trajtSNE$time*48
+```
+
+### Pseudo time comparison between RNA and protein and methods
+
+
+```{r Comparing pseudo time results }
+
+library(knitr)
+ggplot(sampleInfo, aes(x = pseudoTimeProteinPCA, y = pseudoTimeProtein_tSNE, color = RNA_seurat_pseudoTime))+ geom_point() 
+
+PseudoTime = sampleInfo %>% select (pseudoTimeProteinPCA,pseudoTimeProtein_tSNE, RNA_seurat_pseudoTime)
+
+```
+
+```{r Comparing pseudo time results 2 }
+
+# Pearson correlation score between the three different samples
+kable(cor(PseudoTime, method = "pearson"))
+
+```
+
+## TF target prediction.
+
+Since it is the protein and not the RNA that is molecule that acts as the trans regulatory molecule it is interesting to see if there is a correlation of a TF in a cell and the target of the TF. In this example we will be looking at POUF5I that is a TF that is known to be important in early stem cell  development. 
+
+
+```{r load RNAseq data  }
+
+SPARC.data.QC = SPARC.data.QC  %>% filter(type == "sc")
+
+
+# Load in the  RNA and protein  normalised data set
+SPARC.rna.data<- read.table(SPARC_RNA_RPKM_file, header = T, sep = "\t")
+
+dim(SPARC.rna.data)
+#only keep samples that are left after proteinQC 
+
+samplesInCommon = intersect(SPARC.data.QC$sample, colnames(SPARC.rna.data) )
+length(samplesInCommon)
+
+
+
+SPARC.rna.data = SPARC.rna.data %>% select(samplesInCommon)
+SPARC.data.QC = SPARC.data.QC[SPARC.data.QC$sample %in% samplesInCommon, ]
+
+#In this case only interested in POUF51
+SPARC.data.QC.POUF5I = SPARC.data.QC %>% filter(geneID == "POU5F1") %>%
+  select(sample, Cq, RPKM, time)
+
+
+#make sure the the two matrices have the same order.
+SPARC.rna.data = SPARC.rna.data[ , as.character(SPARC.data.QC.POUF5I$sample)]
+
+
+```
+
+
+
+### Plot correlation of known targets. 
+
+First we see if there is any signal at all in the data that suggest that there should be any correlation between POU5F1 and its target. Two known direct targets of POU5F1 are OTX2 that is down-regulated in the presence of POU5F1 and  TDGF1 that is up-regulated in the presence of POU5F1. 
+
+```{r plot known TF target correlation}
+
+SPARC.rna.data.targets = as.data.frame(t(SPARC.rna.data[c("OTX2","TDGF1"), ]))
+SPARC.rna.data.targets$sample = rownames(SPARC.rna.data.targets)
+
+SPARC.data.QC.POUF5I =inner_join(SPARC.data.QC.POUF5I, SPARC.rna.data.targets)
+
+
+SPARC.data.QC.POUF5I.2 = SPARC.data.QC.POUF5I %>% gather(OTX2, TDGF1,key = target, value = targetEexpressionLevel )
+SPARC.data.QC.POUF5I.2 = SPARC.data.QC.POUF5I.2 %>% gather(Cq, RPKM,key = TF, value = TFexpressionLevel )
+
+
+ggplot(SPARC.data.QC.POUF5I.2, mapping = aes(y = targetEexpressionLevel, x = TFexpressionLevel) ) + 
+  geom_point(aes(color = time))+
+  scale_color_manual(values = timePalette)+
+  geom_smooth(method = "lm")+
+  facet_grid(rows = vars(target), cols =vars(TF), scales ="free" , labeller = label_parsed)+
+  theme(legend.position = "none",axis.title.x = element_blank(), axis.title.y = element_blank())+ theme_classic()
+```
+
+
+
+### Plot correlation of known targets in steady state cells. 
+
+By just using the 0h samples we can ask if this approach can be used in experiment where there is no change of TF over time, which is the case for POU5F1 in our setup. Showing a real advantage over bulk analysis where there is no change in steady state samples but we now can measure the stochastic changes between the cells. 
+
+
+
+```{r plot known targets in steady state cells }
+
+SPARC.data.QC.POUF5I.2.0h = SPARC.data.QC.POUF5I.2 %>%  filter(time == "0h")
+
+ggplot(SPARC.data.QC.POUF5I.2.0h, mapping = aes(y = targetEexpressionLevel, x = TFexpressionLevel) ) + 
+  geom_point(aes(color = time))+
+  scale_color_manual(values = timePalette)+
+  geom_smooth(method = "lm")+
+  facet_grid(rows = vars(target), cols =vars(TF), scales ="free" , labeller = label_parsed)+
+  theme(legend.position = "none",axis.title.x = element_blank(), axis.title.y = element_blank())+ theme_classic()
+
+
+
+
+```
+
+
+
+### Get correlation of all genes against TF 
+
+
+```{r Get correlation  for all genes against TF }
+
+
+TF_TARGET_correlation = data.frame(
+  protein = cor(t(SPARC.rna.data), SPARC.data.QC.POUF5I$Cq) ,
+  rna = cor(t(SPARC.rna.data), SPARC.data.QC.POUF5I$RPKM))
+
+TF_TARGET_correlation$geneID = rownames(TF_TARGET_correlation)
+
+TF_TARGET_correlation = TF_TARGET_correlation %>%
+  gather(protein,rna,key = TF, value = correlation)
+
+# Annotate known targets 
+knownTargetsLarge = c( "SOX2","NANOG","FOXO1","LEFTY2","HAND1",
+                        "DPPA4","TDGF1","THY1")
+
+TF_TARGET_correlation$target = "no"
+TF_TARGET_correlation$target[
+  TF_TARGET_correlation$geneID %in% knownTargetsLarge] = "yes"
+
+
+TF_TARGET_correlation$molecule = "RNA"
+TF_TARGET_correlation$molecule[
+  grep(pattern = "protein", x =TF_TARGET_correlation$TF) ] = "protein" 
+
+ggplot(data = TF_TARGET_correlation, aes(correlation, color = target) )+
+  geom_density()+
+  facet_grid(cols = vars(molecule) )
+  
+
+potentialTargets = TF_TARGET_correlation %>% 
+  filter(TF =="protein") %>%
+  filter(correlation >0.25 | correlation < (-0.25))
+
+
+
+
+
+write.table(x = potentialTargets$geneID, file = "data/POU5F1targets.tsv" ,
+            quote = FALSE,row.names = FALSE, col.names = FALSE)
+
+```
+
+
+### Do gene set analysis on targets annotated databases. 
+
+To see if there is any consensus on the data we found we will submit the data to [enrichr](https://amp.pharm.mssm.edu/Enrichr/). 
+
+Once in enrichr upload the *POU5F1targets.tsv* file and submit the job. Hopefully within seconds you will get a lot of results. When examining  *TRRUST Transcription Factors 2019*  POU5F1 is the most probable TF to generate this list. 
+
+
+
+
+# Conclusion
+
+Protein data gives another layer of information that sometimes is gives better information than RNA seq data. By integrating the data we can subdivide clusters that is not possible with only RNA and we can facilitate in the identification of TF targets using single cell RNA seq data and TF protein levels. 
+
+
+
+
+
+
+
+
+
+---
+
+<!-- --------------------- Do not edit this and below ---------------------- -->
+
+```{r,echo=FALSE,child="assets/footer-lab.Rmd"}
+```
+
+```{r,eval=FALSE,echo=FALSE}
+# manually run this to render this document to HTML
+rmarkdown::render("lab.Rmd")
+# manually run this to convert HTML to PDF
+#pagedown::chrome_print("lab.html",output="lab.pdf")
+```

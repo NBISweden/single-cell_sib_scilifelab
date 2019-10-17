@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Single cell protein and RNA analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Johan Reimegard 17-Oct-2019" />
+    <meta name="keywords" content="single cell analysis, proteomics, scRNAseq, bioinformatics, course, scilifelab, nbis" />
+    <link href="libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+    <link id="font-awesome-1-attachment" rel="attachment" href="libs/font-awesome-5.1.0/fonts/fontawesome-webfont.ttf"/>
+    <link rel="stylesheet" href="assets/presentation_Schweiz.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Single cell protein and RNA analysis
+## How can protein help single cell RNA-seq analysis
+### <b>Johan Reimegard</b> 17-Oct-2019
+### NBIS, SciLifeLab
+
+---
+
+exclude: true
+count: false
+
+
+&lt;link href="https://fonts.googleapis.com/css?family=Roboto|Source+Sans+Pro:300,400,600|Ubuntu+Mono&amp;amp;subset=latin-ext" rel="stylesheet"&gt;
+&lt;link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous"&gt;
+
+
+
+
+
+&lt;!-- ------------ Only edit title, subtitle &amp; author above this ------------ --&gt;
+
+---
+name: intro
+class: spaced
+
+
+##  WHY PROTEINS? 
+
+
+
+---
+name: proRNAchar
+class: spaced
+
+## The first time I was intrigued with proteins
+
+### How can people with three chr 21 be alive and so well?
+
+* DNA level 1.5 times higher on chr 21
+* RNA level also higher on chr 21 
+* Protein levels level same as on other chromosomes
+   * Except for proteins that did not belong to protein complexes 
+   * Due to faster degradation of proteins that was not part of a complex
+
+.pull-left-30[![](images/downsyndrome.jpeg)]
+.pull-right-70[
+.size-85[![](images/trisomie.png)]
+]
+
+
+
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_4.png)
+
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_5.png)
+
+
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_6.png)
+
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_7.png)
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_8.png)
+
+---
+name: intro
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_9.png)
+
+
+
+---
+name: proAd
+class: spaced
+
+## Protein levels better explains the role of a cell than RNA 
+
+#![](images/Figure1_Overview.png)
+
+#![](images/RNA_protein_expression_2_10.png)
+
+
+
+---
+name: content
+class: spaced
+## Contents
+
+* [WHY PROTEINS](#proRNAchar)
+  * [Protein levels better explains the role of a cell than RNA](#proAd)
+  * [Protein closer to cellular function](#proAd2)
+  * [Protein characteristics](#protCharacteristics)
+  * [Protein cellualar importance](#cellImportance)
+  * [RNA protein dependance ](#ProRNAcorr)
+  * [Post transcriptional modifications](#PostTranscriptMod)
+* [Single cell protein analysis Landscape](#scpLandscape)
+* [Single cell protein analysis Trends](#scpTrends)
+* [PEA and immune assays](#PEA)
+* [CITE-seq](#CITE)
+* [SPARC](#CITE)
+* [Todays afternoon lab](#lab)
+
+
+
+
+
+
+---
+name: protCharacteristics
+class: spaced
+
+## Protein and RNA characteristics
+
+.size-60[![](images/Picture1_RNAProteinRelevance1.png)]
+
+
+- Proteins are in general more stable
+- Proteins have a greater dynamic range
+- Proteins are more abundant
+
+.citation[
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Schwanh??usser B, *et al.* "Global quantification of mammalian gene expression control" [Nature 2011](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0881-8)]
+]
+
+---
+name: ProRNAcorr
+class: spaced
+
+## Protein and RNA levels does not neccesarily correlate
+
+
+.size-100[![](images/Picture2_proteinRNArelation.png)]
+
+.citation[
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Liu, *et al.* "On the Dependency of Cellular Protein Levels on mRNA Abundance" [Cell 165 2016](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0881-8)]
+]
+
+
+
+---
+name: postTransModifications
+class: spaced
+
+## Post transcriptional modification
+
+
+ 
+.pull-left-30[
+- Turnover
+- Protein conformation
+- Enzyme activity
+- Crosstalk
+- Localisation
+- Protein binding and interaction
+
+]
+
+.pull-right-70[
+.size-85[![](images/Picture2.1_postmodifications.png)]
+]
+
+.citation[
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Aebersold &amp; Mann. "Mass-spectrometric exploration of proteome structure and function." [Nature 2016](https://bmcbiol.biomedcentral.com/articles/10.1186/1741-7007-12-42)]  
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; See also Wei, *et al*. "Single-cell phosphoproteomics resolves adaptive signaling dynamics and informs targeted combination therapy in glioblastoma." [Cancer Cell. 2016](https://www.cell.com/molecular-cell/fulltext/S1097-2765(12)00481-9).]  
+]  
+---
+name: applications
+class: spaced
+
+
+
+
+
+## Applications for single cell protein analysis
+
+- Biomarkers for cell differentiation
+- Biomarkers for cell cycle state
+- Identify post-transcriptional modifications
+- Identify trans-regulatory targets 
+
+
+
+---
+name: scpLandscape
+class: spaced
+
+## Landscape of single cell protein analysis
+
+.pull-left-30[
+- Mass spectrometry
+- Co-detection with RNA
+- PLA/PEA
+- ELISA
+- Immuno-Seq
+- Immunofluorescence
+- Mass cytometry
+- Flow cytometry
+- Western blot
+]  
+.pull-right-70[![](images/Different_singleCellProtein.png)
+]  
+---
+name: scp_landscape
+class: spaced
+
+## Landscape of single cell protein analysis
+
+
+.pull-left-50[
+**Trends**
+- Transfer of protein information to DNA
+- Combined mRNA and protein analysis
+- Combined in situ multiplex protein and cellular parameters
+
+]  
+
+---
+name: multiIF
+class: spaced
+
+## Multiplex immunofluorescence 
+
+
+.size-90[![](images/Picture9_Multiplex_immunoflourescence.png)]
+
+.pull-right-20[
+- ~40 plex
+- Cellular parameters
+
+]
+
+
+
+
+.citation[
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Gut G  *et al.* "Multiplex protein maps link subcellular organization to cellular states." [Science 2018 ](https://bmcbiol.biomedcentral.com/articles/10.1186/1741-7007-12-42)]  
+
+
+] 
+
+
+---
+name: MultiProteinDetection1
+class: spaced
+
+## Multiplex protein detection
+ 
+Transfer protein information to DNA reporter
+
+
+
+.pull-left-90[![](images/Picture11_multiplex_protein_detection.png)]
+.pull-left-80[![](images/Picture11_immune_seq.png)]
+
+
+---
+name: MultiProteinDetection1
+class: spaced
+
+## How does PEA works
+ 
+&lt;iframe width="800" height="400" src="http://www.youtube.com/embed/3-nGHs8DoSw?rel=0" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
+
+
+
+
+
+---
+name: MultiProteinDetection2
+class: spaced
+
+## Multiplex protein detection
+ 
+.pull-center-50[![](images/Picture12_otherInformation.png)]
+
+
+.center[Can also identify more complex scenarios like modification of proteins or protein-protein interactions.]
+
+
+---
+name: ImmuneSeq
+class: spaced
+
+## Immune-Seq
+Cellular Indexing of Transcriptomes and Epitopes by sequencing (CITE-seq)
+
+.pull-center-80[![](images/CITEseqWorkFlow.jpg)]
+
+**Disatvantage** Only bind to surface proteins (right now anyway)
+
+**Advantage** Can be incorporated in droplet based methods. 10x does CITE-seq. 
+
+.citation[
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Stoeckius  *et al.* "Simultaneous epitope and transcriptome measurement in single cells." [Nature Methods 2017 ](https://bmcbiol.biomedcentral.com/articles/10.1186/1741-7007-12-42)]
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Peterson VM *et al.* "Multiplexed quantification of proteins and transcripts in single cells." [Nat Biotech 2017](https://bmcbiol.biomedcentral.com/articles/10.1186/1741-7007-12-42)]  
+.cite[&lt;i class="fas fa-link"&gt;&lt;/i&gt; Mimitou EP *et al.* "Multiplex detection of proteins, transcriptomes, clonotypes and CRISPR perturbations in single cells." [Nature Methods 2019 ](https://bmcbiol.biomedcentral.com/articles/10.1186/1741-7007-12-42)]  
+]
+---
+name: ImmuneSeq
+class: spaced
+
+## Immune-Seq
+Can also use it for Cell Hashing
+
+.pull-center-80[![](images/Cell_Hashing.jpg)]
+
+
+**Advantage** Can join multiple samples before sequencing and use the tags to seperate the cells 
+
+
+---
+name: ImmuneSeq
+class: spaced
+
+## Immune-Seq
+ECCITE set published this year from the same group that did CITE-seq. Does scRNAseq, hashtaging, surface proteins and CRISP sequence detection at the same time. 
+
+.pull-center-80[![](images/ECCITEseq_a.png)]
+
+
+**Advantage** They claym that you can do up to five different assays using this protocoll. 
+
+
+
+---
+name: ImmuneSeq2
+class: spaced
+
+
+## Protein are stable and make them better biomarkers. 
+
+* Protein levels in the right context have very long half-life
+  * Especially surface proteins that are very stable
+
+
+#![](images/RNA_protein_expression_2_9.png)
+
+---
+name: ImmuneSeq2
+class: spaced
+
+## CITE seq experiment on Immune cells.
+Using the more stable protein expression of surface proteins to distinguish different cell types. 
+ 
+
+.pull-center-80[![](images/Picture13_siteSeq.png)]
+
+
+- Surface protein levels per-cells less prone than mRNA to drop-out events (due to greater copy number of proteins?)
+- Protein data robustly represented immune-phenotypes
+- scRNAseq data alone could not provide a clear separation between CD4 and CD8 T cells
+
+
+
+---
+name: SPARC1
+class: spaced
+
+## Single cell mRNA and protein analysis in a dynamic cellular system
+
+
+
+
+.padding-horisontal-70[
+
+- Can we co-measure global mRNA and intracellular protein in single cells?
+- How are mRNA-protein co-expressed? In cells at steady-state or undergoing a stable-state change?
+- How can protein measurements aid to decipher cell state and gene regulatory networks?
+]
+
+
+
+
+---
+name: SPARC2
+class: spaced
+
+## SPARC - Single-cell Protein and RNA Co-profiling 
+
+
+.pull-left-50[![](images/SPARC_fig1.png)]
+
+
+
+
+---
+name: SPARC2
+class: spaced
+
+## SPARC - Single-cell Protein and RNA Co-profiling 
+
+
+.pull-left-50[![](images/SPARC_fig1_2.png)]
+
+
+
+---
+name: SPARC2
+class: spaced
+
+## SPARC - Single-cell Protein and RNA Co-profiling 
+
+
+.size-100[![](images/SPARC_fig1_3.png)]
+
+
+---
+name: SPARC2
+class: spaced
+
+## SPARC - Single-cell Protein and RNA Co-profiling 
+
+
+.size-100[![](images/Sparc_fig2_up.png)]
+.pull-left-30[![](images/Sparc_fig2_left.png)]
+
+
+
+---
+name: SPARC2
+class: spaced
+
+## SPARC - Single-cell Protein and RNA Co-profiling 
+
+
+.size-100[![](images/Sparc_fig2_up.png)]
+.pull-left-70[![](images/Sparc_fig2_left_2.png)]
+
+
+---
+name: SPARC3
+class: spaced
+
+## SPARC - Single-cell Protein and RNA Co-profiling 
+
+
+.size-100[![](images/Sparc_fig2_up.png)]
+.size-100[![](images/Sparc_fig2_left_3.png)]
+
+
+pearson correlation between RNA-protein pseudotime: 0.83
+
+
+
+---
+name: SPARC3
+class: spaced
+
+
+## Correlation of mRNA and protein 
+
+Using our data mRNA expression fails to accurately reflect protein abundance at the time of measurement
+
+.pull-left-25[![](images/Sparc_Fig3_left.png)]
+
+
+
+
+---
+name: SPARC3
+class: spaced
+
+
+## Correlation of mRNA and protein 
+
+Using our data mRNA expression fails to accurately reflect protein abundance at the time of measurement
+
+.pull-left-50[![](images/Sparc_Fig3_half.png)]
+
+
+---
+name: SPARC3
+class: spaced
+
+
+## Correlation of mRNA and protein 
+
+Using our data mRNA expression fails to accurately reflect protein abundance at the time of measurement
+
+.size-100[![](images/Sparc_Fig3_full.png)]
+
+
+---
+name: SPARC3
+class: spaced
+
+
+## Correlation of mRNA and protein 
+
+Using our data mRNA expression fails to accurately reflect protein abundance at the time of measurement
+
+.size-80[![](images/Sparc_Fig3_summary.png)]
+
+- A weak, but significant, trend that RNA and protein levels correlate over time.   
+-  Very selldom contradictory results, *e.g.* protein levels go up and RNA levels go down, over time. 
+
+---
+name: Velocyto
+class: spaced
+
+## Can we use mature RNA and protein levels to predict the flow of cells over time.
+
+
+#![](images/RNA_protein_expression_2_7.png)
+
+Can we use velocyto and replace pre-mRNA levels with mRNA levels and mRNA levels with protein levels 
+
+---
+name: SPARC3
+class: spaced
+
+## Can we use mature RNA and protein levels to predict the flow of cells over time.
+
+
+#![](images/velocyto_no.png ) 
+
+NO!
+
+
+---
+name: SPARC3
+class: spaced
+
+## Can we use mature RNA and protein levels to predict the flow of cells over time.
+
+
+#![](images/velocyto_maybe.png ) 
+
+MAYBE...
+
+
+---
+name: SPARC3
+class: spaced
+
+## Are protein level of TF better to predict TF-targets?
+
+
+#![](images/RNA_protein_expression_2_10.png)
+
+
+---
+name: SPARC3
+class: spaced
+
+## Are protein level of TF better to predict TF-targets?
+
+.size-60[![](images/TFtargetAll.png)]
+
+* Yes. at least for POU5F1
+
+---
+name: SPARC3
+class: spaced
+
+## Are protein level of TF better to predict TF-targets?
+
+
+.size-60[![](images/TF_target_SS.png)]
+
+* Signal remains for single cells in 0h steady state for protein but not for RNA levels of POU5F1
+
+
+---
+name: SPARC3
+class: spaced
+# Are protein level of TF better to predict TF-targets?
+
+
+.size-100[![](images/ROC.png)]
+
+* Protein levels better predictor. 
+* Better predictor if TF changes over time but works ok even in steady state cells!
+
+
+---
+name: SPARC3
+class: spaced
+# Potential POU5F1 targets 
+
+.pull-left-50[
+- Criteria for being a target
+  -   Among top correlated levels to POU5F1 in two of the setups
+  -  ChIP seq data evidence that POU5F1 binds in the vicinity of the TSS of the gene
+- All targets were the same for All time points independent of method
+- 13 of 20 where also found in steady state samples when using protein level of POU5F1
+- 2 of 20 where also found in steady state samples when using protein level of POU5F1
+]  
+.pull-right-40[![](images/HeatMap.correlation.POU5F1.png)
+]  
+.size-40[![]()]
+
+
+
+---
+name: SPARC1
+class: spaced
+
+## Single cell mRNA and protein analysis in a dynamic cellular system
+
+
+
+
+.padding-horisontal-70[
+
+- Can we co-measure global mRNA and intracellular protein in single cells?
+  - Yes we can!
+- How are mRNA-protein co-expressed? In cells at steady-state or undergoing a stable-state change?
+  - Very little correlation unless you follow over time or in different celltypes.
+- How can protein measurements aid to decipher cell state and gene regulatory networks?
+  - More stable expression levels ( Not shown in this lecture). Better biomarkers. But not as good as the surface protein makers.
+  - Better predictor for TF targets ( at least for POU5F1)
+]
+
+
+---
+name: SPARC1
+class: spaced
+
+## Afternoon lab
+
+
+
+
+.padding-horisontal-70[
+
+- Use seurat and CITE seq data to combine protein and RNA levels to identify different clusters
+
+- Use scripts and SPARC data to go through some of the analysis presented today
+
+- The data and the markdown files can be downloaded here
+
+- The presentation can be downloaded from here 
+
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="assets/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "4:3",
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "%current%/%total%"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
