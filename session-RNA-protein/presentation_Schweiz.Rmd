@@ -52,7 +52,7 @@ class: spaced
 
 .pull-left-30[![](images/downsyndrome.jpeg)]
 .pull-right-70[
-.size-85[![](images/trisomie.png)]
+.size-80[![](images/trisomie.png)]
 ]
 
 .citation[
@@ -241,7 +241,7 @@ class: spaced
 ## Applications for single cell protein analysis
 
 - Biomarkers for cell differentiation
-- Biomarkers for cell cycle state
+- Biomarkers for cell states
 - Identify post-transcriptional modifications
 - Identify trans-regulatory targets 
 
