@@ -52,7 +52,7 @@
 - **20:00 - 22:00** Special late opening of the spa
 
 ### Friday 18.10.2019
-- **09:00 - 10:00** Data integration methods (Sebastien Smallwood)
+- **09:00 - 10:00** [Technical overview of single-cell transcriptomics methods](session-outlook/Smallwood_Leysin_2019.pptx) (Sebastien Smallwood)
 - **10:00 - 11:00** Spatial mapping of scRNAseq (Lars Borm)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** Lineage tracing and scRNA (Maria Florescu)
