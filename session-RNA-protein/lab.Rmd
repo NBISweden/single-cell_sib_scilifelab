@@ -31,7 +31,18 @@ library(ggplot2) # plotting
 library(stringr) # text processing
 library(tidyr) # data wrangling
 library(dplyr) # data handling
+library(Seurat) # sc data analysis
+#install.packages(SCORPIUS)
+
+#install.packages("SCORPIUS")
+library(SCORPIUS) # pseudo time analysis
+
+
+#install.packages("gridExtra")
 library(gridExtra) # Visualisation
+
+#install.packages("Rtsne")
+library(Rtsne)
 
 
 #colours
@@ -80,23 +91,17 @@ In this exercise we will look at two different ways of incorporating protein dat
 # SITE-seq exercise
 
 This exercise is bluntly stolen from the [Seurat home page](https://satijalab.org/seurat/v3.1/multimodal_vignette.html). 
+
 ## Data description
 The data used in this exercise is from the paper: **Stoeckius M, *et al*. "Simultaneous epitope and transcriptome measurement in single cells." [Nat Methods (2017)](https://www.ncbi.nlm.nih.gov/pubmed/28759029)**. 
 
-## Using Seurat with multi-modal data
-
-### Load in the data
+## Load in the data
 This vignette demonstrates new features that allow users to analyze and explore multi-modal data with Seurat. While this represents an initial release, we are excited to release significant new functionality for multi-modal datasets in the future.
 
 Here, we analyze a dataset of 8,617 cord blood mononuclear cells (CBMCs), produced with CITE-seq, where we simultaneously measure the single cell transcriptomes alongside the expression of 11 surface proteins, whose levels are quantified with DNA-barcoded antibodies. First, we load in two count matrices : one for the RNA measurements, and one for the antibody-derived tags (ADT). You can download the ADT file [here](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100866/suppl/GSE100866_CBMC_8K_13AB_10X-ADT_umi.csv.gz) and the RNA file [here](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100866/suppl/GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz)
 
 
-
-
-```{r load library }
-library(Seurat)
-library(ggplot2)
-```
+## Using Seurat with multi-modal data
 
 At this point you need to put the data that you downloaded.
 
@@ -211,7 +216,7 @@ cbmc <- ScaleData(cbmc, assay = "ADT")
 
 
 ### Visualize protein levels on RNA clusters
-You can use the names of any ADT markers, (i.e. ???adt_CD4???), in FetchData, FeaturePlot, RidgePlot, FeatureScatter, DoHeatmap, or any other [visualization features](http://satijalab.org/seurat/visualization_vignette.html)
+You can use the names of any ADT markers, (i.e. adt_CD4), in FetchData, FeaturePlot, RidgePlot, FeatureScatter, DoHeatmap, or any other [visualization features](http://satijalab.org/seurat/visualization_vignette.html)
 
 ```{r Visualize protein expression levels 1}
 # in this plot, protein (ADT) levels are on top, and RNA levels are on the bottom
@@ -374,7 +379,7 @@ RidgePlot(cbmc, features = c("adt_CD11c", "adt_CD8", "adt_CD16", "adt_CD4", "adt
 
 
 
-# Using SPARC with multi-modal data
+# SPARC-seq exercise
 
 ## Load in the data
 This lab demonstrates new features that allow users to analyze and explore multi-modal data from SPARC. 
@@ -718,8 +723,6 @@ ggplot(sampleInfo, aes(x = PCA_protein1, y = PCA_protein2, color = time))+
 
 ```{r pseudo time analysis on PCA using SCORPIUS }
 
-library(SCORPIUS)
-
 PCASpace = sampleInfo %>% select(PCA_protein1,PCA_protein2,PCA_protein3)
 
 trajPCA <- infer_trajectory(PCASpace)
@@ -742,7 +745,6 @@ sampleInfo["pseudoTimeProteinPCA"] = trajPCA$time*48
 
 
 
-library(Rtsne)
 
 
 
