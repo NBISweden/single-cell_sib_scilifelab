@@ -53,7 +53,7 @@
 
 ### Friday 18.10.2019
 - **09:00 - 10:00** [Technical overview of single-cell transcriptomics methods](session-outlook/Smallwood_Leysin_2019.pptx) (Sebastien Smallwood)
-- **10:00 - 11:00** Spatial mapping of scRNAseq (Lars Borm)
+- **10:00 - 11:00** [Spatial mapping of scRNAseq](session-outlook/Spatial_Lars-Borm_NBIS2019.pdf) (Lars Borm)
 - **11:00 - 11:30** Coffee break
 - **11:30 - 12:30** Lineage tracing and scRNA (Maria Florescu)
 - **12:30 - 14:00** Lunch break
